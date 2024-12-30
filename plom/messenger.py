@@ -21,8 +21,6 @@ import requests
 from requests_toolbelt import MultipartEncoder
 
 from plom.baseMessenger import BaseMessenger
-from plom.scanMessenger import ScanMessenger
-from plom.managerMessenger import ManagerMessenger
 from plom.plom_exceptions import PlomSeriousException
 from plom.plom_exceptions import (
     PlomAuthenticationException,
@@ -41,8 +39,6 @@ from plom.plom_exceptions import (
 
 __all__ = [
     "Messenger",
-    "ManagerMessenger",
-    "ScanMessenger",
 ]
 
 log = logging.getLogger("messenger")
