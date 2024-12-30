@@ -17,8 +17,6 @@ include requirements.txt
 
 include plom/templateTestSpec.toml
 include plom/templateSolutionSpec.toml
-include plom/create/digits.json
-include plom/serverDetails.toml
 include plom/demo_rubrics.toml
 include plom/default_keys.toml
 include plom/wasd_keys.toml
