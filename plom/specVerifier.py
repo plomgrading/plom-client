@@ -395,19 +395,6 @@ class SpecVerifier:
     @classmethod
     def _demo_str(cls, *, num_to_produce=None):
         s = cls._template_as_string()
-        if num_to_produce:
-            from plom.create.demotools import getDemoClassListLength
-
-            # TODO: 20 in source file hardcoded here, use regex instead
-            s = s.replace(
-                "numberToProduce = 20",
-                "numberToProduce = {}".format(num_to_produce),
-            )
-            classlist_len = getDemoClassListLength()
-            if num_to_produce > classlist_len:
-                raise ValueError(
-                    "Demo size capped at classlist length of {}".format(classlist_len)
-                )
         return s
 
     @classmethod
