@@ -175,8 +175,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = [
     'plom.client.tools.tool',
-    'plom.db.examDB',
-    'plom.server.theServer',
 ]
 ignore_errors = true
 
