@@ -294,6 +294,7 @@ unittests:
 # TODO: may consider merging with unittests job above
 coverage:
   stage: test
+  needs: []
   image: ubuntu:24.04
   before_script:
     - apt-get -y update
@@ -317,7 +318,7 @@ coverage:
       python3-tomlkit python3-tqdm python3-arrow
       python3-segno python3-pandas python3-exif python3-fitz
     - apt-get -yq autoclean
-    - pip install pyspellchecker stdiomask
+    - pip install --break-system-packages pyspellchecker stdiomask
   script:
     - pip install pytest pytest-cov coverage[toml]~=7.6.10
     - coverage run -m pytest
