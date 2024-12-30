@@ -320,7 +320,7 @@ coverage:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pip install pytest pytest-cov coverage[toml]~=7.6.10
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.6.10
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
