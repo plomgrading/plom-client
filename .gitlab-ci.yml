@@ -243,7 +243,6 @@ unittests:
       cmake make g++
       imagemagick
       openssl
-      dvipng latexmk texlive-latex-extra texlive-fonts-recommended texlive-pictures
       libpango-1.0-0 libpangocairo-1.0-0
       file
       python3
@@ -283,7 +282,6 @@ coverage:
       cmake make g++
       imagemagick
       openssl
-      dvipng latexmk texlive-latex-extra texlive-fonts-recommended texlive-pictures
       libpango-1.0-0 libpangocairo-1.0-0
       file
       python3
@@ -422,7 +420,6 @@ newOS_newdeps_legacy:
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
     - apt-get --no-install-recommends --yes install
       cmake make g++ imagemagick
-      dvipng latexmk texlive-latex-extra texlive-fonts-recommended
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
       libpango-1.0-0 libpangocairo-1.0-0
       python3-pytest python3-dev
@@ -450,7 +447,6 @@ oldOS_mindeps:
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
     - apt-get --no-install-recommends --yes install
       cmake make g++ imagemagick
-      dvipng latexmk texlive-latex-extra texlive-fonts-recommended
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
       libpango-1.0-0 libpangocairo-1.0-0
       python3 python3-dev
@@ -476,8 +472,7 @@ minpy_mindeps:
   before_script:
     - apt-get update
     - apt-get --no-install-recommends --yes install
-      cmake make imagemagick dvipng g++
-      texlive-latex-extra latexmk texlive-fonts-recommended
+      cmake make imagemagick g++
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
     - pip install pytest
   script:
