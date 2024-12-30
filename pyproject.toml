@@ -48,14 +48,11 @@ dependencies = [
     "cryptography>=41.0.3",
     'importlib_resources>=5.0.7 ; python_version<"3.9"',  # until we drop 3.8
     "imutils>=0.5.4",
-    "numpy>=1.21.2",
-    "opencv-python-headless>=4.5.4.60",
     "packaging",
     "pandas>=1.5.0",
     "passlib",
     "Pillow>=7.0.0",  # Consider >=10.2 for Issue #3216
     "platformdirs>=3.0.0",
-    "pymupdf>=1.24.6",
     "pyspellchecker>=0.8.1",
     "pytest>=6.0.0",
     "pytest-qt>=4.1.0",
@@ -153,7 +150,6 @@ module = [
     'imutils.*',
     'requests_toolbelt',
     'stdiomask',
-    'pymupdf',
 ]
 ignore_missing_imports = true
 

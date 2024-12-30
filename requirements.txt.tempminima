@@ -25,10 +25,8 @@ arrow==1.1.1
 cryptography==41.0.3
 importlib_resources==5.0.7
 imutils==0.5.4
-numpy==1.21.2
 Pillow==7.0.0
 platformdirs==3.0.0
-pymupdf==1.24.6
 pyOpenSSL==23.2.0
 pyspellchecker==0.8.1
 pytest==6.0.0
