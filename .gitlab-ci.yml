@@ -283,15 +283,43 @@ black:
   allow_failure: true
 
 
+# image: python:3.12?
 unittests:
   stage: test
-  needs: ["container-image"]
-  image: $IM
+  needs: []
+  image: ubuntu:24.04
+  before_script:
+    - apt-get -y update
+    - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
+    - apt-get --no-install-recommends -y install
+      cmake make g++
+      imagemagick
+      openssl
+      dvipng latexmk texlive-latex-extra texlive-fonts-recommended texlive-pictures
+      libpango-1.0-0 libpangocairo-1.0-0
+      file
+      python3
+      python3-dev
+      python3-pip
+      python3-setuptools
+      python3-wheel
+      python3-pytest
+      python3-magic
+      python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
+      python3-platformdirs python3-packaging python3-requests-toolbelt
+      python3-tomlkit python3-tqdm python3-arrow
+      python3-segno python3-pandas python3-exif python3-fitz
+    - apt-get -yq autoclean
+    - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pytest-3 -l --pyargs plom
+    - pytest --version
+    - pytest -l --pyargs plom
+    # TODO how to run only doctests?  here we just ignore-glib on "test_*"
+    # pip install --upgrade pytest
+    - pytest --version
+    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plom
 
 
-# TODO: may consider merging with unittests job above
 coverage:
   stage: test
   needs: []
