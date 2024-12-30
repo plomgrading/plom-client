@@ -256,7 +256,7 @@ unittests:
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-tqdm python3-arrow
-      python3-segno python3-pandas python3-pillow
+      python3-segno python3-pandas python3-pillow python3-zxing-cpp
     - apt-get -yq autoclean
     - pip install --break-system-packages exif pyspellchecker stdiomask pymupdf
   script:
@@ -296,7 +296,7 @@ coverage:
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-tqdm python3-arrow
-      python3-segno python3-pandas python3-pillow
+      python3-segno python3-pandas python3-pillow python3-zxing-cpp
     - apt-get -yq autoclean
     - pip install --break-system-packages exif pyspellchecker stdiomask pymupdf
   script:
