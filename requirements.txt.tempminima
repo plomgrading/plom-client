@@ -31,6 +31,5 @@ pyspellchecker==0.8.1
 pytest==6.0.0
 pytest-qt==4.1.0
 stdiomask==0.0.6
-tqdm==4.63.2
 tomli==2.0.1
 tomlkit==0.11.7

@@ -48,8 +48,6 @@ dependencies = [
     "cryptography>=41.0.3",
     'importlib_resources>=5.0.7 ; python_version<"3.9"',  # until we drop 3.8
     "packaging",
-    "pandas>=1.5.0",
-    "passlib",
     "Pillow>=7.0.0",  # Consider >=10.2 for Issue #3216
     "platformdirs>=3.0.0",
     "pyspellchecker>=0.8.1",
@@ -61,7 +59,6 @@ dependencies = [
     "stdiomask>=0.0.6",
     'tomli>=2.0.1 ; python_version<"3.11"',  # until we drop 3.10
     "tomlkit>=0.11.7",
-    "tqdm>=4.63.2",
 ]
 
 readme = {file = 'README.md', content-type = 'text/markdown'}
@@ -127,8 +124,6 @@ ignored-modules = []
 omit = ["*/test_*", "/usr/*", "*/config*"]
 
 [tool.pytest.ini_options]
-# TODO: for now ignore the plom_server folder: it uses its own testing
-addopts = "--ignore plom_server"
 qt_api = "pyqt6"
 
 [tool.djlint]
@@ -144,7 +139,6 @@ exclude = []
 # Maintenance: try removing X, removing .mypy_cache, uninstalling types-X, and rerunning mypy locally
 [[tool.mypy.overrides]]
 module = [
-    'api_secrets',
     'importlib_resources',
     'requests_toolbelt',
     'stdiomask',
@@ -152,9 +146,7 @@ module = [
 ignore_missing_imports = true
 
 # hide some things from mypy
-#   - examDB and theServer have strange/confusing import patterns
 #   - tool.py has pyqtProperty stuff that is also confusing to me
-#   - TODO: fix the temporary ones for Issue #2847 and Issue #2849
 [[tool.mypy.overrides]]
 module = [
     'plom.client.tools.tool',
@@ -186,8 +178,7 @@ select = ["D"]
 # D100: public module docstrings: seem to get a lot of false positives
 # D10x: most of these are about missing docstrings
 ignore = ["D107", "D100", "D101", "D102", "D103", "D104", "D106"]
-# Legacy stuff: would need lots of edits to pass
-exclude = ["plom/server/**", "plom/db/**", "plom/canvas/**"]
+exclude = []
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
