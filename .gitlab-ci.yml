@@ -308,9 +308,9 @@ unittests:
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-tqdm python3-arrow
-      python3-segno python3-pandas python3-exif python3-pillow
+      python3-segno python3-pandas python3-pillow
     - apt-get -yq autoclean
-    - pip install --break-system-packages pyspellchecker stdiomask pymupdf
+    - pip install --break-system-packages exif pyspellchecker stdiomask pymupdf
   script:
     - pytest --version
     - pytest -l --pyargs plom
@@ -344,9 +344,9 @@ coverage:
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-tqdm python3-arrow
-      python3-segno python3-pandas python3-exif python3-pillow
+      python3-segno python3-pandas python3-pillow
     - apt-get -yq autoclean
-    - pip install --break-system-packages pyspellchecker stdiomask pymupdf
+    - pip install --break-system-packages exif pyspellchecker stdiomask pymupdf
   script:
     - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.6.10
     - coverage run -m pytest
