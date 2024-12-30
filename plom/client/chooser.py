@@ -60,7 +60,7 @@ from plom.plom_exceptions import (
     PlomSSLError,
     PlomNoServerSupportException,
 )
-from plom.messenger import Messenger, ManagerMessenger
+from plom.messenger import Messenger
 from plom.client import MarkerClient, IDClient
 from .downloader import Downloader
 from .about_dialog import show_about_dialog
@@ -141,9 +141,8 @@ class Chooser(QDialog):
         self.ui.markButton.clicked.connect(self.run_marker)
         self.ui.identifyButton.clicked.connect(self.run_identifier)
         self.ui.aboutButton.clicked.connect(lambda: show_about_dialog(self))
-        # Hide button used for directly opening manager
+        # Hide currently-unused button
         self.ui.manageButton.setVisible(False)
-        self.ui.manageButton.clicked.connect(self.run_manager)
         self.ui.closeButton.clicked.connect(self.close)
         self.ui.fontSB.valueChanged.connect(self.setFontSize)
         self.ui.optionsButton.clicked.connect(self.options)
@@ -213,13 +212,12 @@ class Chooser(QDialog):
 
         assert self.messenger is not None
         if self.messenger.is_legacy_server() and self.messenger.username == "manager":
-            if which_subapp != "Manager":
-                InfoMsg(
-                    self,
-                    "<p>You are not allowed to mark or ID papers while "
-                    "logged-in as &ldquo;manager&rdquo;.</p>",
-                ).exec()
-                return
+            InfoMsg(
+                self,
+                "<p>You are not allowed to mark or ID papers while "
+                "logged-in as &ldquo;manager&rdquo;.</p>",
+            ).exec()
+            return
 
         self.saveDetails()
 
@@ -231,28 +229,7 @@ class Chooser(QDialog):
         except PlomNoServerSupportException:
             role = ""
 
-        if which_subapp == "Manager":
-            if not self.messenger.is_legacy_server():
-                InfoMsg(
-                    self,
-                    "<p>Only legacy servers have a manager app: "
-                    "how did you get here?</p>",
-                ).exec()
-                return
-            if not self.messenger.username == "manager":
-                InfoMsg(self, 'Only "manager" can manager.').exec()
-                return
-
-            # Importing here avoids a circular import
-            from plom.manager import Manager
-
-            self.setEnabled(False)
-            self.hide()
-            window = Manager(self.Qapp, manager_msgr=self.messenger)
-            window.show()
-            # store ref in Qapp to avoid garbase collection
-            self.Qapp._manager_window = window
-        elif which_subapp == "Marker":
+        if which_subapp == "Marker":
             if len(role) and role not in ["marker", "lead_marker"]:
                 WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
                 return
@@ -295,9 +272,6 @@ class Chooser(QDialog):
 
     def run_identifier(self) -> None:
         self._launch_subapp("Identifier")
-
-    def run_manager(self) -> None:
-        self._launch_subapp("Manager")
 
     def saveDetails(self) -> None:
         """Write the options to the config file."""
@@ -389,7 +363,7 @@ class Chooser(QDialog):
         self.ui.infoLabel.setText("")
         self.logout()
 
-    def _pre_login_connection(self, msgr: Messenger | ManagerMessenger) -> bool:
+    def _pre_login_connection(self, msgr: Messenger) -> bool:
         # This msgr object may or may not be logged in: it can be temporary: we
         # only use it to get public info from the server.
         #
@@ -475,15 +449,10 @@ class Chooser(QDialog):
         else:
             self.ui.userLE.setFocus()
 
-    def start_messenger_get_info(
-        self, *, _legacy_username: str | None = None, verify_ssl: bool = True
-    ) -> None:
+    def start_messenger_get_info(self, *, verify_ssl: bool = True) -> None:
         """Get info from server, update UI with server version, check SSL.
 
         Keyword Args:
-            _legacy_username: normally we don't care who might eventually
-                login, except in the legacy case and if it might be the
-                manager.
             verify_ssl: True by default but if False then don't pop up
                 dialogs about lacking SSL verification.  Should not be
                 used lightly!  Currently we let users make this decision
@@ -512,24 +481,14 @@ class Chooser(QDialog):
             self.messenger = None
 
         try:
-            msgr: Messenger | ManagerMessenger = Messenger(
-                server, port=port, verify_ssl=verify_ssl
-            )
+            msgr = Messenger(server, port=port, verify_ssl=verify_ssl)
             if not self._pre_login_connection(msgr):
                 return
         except PlomException as e:
             WarnMsg(self, "Could not connect to server", info=str(e)).exec()
             return
 
-        if msgr.is_legacy_server():
-            if _legacy_username and _legacy_username == "manager":
-                verified = msgr.is_ssl_verified()
-                msgr.stop()
-                msgr = ManagerMessenger(server, port=port, verify_ssl=verified)
-                if not self._pre_login_connection(msgr):
-                    return
-
-        # Once we're happy with the manager keep it, b/c it knows if we
+        # Once we're happy with the messenger keep it, b/c it knows if we
         # have made an SSL exception for example.
         self.messenger = msgr
 
@@ -580,19 +539,8 @@ class Chooser(QDialog):
         if self.is_logged_in():
             self.logout()
 
-        verified = True
-        # Legacy special cases if we already have the wrong type of messenger,
-        # e.g., someone changed the username after validating but before login.
-        if self.messenger and self.messenger.is_legacy_server():
-            if user == "manager" and not isinstance(self.messenger, ManagerMessenger):
-                verified = self.messenger.is_ssl_verified()
-                self.logout()
-            elif user != "manager" and isinstance(self.messenger, ManagerMessenger):
-                verified = self.messenger.is_ssl_verified()
-                self.logout()
-
         if not self.messenger:
-            self.start_messenger_get_info(_legacy_username=user, verify_ssl=verified)
+            self.start_messenger_get_info()
             if not self.messenger:
                 return
 
@@ -643,17 +591,15 @@ class Chooser(QDialog):
         try:
             spec = self.messenger.get_spec()
         except PlomServerNotReady as e:
-            if not self.messenger.username == "manager":
-                WarnMsg(
-                    self,
-                    "Server does not yet have a spec, nothing to mark. "
-                    " Perhaps you want to login with the manager account to"
-                    " configure the server.",
-                    info=str(e),
-                ).exec()
-                self.messenger = None
-                return
-            spec = None
+            WarnMsg(
+                self,
+                "Server does not yet have a spec, nothing to mark. "
+                " Perhaps you need to login to the web-interface to"
+                " configure the server.",
+                info=str(e),
+            ).exec()
+            self.messenger = None
+            return
         except PlomException as e:
             WarnMsg(self, "Could not connect to server", info=str(e)).exec()
             self.messenger = None
@@ -667,9 +613,6 @@ class Chooser(QDialog):
         self.ui.serverLE.setEnabled(False)
         self.ui.mportSB.setEnabled(False)
         self.ui.loginButton.setEnabled(False)
-
-        if self.messenger.is_legacy_server() and self.messenger.username == "manager":
-            self.ui.manageButton.setVisible(True)
 
     def _set_restrictions_from_spec(self, spec: dict[str, Any]) -> None:
         self.ui.markGBox.setTitle("Choose a task for “{}”".format(spec["name"]))
