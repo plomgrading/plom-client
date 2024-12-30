@@ -28,13 +28,8 @@ ok_no_copyright = [
     "CHANGELOG*",
     "CONTRIBUTORS*",
     "*README.md",
-    "qtCreatorFiles/*.ui",
     "*/uiFiles/ui_*.py",
     ".mailmap",
-    "*/cl_*.csv",
-    "*/demo_assessment_*.csv",
-    "*/demoClassList.csv",
-    "*papers_to_rooms.csv",
 ]
 
 if __name__ == "__main__":
