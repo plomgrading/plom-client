@@ -716,10 +716,10 @@ macos13_universal_client:
   rules:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     when: never
-  - if: $CI_PROJECT_PATH == "plom/plom"
+  - if: $CI_PROJECT_PATH == "plom/plom-client"
     when: manual
   allow_failure: true
-  stage: alt_build
+  stage: packaging
   needs: []
   variables:
     HOMEBREW_NO_AUTO_UPDATE: 1
@@ -891,90 +891,6 @@ macos13_x86_64_client:
     - PlomClient*.zip
     - md5sum
     expire_in: 16 days
-
-
-# this was slow and failed, went back to "brew"
-#   asdf plugin-add imagemagick
-#   asdf install imagemagick 7.0.11-5
-# Runs Python 3.10 as of 2023-10
-# As of 2023-10, we only try to run webplom tests, see TODO about legacy
-macos_server_webplom:
-  variables:
-    HOMEBREW_NO_AUTO_UPDATE: 1
-    HOMEBREW_NO_INSTALL_CLEANUP: 1
-    HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-  image: macos-13-xcode-14
-  tags:
-  - saas-macos-medium-m1
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    when: never
-  - if: $CI_PROJECT_PATH == "plom/plom"
-    when: manual
-  allow_failure: true
-  stage: alt_build
-  needs: []
-  script:
-  - sw_vers
-  - echo $SHELL
-  - which python
-  - python --version
-  - pip --version
-  - python -m pip install --upgrade pip
-  - pip --version
-  - echo $USER
-  - brew --version
-  # brew update
-  # brew --version
-  - brew install cmake pango
-  - brew install gobject-introspection
-  - brew install cffi
-  - brew install imagemagick
-  - time brew install basictex
-  - echo $PATH
-  # pdflatex et al not in path until we do this:
-  - eval "$(/usr/libexec/path_helper)"
-  - echo $PATH
-  # alternative slower tex install:
-  # time brew install mactex-no-gui
-  - ls /Library/TeX/texbin/
-  - which pdflatex
-  - which tlmgr
-  # need sudo, "You don't have permission to change the installation in any way"
-  - time sudo tlmgr update --self
-  - sudo tlmgr install latexmk
-  - sudo tlmgr install dvipng
-  - sudo tlmgr install preview exam preprint
-  - which latexmk
-  - pip install pytest
-  - pip install .
-  - python -m plom.create --version
-  - python -m plom.server --version
-  # TODO this fails b/c it runs python3, which is not the right Python
-  # python -m pytest -l --pyargs plom
-  # Instead test webplom
-  - export PYTHONPATH=$PWD
-  - echo $PYTHONPATH
-  - pushd plom_server
-  # no postgres yet
-  # ./Launcher/launch_scripts/launch_plom_demo_server.py --length quick --stop-after randomarking
-  - export PLOM_DATABASE_BACKEND=sqlite
-  - python manage.py test
-  - popd
-
-
-# winmintest:
-#   tags:
-#   - saas-windows-medium-amd64
-#   stage: test
-#   needs: []
-#   script:
-#   - choco install -y python311
-#   - refreshenv
-#   - c:\Python311\Scripts\pip install -r requirements.txt.client
-#   - refreshenv
-#   - echo $Env:Path
-#   - c:\Python311\python -m plom.client -h
 
 
 # Build Windows client binaries
