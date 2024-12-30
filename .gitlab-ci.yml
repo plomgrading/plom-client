@@ -790,8 +790,8 @@ macos13_universal_client:
   # numpy fails complaining about blas, try from brew instead?
   # /usr/local/bin/python3 -m pip install numpy --no-binary ":all:"
   - /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
-  - /usr/local/bin/python3 -m pip install -r requirements.txt.client
-  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt.client
+  - /usr/local/bin/python3 -m pip install -r requirements.txt
+  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=6.11.1
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
