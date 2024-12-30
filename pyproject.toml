@@ -91,7 +91,6 @@ packages = [
     "plom.client.icons",
     "plom.client.cursors",
     "plom.client.help_img",
-    "plom.manager",
 ]
 
 # somewhat deprecated?  not supposed to package things into share?
@@ -106,7 +105,6 @@ version = {attr = 'plom.__version__'}
 
 [project.scripts]
 plom-client = "plom.client.__main__:main"
-plom-legacy-manager = "plom.manager.__main__:main"
 
 
 # Tooling configuration
@@ -171,7 +169,7 @@ ignore_errors = true
 
 [tool.pyright]
 pythonVersion = "3.12"
-exclude = ['plom/manager']
+exclude = []
 # changing to "off" makes this much quieter
 typeCheckingMode = "basic"
 # lots of Django false positives?
