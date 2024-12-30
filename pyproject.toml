@@ -46,7 +46,6 @@ requires-python = '>=3.8'
 dependencies = [
     "arrow>=1.1.1",
     "cryptography>=41.0.3",
-    "exif>=1.2.2",
     'importlib_resources>=5.0.7 ; python_version<"3.9"',  # until we drop 3.8
     "imutils>=0.5.4",
     "numpy>=1.21.2",
@@ -152,7 +151,6 @@ exclude = []
 [[tool.mypy.overrides]]
 module = [
     'api_secrets',
-    'exif',
     'importlib_resources',
     'imutils.*',
     'requests_toolbelt',
