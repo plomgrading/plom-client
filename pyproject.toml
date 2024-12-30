@@ -47,7 +47,6 @@ dependencies = [
     "arrow>=1.1.1",
     "cryptography>=41.0.3",
     'importlib_resources>=5.0.7 ; python_version<"3.9"',  # until we drop 3.8
-    "imutils>=0.5.4",
     "packaging",
     "pandas>=1.5.0",
     "passlib",
@@ -147,7 +146,6 @@ exclude = []
 module = [
     'api_secrets',
     'importlib_resources',
-    'imutils.*',
     'requests_toolbelt',
     'stdiomask',
 ]
