@@ -251,7 +251,7 @@ unittests:
       python3-pip
       python3-setuptools
       python3-wheel
-      python3-pytest
+      python3-pytest python3-pytestqt
       python3-magic
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
@@ -291,7 +291,7 @@ coverage:
       python3-pip
       python3-setuptools
       python3-wheel
-      python3-pytest
+      python3-pytest python3-pytestqt
       python3-magic
       python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
       python3-platformdirs python3-packaging python3-requests-toolbelt
