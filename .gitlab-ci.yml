@@ -37,8 +37,6 @@ services:
 # registry.gitlab.com/plom/plom
 variables:
   DOCKER_DRIVER: overlay2
-  IM: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  IM_LATEST: $CI_REGISTRY_IMAGE:latest
   PLOM_NO_SSL_VERIFY: 1
   MACBIN_PY_MAJOR_MINOR_VER: "3.11"
   MACBIN_PY_VER: 3.11.9
@@ -47,44 +45,10 @@ variables:
 stages:
   - static_analysis
   - build
-  - alt_build
   - test
   - packaging
   - prep
   - release
-
-
-# Attention maintainers: if you start to see errors in the CI runs like:
-#   E: Failed to fetch http://security.ubuntu.com... 404 Not Found [IP: 91...]
-# Run with DOCKER_USE_CACHE set to 0, under Pipeline -> Run pipeline
-container-image:
-  stage: build
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - echo $DOCKER_USE_CACHE
-    - >
-      if [ "$DOCKER_USE_CACHE" == "1" ]; then
-        docker pull $IM_LATEST || true
-      fi
-    - >
-      if [ "$DOCKER_USE_CACHE" == "1" ]; then
-        docker build --cache-from $IM_LATEST --tag $IM . -f Containerfile.bulk
-      else
-        docker build --tag $IM . -f Containerfile.bulk
-      fi
-    - docker push $IM
-
-
-# Get fast results by running tests in a copy-pasta of the container-image job
-# TODO: why is this failing?  check if client-building works by commenting out
-# quick-pytests:
-#   stage: build
-#   needs: []
-#   script:
-#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#     - docker pull $IM_LATEST || true
-#     - docker build --cache-from $IM_LATEST --tag $IM .
-#     - docker run $IM pytest-3 -l --pyargs plom
 
 
 codespell:
@@ -136,22 +100,6 @@ copyright_year:
     - ./is_copyright_uptodate.py `git diff --name-only origin/main...$CI_COMMIT_BRANCH --`
     - echo "Note that there are some files that do not have/need copyright headers"
   allow_failure: true
-
-
-# If on main branch, tag earlier image as "latest" (in Gitlab Container Registry)
-# TODO: Issue #3573: did adding `tags` here make this run during the big release on tags pipeline?
-gitlab-container-registry-tag-latest:
-  stage: packaging
-  needs: ["container-image"]
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $IM
-    - docker tag $IM $IM_LATEST
-    - docker push $IM_LATEST
-  only:
-    - main
-    - tags
 
 
 # to ensure the pypi job works, make sure we can package
@@ -320,6 +268,10 @@ unittests:
     - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plom
 
 
+
+# TODO: from the Containerfile, maybe Ubuntu 22.04 needs this?
+# apt-get --no-install-recommends -y install libglib2.0-0 libgl1-mesa-glx \
+#     libegl1 libxkbcommon0 libdbus-1-3 && \
 coverage:
   stage: test
   needs: []
@@ -359,61 +311,48 @@ coverage:
         coverage_format: cobertura
         path: coverage.xml
 
-# Notes:
-# masked out some stuff that deps on tensorflow
-doctests:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - pip3 install --upgrade pytest
-  script:
-    # TODO how to run only doctests?  here we just ignore-glib on "test_*"
-    - pytest --version
-    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*digitHunter.py" --ignore-glob="*/test_*.py" plom
-
 
 # needs full dependencies, cannot easily run with other early static analysis
-pylint:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    # These are pinned at 3.x.*: should be manually bumped sometimes
-    - python3 -m pip install astroid~=3.3.8  # codespell:ignore astroid
-    - python3 -m pip install pylint~=3.3.3
-  script:
-    - pylint plom
-  allow_failure: true
+# pylint:
+#   stage: test
+#   needs: ["container-image"]
+#   image: $IM
+#   before_script:
+#     # These are pinned at 3.x.*: should be manually bumped sometimes
+#     - python3 -m pip install astroid~=3.3.8  # codespell:ignore astroid
+#     - python3 -m pip install pylint~=3.3.3
+#   script:
+#     - pylint plom
+#   allow_failure: true
 
 
 # needs full dependencies, cannot easily run with other early static analysis
 # If exceptions are needed, see "tool.mypy" sections in pyproject.toml
 # Note: currently allowed to fail because of partial adoption of type hints and safety in this project.
 #       Will make not allowed to fail in the future, once types are more widely adopted in the project.
-mypy-type-checking:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - python3 -m pip install mypy~=1.14.0
-  script:
-    - mypy --version
-    - mypy plom --python-ver 3.8 --install-types --non-interactive || true
-    - mypy plom --python-ver 3.8
-  allow_failure: true
+# mypy-type-checking:
+#   stage: test
+#   needs: ["container-image"]
+#   image: $IM
+#   before_script:
+#     - python3 -m pip install mypy~=1.14.0
+#   script:
+#     - mypy --version
+#     - mypy plom --python-ver 3.8 --install-types --non-interactive || true
+#     - mypy plom --python-ver 3.8
+#   allow_failure: true
 
 
-pyright:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - python3 -m pip install pyright~=1.1.391
-  script:
-    # for now, just display errors but don't fail (Issue #3237)
-    - pyright || true
-  allow_failure: true
+# pyright:
+#   stage: test
+#   needs: ["container-image"]
+#   image: $IM
+#   before_script:
+#     - python3 -m pip install pyright~=1.1.391
+#   script:
+#     # for now, just display errors but don't fail (Issue #3237)
+#     - pyright || true
+#   allow_failure: true
 
 
 flake8:
@@ -475,7 +414,7 @@ appstream-valid:
 # get latest pip deps, doesn't use docker, closer to user install
 # allowed to fail (some pip stuff might be new) but we want to know
 newOS_newdeps_legacy:
-  stage: alt_build
+  stage: test
   image: ubuntu:22.04
   allow_failure: true
   before_script:
@@ -504,7 +443,7 @@ newOS_newdeps_legacy:
 # 3. force the minimum version from setup.py
 # Goal here is to catch changes that need newer features of a dependency.
 oldOS_mindeps:
-  stage: alt_build
+  stage: test
   image: ubuntu:20.04
   before_script:
     - apt-get update
@@ -532,7 +471,7 @@ oldOS_mindeps:
 
 # Minimum Python, minimum deps
 minpy_mindeps:
-  stage: alt_build
+  stage: test
   image: python:3.8
   before_script:
     - apt-get update
