@@ -618,7 +618,7 @@ linuxbin_ubuntu2004:
     - pip install --upgrade pip
     - pip install pyinstaller
   script:
-    - pip install -r requirements.txt.client
+    - pip install -r requirements.txt
     - pyinstaller client.linux.spec
     - export VER=$(python3 -c "from plom import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
@@ -648,7 +648,7 @@ linuxbin_ubuntu2204:
     - pip install pyinstaller
     - pip install . --no-deps  # pyinstaller spec needs version
   script:
-    - pip install -r requirements.txt.client
+    - pip install -r requirements.txt
     - pyinstaller client.linux.spec
     - export VER=$(python3 -c "from plom import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
@@ -780,7 +780,7 @@ macos13_arm64_client:
   - /usr/bin/python3 --version
   - /usr/local/bin/python3 --version
   - /usr/local/bin/python3 -m pip install --upgrade pip
-  - /usr/local/bin/python3 -m pip install -r requirements.txt.client
+  - /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=6.11.1
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
@@ -836,7 +836,7 @@ macos13_x86_64_client:
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
   # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
   - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
-  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt.client
+  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=6.11.1
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
@@ -876,7 +876,7 @@ winpyinst:
   - c:\python311\python -m pip install --user --upgrade setuptools packaging wheel
   - refreshenv
   script:
-  - c:\python311\python -m pip install -r requirements.txt.client
+  - c:\python311\python -m pip install -r requirements.txt
   - refreshenv
   # Delay pyinstaller for a month or so, sometimes output flagged as virus (Issue #1353)
   - c:\python311\python -m pip install pyinstaller~=6.11.1
