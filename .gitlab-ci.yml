@@ -361,6 +361,7 @@ mypy-type-checking:
     - pip install --break-system-packages mypy~=1.14.0
   script:
     - mypy --version
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
     - mypy plom --python-ver 3.8 --install-types --non-interactive || true
     - mypy plom --python-ver 3.8
   allow_failure: true
