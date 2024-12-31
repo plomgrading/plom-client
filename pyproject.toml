@@ -112,9 +112,6 @@ extension-pkg-allow-list = ["PyQt6"]
 generated-members = []
 # order matters: need errors-only before disable
 errors-only = true
-# TODO: lots of not-an-iterable in plom/db
-# TODO: lots of no-member in plom_server
-disable = ["not-an-iterable", "no-member"]
 output-format = "colorized"
 ignored-modules = []
 
