@@ -346,6 +346,7 @@ mypy-type-checking:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+    - apt-get -y install python3-tomli  # else mypy fails, unsure why as Python 3.12
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages mypy~=1.14.0
