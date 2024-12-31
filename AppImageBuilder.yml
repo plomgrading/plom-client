@@ -28,8 +28,8 @@ script:
   - mkdir -p AppDir/usr/share/icons/hicolor/128x128/apps
   - cp src/org.plomgrading.PlomClient.png AppDir/usr/share/icons/hicolor/128x128/apps
   - python3 -m pip install --upgrade pip
-  - python3 -m pip install --ignore-installed --prefix=/usr --root=AppDir -r src/requirements.txt.client
-  # Plom itself: but no-deps to avoid pulling in server deps
+  - python3 -m pip install --ignore-installed --prefix=/usr --root=AppDir -r src/requirements.txt
+  # TODO: should we have --no-deps or not?
   - python3 -m pip install --ignore-installed --prefix=/usr --root=AppDir --no-deps src/
 
 

@@ -108,9 +108,6 @@ wet_no_drift:
   before_script:
     - apk add bash
   script:
-    - 'echo "Issue #2402: ensure two identical copies of the latex template"'
-    - diff -s plom/latexTemplate.tex testTemplates/latexTemplate.tex
-    - diff -s plom/latexTemplatev2.tex testTemplates/latexTemplatev2.tex
     - echo "Version info duplicated in two places, ensure same"
     - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
     - export VER1=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
@@ -136,27 +133,9 @@ copyright_year:
     # git show --pretty="" --name-only origin/main..${CI_COMMIT_BRANCH} -- | uniq -u
     # TODO: tried ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME} instead of main?
     - git diff --name-only origin/main...${CI_COMMIT_BRANCH} --
-    - ./contrib/is_copyright_uptodate.py `git diff --name-only origin/main...$CI_COMMIT_BRANCH --`
+    - ./is_copyright_uptodate.py `git diff --name-only origin/main...$CI_COMMIT_BRANCH --`
     - echo "Note that there are some files that do not have/need copyright headers"
   allow_failure: true
-
-
-djlint:
-  image: python:3
-  stage: static_analysis
-  before_script:
-    - pip install djlint~=1.36.4
-  script:
-    - djlint plom_server/templates/*/*.html plom_server/templates/*/*/*.html --profile django
-
-
-djlint-check:
-  image: python:3
-  stage: static_analysis
-  before_script:
-    - pip install djlint~=1.36.4
-  script:
-    - djlint plom_server/templates/*/*.html plom_server/templates/*/*/*.html --check
 
 
 # If on main branch, tag earlier image as "latest" (in Gitlab Container Registry)
@@ -175,28 +154,6 @@ gitlab-container-registry-tag-latest:
     - tags
 
 
-# push to the image to the docker.io container registry, using credentials from GitLab's secrets
-push-to-docker-io:
-  stage: prep
-  rules:
-   - if: $CI_COMMIT_TAG
-  before_script:
-    - docker login -u $REGISTRY_USER_DOCKER_IO -p $REGISTRY_PASSWORD_DOCKER_IO docker.io
-  script:
-    - echo $CI_COMMIT_TAG
-    - docker pull $IM
-    # strip the leading v in vx.y.z
-    - export VER=${CI_COMMIT_TAG:1}
-    # strip the .z in x.y.z
-    - export VER_MINOR=`echo $VER | sed -e "s/^\(\d*\.\d*\).\d*/\1/"`
-    - docker tag $IM plomgrading/server:$VER
-    - docker tag plomgrading/server:$VER plomgrading/server:$VER_MINOR
-    - docker tag plomgrading/server:$VER plomgrading/server:latest
-    - docker push plomgrading/server:$VER
-    - docker push plomgrading/server:$VER_MINOR
-    - docker push plomgrading/server:latest
-
-
 # to ensure the pypi job works, make sure we can package
 # TODO: we make these again during pypi push: better to use these artifacts?
 make_package:
@@ -210,8 +167,8 @@ make_package:
     - mv dist dist_TODO
   artifacts:
     paths:
-      - dist_TODO/plom-*.tar.gz
-      - dist_TODO/plom-*.whl
+      - dist_TODO/plom*.tar.gz
+      - dist_TODO/plom*.whl
     expire_in: 16 days
 
 
@@ -236,7 +193,7 @@ pypi:
     - python3 -m twine upload --verbose dist/*
   artifacts:
     paths:
-      - dist/plom-*.tar.gz
+      - dist/plom*.tar.gz
     expire_in: 16 days
 
 
@@ -335,14 +292,13 @@ unittests:
 
 
 # TODO: may consider merging with unittests job above
-# Issue #2291: fix coverage calculations for plom_server/
 coverage:
   stage: test
   needs: ["container-image"]
   image: $IM
   script:
     - pip install pytest pytest-cov coverage[toml]~=7.6.10
-    - coverage run -m pytest --ignore plom_server
+    - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
   coverage: '/^TOTAL\s+.*\s(\d+\.\d+)%$/'
@@ -377,8 +333,6 @@ pylint:
     - python3 -m pip install pylint~=3.3.3
   script:
     - pylint plom
-    - pylint plom_server
-    - pylint contrib
   allow_failure: true
 
 
@@ -396,8 +350,6 @@ mypy-type-checking:
     - mypy --version
     - mypy plom --python-ver 3.8 --install-types --non-interactive || true
     - mypy plom --python-ver 3.8
-    - mypy plom_server --python-ver 3.8 --install-types --non-interactive || true
-    - mypy plom_server --python-ver 3.8
   allow_failure: true
 
 
@@ -455,274 +407,6 @@ count-no-docstring:
   allow_failure: true
 
 
-no-question-numbers:
-  image: python:3.12
-  stage: static_analysis
-  script:
-    - grep plom_server -rie "question.num"
-    - echo "Question number is ambiguous; generally we prefer index or the question label"
-    - HOW_MANY=`grep plom_server -rie "question.num" | wc -l`
-    # For now, just ensure the total does not increase
-    - echo $HOW_MANY
-    # Future hackers: consider trying to decrease this number
-    - bash -c "[[ $HOW_MANY -le 30 ]]"
-  allow_failure: true
-
-
-# TODO: why do we need to run makemigrations/migrate before tests?
-webplom_test:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  script:
-    - export PYTHONPATH=$PWD
-    - python3 -m pip install coverage~=7.6.10
-    - pushd plom_server
-    - export PLOM_DATABASE_BACKEND=sqlite
-    - python3 manage.py makemigrations
-    - python3 manage.py migrate
-    - coverage run --source="." manage.py test
-    # -i ignores an error caused by openCV's config-3.py file
-    - coverage report -i --precision=2
-    - coverage xml -i -o django_coverage.xml
-    - popd
-  coverage: '/^TOTAL\s+.*\s(\d+\.\d+)%$/'
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: plom_server/django_coverage.xml
-
-
-webplom_demo:
-  services:
-    - postgres
-  variables:
-    POSTGRES_DB: "plom_db"
-    POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: "postgres"
-    POSTGRES_HOST_AUTH_METHOD: trust
-    PLOM_DATABASE_HOSTNAME: "postgres"
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  script:
-    - export PYTHONPATH=$PWD
-    - echo $PYTHONPATH
-    - pushd plom_server
-    - ./Launcher/launch_scripts/launch_plom_demo_server.py --length quick --stop-after reports
-    - popd
-
-
-# a legacy-only job
-demoserver:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - apt-get update
-    - apt-get --no-install-recommends --yes install iproute2 psmisc file curl
-  script:
-    - mkdir demo
-    - pushd demo
-    - plom-server init
-    - plom-server users --demo
-    - plom-create newspec --demo
-    # Start server
-    - ip addr
-    - plom-server launch &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - plom-create uploadspec demoSpec.toml -w 1234
-    - plom-create class --demo -w 1234
-    - plom-create make -w 1234
-    - plom-solutions extract solutionSpec.toml -w 1234
-    - plom-solutions extract --upload -w 1234
-    - python3 -m plom.create.exam_scribbler -w 1234
-    - plom-scan process -w 4567 fake_scribbled_exams1.pdf
-    - plom-scan upload -w 4567 fake_scribbled_exams1.pdf
-    - plom-scan status -w 4567
-    - plom-scan process -w 4567 fake_scribbled_exams2.pdf
-    - plom-scan upload -w 4567 fake_scribbled_exams2.pdf
-    - plom-scan status -w 4567
-    - plom-scan process -w 4567 fake_scribbled_exams3.pdf
-    - plom-scan upload -w 4567 fake_scribbled_exams3.pdf
-    - plom-scan status -w 4567
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
-
-
-# a legacy-only job
-hwdemoserver:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - apt-get update
-    - apt-get --no-install-recommends --yes install iproute2 psmisc file curl
-  script:
-    - mkdir demo
-    - pushd demo
-    - plom-server init
-    - plom-server users --demo
-    - plom-create newspec --demo
-    # Start server
-    - ip addr
-    - plom-server launch &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - export PLOM_USER=user0
-    - export PLOM_PASSWORD=0123
-    - export PLOM_MANAGER_PASSWORD=1234
-    - export PLOM_SCAN_PASSWORD=4567
-    - plom-create uploadspec demoSpec.toml
-    - plom-create class --demo
-    - plom-create make
-    - plom-solutions extract solutionSpec.toml
-    - plom-solutions extract --upload
-    - plom-hwscan status
-    - python3 -m plom.create.homework_scribbler
-    # TODO: the actual hwdemo script does more with qstr, semiloose
-    - plom-hwscan allbyq -y
-    - plom-hwscan missing -y
-    - plom-hwscan submitted
-    - plom-hwscan submitted -d
-    - python3 -m plom.client.randoMarker
-    - plom-finish status
-    - plom-finish csv
-    - A=`cat marks.csv  | wc -l`     # How many lines?
-    - echo $A
-    - A="$((A-1))"
-    - bash -c "[[ $A -le 10 ]]"      # 10 named papers
-    - bash -c "[[ $A == 6 ]]"        # hw_scribber makes 4 "semiloose"
-    - file marks.csv
-    - file marks.csv | grep text
-    - plom-finish reassemble
-    - B=`ls reassembled/ | wc -l`    # How many files?
-    - echo $B
-    - bash -c "[[ $B == $A ]]"
-    - plom-finish solutions --mark
-    - B=`ls solutions/ | wc -l`    # How many files?
-    - echo $B
-    - bash -c "[[ $B == $A ]]"
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
-
-
-# a legacy-only job
-fullworkflow:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - apt-get update
-    - apt-get --no-install-recommends --yes install iproute2 psmisc file curl
-  script:
-    - pwd
-    - ls /
-    - cd /exam
-    - ls /usr/local/lib/python3.10/dist-packages/plom/
-    - ls /src
-    - python3 --version
-    # Build tests
-    - mkdir play
-    - pushd play
-    - plom-server init
-    - plom-server users --demo
-    - plom-create newspec
-    - python3 -m plom.create.demotools solutions # to get soln pdf copied
-    # TODO: override the private seed
-    # sed specAndDatabase/verifiedSpec.toml -i -e "s/privateSeed = .*/privateSeed = \"8253996856355501\"/"
-    # diff -u specAndDatabase/verifiedSpec.toml ../tmp/resources/verifiedSpec.toml
-    # Start server
-    - ip addr
-    - plom-server launch &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - export PLOM_USER=user0
-    - export PLOM_PASSWORD=0123
-    - export PLOM_MANAGER_PASSWORD=1234
-    - export PLOM_SCAN_PASSWORD=4567
-    - plom-create uploadspec
-    - plom-create class --demo
-    - plom-create make
-    - plom-solutions extract solutionSpec.toml
-    - plom-solutions extract --upload
-    - A=`ls papersToPrint/ | wc -l`  # How many files?
-    - bash -c "[[ $A == 20 ]]"       # should be 20
-    - python3 -m plom.create.exam_scribbler
-    - plom-create rubric --demo
-    # Scan and upload
-    # supposed to fail:
-    - if (plom-scan process); then false; else true; fi
-    - plom-scan process --demo fake_scribbled_exams1.pdf
-    - plom-scan upload fake_scribbled_exams1.pdf
-    - plom-scan upload -u fake_scribbled_exams1.pdf
-    # TODO: I removed some -c lines here...
-    - plom-scan status
-    - plom-scan process --demo fake_scribbled_exams2.pdf
-    - plom-scan upload -u fake_scribbled_exams2.pdf
-    - plom-scan status
-    - plom-scan process --demo fake_scribbled_exams3.pdf
-    - plom-scan upload -u fake_scribbled_exams3.pdf
-    - plom-scan status
-    ## not supposed to be done yet:
-    - if (plom-finish status); then false; else true; fi
-    - python3 -m plom.client.randoIDer -s localhost -u user0 -w 0123
-    - python3 -m plom.client.randoMarker -s localhost -u user0 -w 0123
-    - plom-finish status
-    - plom-finish csv
-    - A=`cat marks.csv  | wc -l`      # How many lines?
-    - echo $A
-    - A="$((A-1))"
-    - bash -c "[[ $A == 19 ]]"        # b/c 1 page from 1 test is deleted
-    - file marks.csv
-    - file marks.csv | grep text
-    - plom-finish reassemble
-    - A=`ls reassembled/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 19 ]]" # since 1 test incomplete
-    - plom-finish solutions --mark
-    - A=`ls solutions/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 19 ]]"
-    - A=`du -sm reassembled/ | cut -f1`  # Don't regress on issue #627
-    - bash -c "[[ $A -lt 40 ]]"          # not more than 10 MB
-    - plom-finish webpage --solutions
-    - A=`ls codedReturn/ | wc -l`    # How many files (inc soln)?
-    - bash -c "[[ $A == 39 ]]"       # 2*(20-1) pdf + 1 html
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
-
-
 appstream-valid:
   stage: static_analysis
   image: alpine
@@ -735,156 +419,6 @@ appstream-valid:
     - appstreamcli --version
     # TODO: consider adding --strict on 0.16.4 which supports <developer> tag
     - appstreamcli validate --pedantic --explain org.plomgrading.PlomClient.metainfo.xml
-
-
-# TODO: perhaps all deps should be in the docker image?
-docs_sphinx:
-  stage: test
-  needs: ["container-image"]
-  image: $IM
-  before_script:
-    - apt-get update
-    - apt-get --no-install-recommends --yes install tex-gyre
-    - pip install -r doc/requirements.txt
-  script:
-    - pushd doc
-    - ls
-    - make autodocs
-    - make html
-    - make singlehtml
-    - make linkcheck
-    - make latexpdf
-    - popd
-  artifacts:
-    paths:
-      - doc/build/latex/plom.pdf
-      - doc/build/html/
-    expire_in: 16 days
-
-
-# get latest pip deps, doesn't use docker, closer to user install
-# allowed to fail (some pip stuff might be new) but we want to know
-# TODO: `dnf install python3-opencv`, and `sed` out the setup.py dep
-fedora_legacy:
-  stage: alt_build
-  image: fedora:41
-  when: manual
-  allow_failure: true
-  before_script:
-    - dnf install -y ImageMagick gcc gcc-c++ cmake
-          latexmk tex-dvipng texlive-scheme-basic
-          tex-preview tex-charter tex-exam tex-preprint
-          python3-passlib python3-pyqt6
-          python3-jsmin python3-defusedxml python3-yaml
-          python3-urllib3 python3-more-itertools
-          python3-seaborn python3-pandas python3-requests-toolbelt
-          python3-pip python3-wheel python3-setuptools
-          python3-tomlkit python3-pillow python3-tqdm
-          python3-appdirs python3-arrow
-          python3-aiohttp python3-peewee python3-cryptography
-          python3-zxing-cpp
-          python3-pytest
-          python3-PyMuPDF python3-scikit-learn python3-PyMySQL
-          file python3-file-magic
-          iproute
-    - pip --version
-  script:
-    # temporary, see https://gitlab.com/plom/plom/-/merge_requests/1634
-    - pip install -U pytest
-    - pip install .
-    # First, run the unit tests
-    - which pytest-3
-    - which pytest
-    - pytest plom
-    # Build tests
-    - mkdir play
-    - pushd play
-    - plom-demo . --num-papers 3 --prepare-only
-    - ip addr
-    - plom-server launch . &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - A=`ls papersToPrint/ | wc -l`  # How many files?
-    - bash -c "[[ $A == 3 ]]"        # should be 3
-    - export PLOM_MANAGER_PASSWORD=1234
-    # not supposed to be done yet:
-    - if (plom-finish status); then false; else true; fi
-    - python3 -m plom.client.randoIDer -s localhost -u user0 -w 0123
-    - python3 -m plom.client.randoMarker -s localhost -u user0 -w 0123
-    - plom-finish status
-    - plom-finish csv
-    - A=`cat marks.csv  | wc -l`      # How many lines?
-    - echo $A
-    - A="$((A-1))"
-    - bash -c "[[ $A == 2 ]]"         # b/c 1 page from 1 test is deleted
-    - file marks.csv
-    - file marks.csv | grep text
-    - plom-finish reassemble
-    - A=`ls reassembled/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 2 ]]" # since 1 test incomplete
-    - A=`du -sm reassembled/ | cut -f1`  # Don't regress on issue #627
-    - bash -c "[[ $A -lt 10 ]]"          # not more than 10 MB
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
-
-
-# get latest pip deps, doesn't use docker, closer to user install
-# allowed to fail (some pip stuff might be new) but we want to know
-# TODO: `dnf install python3-opencv`, and `sed` out the setup.py dep
-fedora_webplom:
-  services:
-    - postgres
-  variables:
-    POSTGRES_DB: "plom_db"
-    POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: "postgres"
-    POSTGRES_HOST_AUTH_METHOD: trust
-    PLOM_DATABASE_HOSTNAME: "postgres"
-  stage: alt_build
-  needs: []
-  image: fedora:41
-  when: manual
-  allow_failure: true
-  before_script:
-    - dnf install -y ImageMagick gcc gcc-c++ cmake
-          latexmk tex-dvipng texlive-scheme-basic
-          tex-preview tex-charter tex-exam tex-preprint
-          python3-passlib python3-pyqt6
-          python3-jsmin python3-defusedxml python3-yaml
-          python3-urllib3 python3-more-itertools
-          python3-seaborn python3-pandas python3-requests-toolbelt
-          python3-pip python3-wheel python3-setuptools
-          python3-tomlkit python3-pillow python3-tqdm
-          python3-appdirs python3-arrow
-          python3-aiohttp python3-peewee python3-cryptography
-          python3-zxing-cpp
-          python3-pytest
-          python3-PyMuPDF python3-scikit-learn python3-PyMySQL
-          file python3-file-magic
-          iproute
-          python3-django
-    - pip --version
-  script:
-    # temporary, see https://gitlab.com/plom/plom/-/merge_requests/1634
-    - pip install -U pytest
-    - pip install .
-    - export PYTHONPATH=$PWD
-    - echo $PYTHONPATH
-    - pushd plom_server
-    - ./Launcher/launch_scripts/launch_plom_demo_server.py --stop-after reports
-    - export PLOM_DATABASE_BACKEND=sqlite
-    - python3 manage.py test
-    - popd
 
 
 # get latest pip deps, doesn't use docker, closer to user install
@@ -911,88 +445,6 @@ newOS_newdeps_legacy:
     - pip install .
     # First, run the unit tests
     - pytest-3 -l --pyargs plom
-    # Build tests
-    - mkdir play
-    - pushd play
-    - plom-demo . --num-papers 3 --prepare-only
-    - ip addr
-    - plom-server launch . &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - A=`ls papersToPrint/ | wc -l`  # How many files?
-    - bash -c "[[ $A == 3 ]]"        # should be 3
-    - export PLOM_MANAGER_PASSWORD=1234
-    # not supposed to be done yet:
-    - if (plom-finish status); then false; else true; fi
-    - python3 -m plom.client.randoIDer -s localhost -u user0 -w 0123
-    - python3 -m plom.client.randoMarker -s localhost -u user0 -w 0123
-    - plom-finish status
-    - plom-finish csv
-    - A=`cat marks.csv  | wc -l`      # How many lines?
-    - echo $A
-    - A="$((A-1))"
-    - bash -c "[[ $A == 2 ]]"         # b/c 1 page from 1 test is deleted
-    - file marks.csv
-    - file marks.csv | grep text
-    - plom-finish reassemble
-    - A=`ls reassembled/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 2 ]]"  # since 1 test incomplete
-    - A=`du -sm reassembled/ | cut -f1`  # Don't regress on issue #627
-    - bash -c "[[ $A -lt 10 ]]"          # not more than 10 MB
-    - plom-finish webpage
-    - A=`ls codedReturn/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 3 ]]"        # 3-1 pdf + 1 html
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
-
-
-# get latest pip deps, doesn't use docker, closer to user install
-# allowed to fail (some pip stuff might be new) but we want to know
-newOS_newdeps_webplom:
-  services:
-    - postgres
-  variables:
-    POSTGRES_DB: "plom_db"
-    POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: "postgres"
-    POSTGRES_HOST_AUTH_METHOD: trust
-    PLOM_DATABASE_HOSTNAME: "postgres"
-  stage: alt_build
-  image: ubuntu:22.04
-  allow_failure: true
-  before_script:
-    - apt-get update
-    - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
-    - apt-get --no-install-recommends --yes install
-      cmake make g++ imagemagick
-      dvipng latexmk texlive-latex-extra texlive-fonts-recommended
-      libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
-      libpango-1.0-0 libpangocairo-1.0-0
-      python3-pytest python3-dev
-      python3-pip
-      iproute2 psmisc file python3-magic
-    # apt-get --no-install-recommends --yes install libimage-exiftool-perl
-    - python3 -m pip install --upgrade pip setuptools packaging wheel
-    - pip --version
-  script:
-    - pip install .
-    - export PYTHONPATH=$PWD
-    - echo $PYTHONPATH
-    - pushd plom_server
-    - ./Launcher/launch_scripts/launch_plom_demo_server.py --length quick --stop-after randomarking
-    - export PLOM_DATABASE_BACKEND=sqlite
-    - python3 manage.py test
-    - popd
 
 
 # Ensure minimum listed dependency versions actually work on older system
@@ -1025,46 +477,6 @@ oldOS_mindeps:
     - python3 -m pip install .
     # First, run the unit tests
     - pytest -l --pyargs plom
-    # Build tests
-    - mkdir play
-    - pushd play
-    - plom-demo . --num-papers 3 --prepare-only
-    - ip addr
-    - plom-server launch . &
-    - sleep 2
-    - sleep 2
-    - echo "Server should be in background"
-    - jobs -l
-    - echo "We should be able to connect to it"
-    - curl -k https://localhost:41984/Version
-    - A=`ls papersToPrint/ | wc -l`  # How many files?
-    - bash -c "[[ $A == 3 ]]"        # should be 3
-    - export PLOM_MANAGER_PASSWORD=1234
-    # not supposed to be done yet:
-    - if (plom-finish status); then false; else true; fi
-    - python3 -m plom.client.randoIDer -s localhost -u user0 -w 0123
-    - python3 -m plom.client.randoMarker -s localhost -u user0 -w 0123
-    - plom-finish status
-    - plom-finish csv
-    - A=`cat marks.csv  | wc -l`      # How many lines?
-    - echo $A
-    - A="$((A-1))"
-    - bash -c "[[ $A == 2 ]]"         # b/c 1 page from 1 test is deleted
-    - file marks.csv
-    - file marks.csv | grep text
-    - plom-finish reassemble
-    - A=`ls reassembled/ | wc -l`    # How many files?
-    - bash -c "[[ $A == 2 ]]"  # since 1 test incomplete
-    - A=`du -sm reassembled/ | cut -f1`  # Don't regress on issue #627
-    - bash -c "[[ $A -lt 10 ]]"          # not more than 10 MB
-    - echo "Now take down the server"
-    # https://gitlab.com/gitlab-org/gitlab-runner/issues/2880
-    - jobs -l
-    - kill %1
-    - sleep 2
-    - echo "Should be no jobs and this should succeed"
-    - jobs -l
-    - popd
 
 
 # Minimum Python, minimum deps
@@ -1082,38 +494,6 @@ minpy_mindeps:
     - pip install -r requirements.txt.tempminima
     - pip install .
     - pytest -l --pyargs plom
-    - plom-demo . --num-papers 3 --prepare-only
-
-
-# Minimum Python, minimum deps
-minpy_mindeps_webplom:
-  services:
-    - postgres
-  variables:
-    POSTGRES_DB: "plom_db"
-    POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: "postgres"
-    POSTGRES_HOST_AUTH_METHOD: trust
-    PLOM_DATABASE_HOSTNAME: "postgres"
-  stage: alt_build
-  image: python:3.8
-  before_script:
-    - apt-get update
-    - apt-get --no-install-recommends --yes install
-      cmake make imagemagick dvipng g++
-      texlive-latex-extra latexmk texlive-fonts-recommended
-      libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
-    - pip install pytest
-  script:
-    - pip install -r requirements.txt.tempminima
-    - pip install .
-    - export PYTHONPATH=$PWD
-    - echo $PYTHONPATH
-    - pushd plom_server
-    - ./Launcher/launch_scripts/launch_plom_demo_server.py --length quick --stop-after randomarking
-    - export PLOM_DATABASE_BACKEND=sqlite
-    - python3 manage.py test
-    - popd
 
 
 # upload binaries are generic gitlab packages
