@@ -1,27 +1,47 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2024 Colin B. Macdonald
+# Copyright (C) 2024-2025 Colin B. Macdonald
 
-from copy import deepcopy
+from pytest import raises
 
-from plom import SpecVerifier
-
-from .question_labels import get_question_label, verbose_question_label
-from .question_labels import check_for_shared_pages
+from .question_labels import (
+    check_for_shared_pages,
+    get_question_label,
+    verbose_question_label,
+)
 
 
 def test_verbose_question_label() -> None:
-    raw = SpecVerifier.demo().spec
-    r = deepcopy(raw)
-    r["question"]["1"]["label"] = ""
-    r["question"]["2"]["label"] = "Q2a"
-    r["question"]["3"]["label"] = "Q2bc"
-    s = SpecVerifier(r).spec
+    s = {
+        "question": {
+            "1": {},
+            "2": {"label": "Q2a"},
+            "3": {"label": "Q2bc"},
+        }
+    }
     assert get_question_label(s, 1) == "Q1"
     assert get_question_label(s, 2) == "Q2a"
     assert get_question_label(s, 3) == "Q2bc"
     assert verbose_question_label(s, 1) == "Q1"
     assert verbose_question_label(s, 2) == "Q2a (question index 2)"
     assert verbose_question_label(s, 3) == "Q2bc (question index 3)"
+
+
+def test_spec_question_label_printer_errors() -> None:
+    N = 2
+    s = {"numberOfQuestions": N}
+    with raises(ValueError):
+        get_question_label(s, N + 1)
+    with raises(ValueError):
+        get_question_label(s, -1)
+    with raises(ValueError):
+        get_question_label(s, 0)
+
+
+def test_spec_question_string() -> None:
+    s = {"question": {"1": {}}}
+    with raises(ValueError):
+        get_question_label(s, "c")
+    assert get_question_label(s, "1") == get_question_label(s, 1)
 
 
 def test_check_shared_pages() -> None:

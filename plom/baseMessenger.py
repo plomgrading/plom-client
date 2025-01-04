@@ -9,10 +9,10 @@
 
 from __future__ import annotations
 
-from io import BytesIO
 import logging
 import os
 import threading
+from io import BytesIO
 from typing import Any
 
 import requests
@@ -718,7 +718,8 @@ class BaseMessenger:
         """Get the specification of the exam from the server.
 
         Returns:
-            The server's spec, as in :func:`plom.SpecVerifier`.
+            The server's spec, a dictionary with string keys that describes
+            the assessment.
 
         Exceptions:
             PlomServerNotReady: server does not yet have a spec.

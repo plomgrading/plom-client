@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2024 Colin B. Macdonald
+# Copyright (C) 2024-2025 Colin B. Macdonald
 
 """Utilities for dealing with question labels, question indices, etc.."""
 
@@ -7,7 +7,38 @@ from __future__ import annotations
 
 from typing import Any
 
-from .specVerifier import get_question_label
+
+def get_question_label(spec: dict[str, Any], n: int | str) -> str:
+    """Print question label for the nth question from spec dict.
+
+    Args:
+        spec: a dict with the assessment specification.
+        n: which question, current indexed from 1.  For historical
+            reasons it can be a str.
+
+    Returns:
+        The custom label of a question or "Qn" if one is not set.
+
+    Raises:
+        ValueError: `n` is out of range.
+
+    TODO: change spec question keys to int.
+    """
+    n = int(n)
+    try:
+        N = spec["numberOfQuestions"]
+    except KeyError:
+        N = None
+    if N:
+        if n < 1 or n > N:
+            raise ValueError(f"question={n} out of range [1, {N}]")
+    else:
+        if n < 1:
+            raise ValueError(f"question={n} out of range [1, ...]")
+    label = spec["question"][str(n)].get("label", None)
+    if label:
+        return label
+    return "Q{}".format(n)
 
 
 def verbose_question_label(spec: dict[str, Any], qidx: int) -> str:

@@ -15,8 +15,6 @@
 include CONTRIBUTORS CHANGELOG.md LICENSE.md
 include requirements.txt
 
-include plom/templateTestSpec.toml
-include plom/templateSolutionSpec.toml
 include plom/demo_rubrics.toml
 include plom/default_keys.toml
 include plom/wasd_keys.toml
