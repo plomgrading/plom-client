@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2024-2025 Colin B. Macdonald
 
+from __future__ import annotations
+
+from typing import Any
+
 from pytest import raises
 
 from .question_labels import (
@@ -38,10 +42,10 @@ def test_spec_question_label_printer_errors() -> None:
 
 
 def test_spec_question_string() -> None:
-    s = {"question": {"1": {}}}
+    s: dict[str, Any] = {"question": {"1": {}}}
+    assert get_question_label(s, "1") == get_question_label(s, 1)
     with raises(ValueError):
         get_question_label(s, "c")
-    assert get_question_label(s, "1") == get_question_label(s, 1)
 
 
 def test_check_shared_pages() -> None:
