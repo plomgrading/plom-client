@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2022 Andrew Rechnitzer
-# Copyright (C) 2020-2024 Colin B. Macdonald
+# Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
@@ -101,7 +101,7 @@ from plom.client.rubrics import compute_score
 from plom.client.useful_classes import SimpleQuestion
 
 
-log = logging.getLogger("pagescene")
+log = logging.getLogger("scene")
 
 
 class ScoreBox(QGraphicsTextItem):
