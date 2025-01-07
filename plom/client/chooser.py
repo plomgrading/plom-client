@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2022 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Forest Kobayashi
 # Copyright (C) 2021 Peter Lee
@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-__copyright__ = "Copyright (C) 2018-2024 Andrew Rechnitzer, Colin B. Macdonald, et al"
+__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
 __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
@@ -48,7 +48,6 @@ from plom import __version__
 from plom import Plom_API_Version
 from plom import Default_Port
 import plom.client.ui_files
-from plom import get_question_label
 from plom.plom_exceptions import (
     PlomException,
     PlomSeriousException,
@@ -64,6 +63,7 @@ from plom.messenger import Messenger
 from plom.client import MarkerClient, IDClient
 from .downloader import Downloader
 from .about_dialog import show_about_dialog
+from .question_labels import get_question_label
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, WarningQuestion
 from .useful_classes import ClientSettingsDialog
 

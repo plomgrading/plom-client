@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-__copyright__ = "Copyright (C) 2018-2024 Andrew Rechnitzer, Colin B. Macdonald, et al"
+__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
 __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
@@ -73,10 +73,10 @@ from plom.plom_exceptions import (
 )
 from plom.messenger import Messenger
 from plom.feedback_rules import feedback_rules as static_feedback_rules_data
-from plom.question_labels import (
+from .question_labels import (
+    check_for_shared_pages,
     get_question_label,
     verbose_question_label,
-    check_for_shared_pages,
 )
 from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
