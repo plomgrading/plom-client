@@ -12,8 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Plom Client, which was previous developed as part of the main Plom repo, is becoming a separate project.
+* Annotations that use out-of-date rubrics produce a warning, although no mechanism yet for fixing, other than manually removing and re-adding.
+* API updates for compatibility with the upcoming 0.17.x Plom server.
 
 ### Fixed
+* Various fixes for crashes.
 
 
 
