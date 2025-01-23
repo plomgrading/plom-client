@@ -105,11 +105,13 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
 
 def render_params(
     template: str,
-    params: Sequence[tuple[str, Sequence[str]]],
+    params: Sequence[tuple[str, Sequence[str]]] | None,
     ver: int,
 ) -> str:
     """Perform version-dependent substitutions on a template text."""
     s = template
+    if not params:
+        return s
     for param, values in params:
         s = s.replace(param, values[ver - 1])
     return s
@@ -1176,7 +1178,11 @@ class RubricWidget(QWidget):
             self.syncB.setText("Sync")
 
     def refreshRubrics(self) -> None:
-        """Get rubrics from server and if non-trivial then repopulate."""
+        """Get rubrics from server and if non-trivial then repopulate.
+
+        TODO: consider splitting this in two: trigger a refresh elsewhere
+        and react to a refresh.
+        """
         old_rubrics = self.rubrics
         self.rubrics = self._parent.getRubricsFromServer()
         self.setRubricTabsFromState(self.get_tab_rubric_lists())
@@ -1580,6 +1586,9 @@ class RubricWidget(QWidget):
             tab.updateLegality()
         self.tabDeltaP.updateLegality()
         self.tabDeltaN.updateLegality()
+        # TODO: port to slots and signals instead
+        if self._parent.scene:
+            self._parent.scene.react_to_rubric_list_changes(self.rubrics)
 
     def handleClick(self) -> None:
         self.RTW.currentWidget().handleClick()
