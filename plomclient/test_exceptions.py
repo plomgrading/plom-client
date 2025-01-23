@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2020-2021, 2023-2024 Colin B. Macdonald
+# Copyright (C) 2020-2021, 2023-2025 Colin B. Macdonald
 
 import plomclient.plom_exceptions
 from plomclient.plom_exceptions import PlomException, PlomAuthenticationException
@@ -24,7 +24,7 @@ def test_exc_auth_has_default_msg() -> None:
 
 
 def test_exc_all_print_properly() -> None:
-    excs = [eval(e) for e in dir(plom.plom_exceptions) if e.startswith("Plom")]
+    excs = [eval(e) for e in dir(plomclient.plom_exceptions) if e.startswith("Plom")]
     assert len(excs) > 10  # we have some exceptions
     for exc in excs:
         assert str(exc("foo")) == "foo"
