@@ -71,7 +71,7 @@ wet_no_drift:
     - apk add bash
   script:
     - echo "Version info duplicated in two places, ensure same"
-    - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+    - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
     - export VER1=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
     - echo $VER0
     - echo $VER1
@@ -209,7 +209,7 @@ tag_matches_ver:
   rules:
    - if: $CI_COMMIT_TAG
   script:
-    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
     - echo "Extracted version string '$VER'"
     - echo "Now comparing to CI_COMMIT_TAG '$CI_COMMIT_TAG'"
     - echo $VER
@@ -252,11 +252,11 @@ unittests:
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
     - pytest --version
-    - pytest -l --pyargs plom
+    - pytest -l --pyargs plomclient
     # TODO how to run only doctests?  here we just ignore-glib on "test_*"
     # pip install --upgrade pytest
     - pytest --version
-    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plom
+    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plomclient
 
 
 
@@ -322,7 +322,7 @@ pylint:
     - pip install --break-system-packages astroid~=3.3.8  # codespell:ignore astroid
     - pip install --break-system-packages pylint~=3.3.3
   script:
-    - pylint plom
+    - pylint plomclient
   allow_failure: true
 
 
@@ -353,8 +353,8 @@ mypy-type-checking:
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
-    - mypy plom --python-ver 3.8 --install-types --non-interactive || true
-    - mypy plom --python-ver 3.8
+    - mypy plomclient --python-ver 3.8 --install-types --non-interactive || true
+    - mypy plomclient --python-ver 3.8
   allow_failure: true
 
 
@@ -463,7 +463,7 @@ newOS_newdeps_legacy:
   script:
     - pip install .
     # First, run the unit tests
-    - pytest-3 -l --pyargs plom
+    - pytest-3 -l --pyargs plomclient
 
 
 # Ensure minimum listed dependency versions actually work on older system
@@ -493,7 +493,7 @@ oldOS_mindeps:
     - python3 -m pip install -r requirements.txt.tempminima
     - python3 -m pip install .
     # First, run the unit tests
-    - pytest -l --pyargs plom
+    - pytest -l --pyargs plomclient
 
 
 # Minimum Python, minimum deps
@@ -509,7 +509,7 @@ minpy_mindeps:
   script:
     - pip install -r requirements.txt.tempminima
     - pip install .
-    - pytest -l --pyargs plom
+    - pytest -l --pyargs plomclient
 
 
 # upload binaries are generic gitlab packages
@@ -615,7 +615,7 @@ linux_client_appimage:
   script:
     - docker build --tag appimagebuilder_tmp -f AppImageBuilder.Containerfile .
     - docker create -ti --name dummy appimagebuilder_tmp bash
-    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
     - export NAME=PlomClient-$VER-x86_64.AppImage
     - docker cp dummy:/app/$NAME .
     - docker rm -f dummy
@@ -646,7 +646,7 @@ linuxbin_ubuntu2004:
   script:
     - pip install -r requirements.txt
     - pyinstaller client.linux.spec
-    - export VER=$(python3 -c "from plom import __version__; print(__version__)")
+    - export VER=$(python3 -c "from plomclient import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
     - export NAME=PlomClient-$VER-linux-ubuntu2004.bin
     - mv dist/PlomClient*.bin $NAME
@@ -676,7 +676,7 @@ linuxbin_ubuntu2204:
   script:
     - pip install -r requirements.txt
     - pyinstaller client.linux.spec
-    - export VER=$(python3 -c "from plom import __version__; print(__version__)")
+    - export VER=$(python3 -c "from plomclient import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
     - export NAME=PlomClient-$VER-linux-ubuntu2204.bin
     - mv dist/PlomClient*.bin $NAME
@@ -760,7 +760,7 @@ macos13_universal_client:
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
   - export ZIPNAME=PlomClient-$VER-macos13.zip
   - pushd dist
@@ -810,7 +810,7 @@ macos13_arm64_client:
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
   - export ZIPNAME=PlomClient-$VER-macos13-arm64.zip
   - pushd dist
@@ -866,7 +866,7 @@ macos13_x86_64_client:
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
   - export ZIPNAME=PlomClient-$VER-macos13-x86_64.zip
   - pushd dist
@@ -908,9 +908,9 @@ winpyinst:
   - refreshenv
   - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
-  - c:\python311\python -m plom.client -h
+  - c:\python311\python -m plomclient.client -h
   - c:\python311\scripts\pyinstaller client.windows.spec
-  - $VER = &"c:\python311\python" -c "from plom import __version__; print(__version__)"
+  - $VER = &"c:\python311\python" -c "from plomclient import __version__; print(__version__)"
   - echo "Extracted version string '$VER'"
   - $NAME = "PlomClient-$VER.exe"
   - move dist\PlomClient*.exe $NAME
