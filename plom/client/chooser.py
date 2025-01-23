@@ -47,7 +47,6 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 from plom import __version__
 from plom import Plom_API_Version
 from plom import Default_Port
-import plom.client.ui_files
 from plom.plom_exceptions import (
     PlomException,
     PlomSeriousException,
@@ -60,7 +59,8 @@ from plom.plom_exceptions import (
     PlomNoServerSupportException,
 )
 from plom.messenger import Messenger
-from plom.client import MarkerClient, IDClient
+from . import MarkerClient, IDClient
+from . import ui_files
 from .downloader import Downloader
 from .about_dialog import show_about_dialog
 from .question_labels import get_question_label
@@ -97,7 +97,7 @@ class Chooser(QDialog):
     def __init__(self, Qapp):
         self.APIVersion = Plom_API_Version
         super().__init__()
-        uic.loadUi(resources.files(plom.client.ui_files) / "chooser.ui", self)
+        uic.loadUi(resources.files(ui_files) / "chooser.ui", self)
         self.Qapp = Qapp
         self.messenger = None
         self._old_client_note_seen = False
