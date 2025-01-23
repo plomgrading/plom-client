@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>
-  Copyright (C) 2018-2024 The Plom Project Developers
+  Copyright (C) 2018-2025 The Plom Project Developers
   SPDX-License-Identifier: AGPL-3.0-or-later
  </author>
  <class>MarkerWindow</class>
@@ -468,7 +468,7 @@
   <customwidget>
    <class>TaskTableView</class>
    <extends>QTableView</extends>
-   <header location="global">plom/client/task_table_view.h</header>
+   <header location="global">plomclient/client/task_table_view.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: FSFAP
 # Copyright (C) 2020-2023 Andrew Rechnitzer
-# Copyright (C) 2020-2024 Colin B. Macdonald
+# Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2021 Nicholas J H Lai
 # Copyright (C) 2022 Elizabeth Xiao
 # Copyright (C) 2022 Natalia Accomazzo Scotti
@@ -41,7 +41,6 @@ classifiers=[
 ]
 dynamic = ['version']
 requires-python = '>=3.8'
-# Note: importlib_resources for < 3.10 in plom_server, not sure why
 # pyopenssl is not a direct dependency but old versions caused trouble: Issue #3150
 dependencies = [
     "arrow>=1.1.1",
@@ -66,7 +65,7 @@ readme = {file = 'README.md', content-type = 'text/markdown'}
 [project.urls]
 Homepage = "https://plomgrading.org/"
 Repository = "https://gitlab.com/plom/plom-client"
-'Bug Tracker' = "https://gitlab.com/plom/plom/-/issues"
+'Bug Tracker' = "https://gitlab.com/plom/plom-client/-/issues"
 Documentation = "https://plom.readthedocs.org"
 Changelog = "https://gitlab.com/plom/plom-client/-/blob/main/CHANGELOG.md"
 
@@ -77,13 +76,13 @@ Changelog = "https://gitlab.com/plom/plom-client/-/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = [
-    "plom",
-    "plom.client",
-    "plom.client.ui_files",
-    "plom.client.tools",
-    "plom.client.icons",
-    "plom.client.cursors",
-    "plom.client.help_img",
+    "plomclient",
+    "plomclient.client",
+    "plomclient.client.ui_files",
+    "plomclient.client.tools",
+    "plomclient.client.icons",
+    "plomclient.client.cursors",
+    "plomclient.client.help_img",
 ]
 
 # somewhat deprecated?  not supposed to package things into share?
@@ -94,15 +93,14 @@ packages = [
 "share/icons/hicolor/128x128/apps" = ["org.plomgrading.PlomClient.png"]
 
 [tool.setuptools.dynamic]
-version = {attr = 'plom.__version__'}
+version = {attr = 'plomclient.__version__'}
 
 [project.scripts]
-plom-client = "plom.client.__main__:main"
+plom-client = "plomclient.client.__main__:main"
 
 
 # Tooling configuration
 
-# You can run `black plom` or `black plom --verbose`
 [tool.black]
 line-length = 88
 target-version = ["py38"]
@@ -146,7 +144,7 @@ ignore_missing_imports = true
 #   - tool.py has pyqtProperty stuff that is also confusing to me
 [[tool.mypy.overrides]]
 module = [
-    'plom.client.tools.tool',
+    'plomclient.client.tools.tool',
 ]
 ignore_errors = true
 
