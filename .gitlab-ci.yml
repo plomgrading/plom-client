@@ -149,7 +149,7 @@ pypi-publish:
     - api_token=$(jq --raw-output '.token' <<< "${resp}")
 
     # Upload to PyPI authenticating via the newly-minted token
-    - twine upload -u __token__ -p "${api_token}" dist/*
+    - twine upload -u __token__ -p "${api_token}" --verbose dist/*
 
 
 release_job:
