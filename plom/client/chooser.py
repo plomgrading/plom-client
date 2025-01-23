@@ -60,7 +60,7 @@ from plom.plom_exceptions import (
     PlomNoServerSupportException,
 )
 from plom.messenger import Messenger
-from plom.client import MarkerClient, IDClient
+from . import MarkerClient, IDClient
 from .downloader import Downloader
 from .about_dialog import show_about_dialog
 from .question_labels import get_question_label
