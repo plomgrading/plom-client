@@ -44,4 +44,4 @@ from .tagging import (
 )
 
 # TODO: what you get from "from plomclient import *"
-# __all__ = ["client", "server", "produce", "scan", "finish", "manager"]
+# __all__ = ["client"]
