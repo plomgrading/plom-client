@@ -908,7 +908,7 @@ winpyinst:
   - refreshenv
   - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
-  - c:\python311\python -m plom.client -h
+  - c:\python311\python -m plomclient.client -h
   - c:\python311\scripts\pyinstaller client.windows.spec
   - $VER = &"c:\python311\python" -c "from plomclient import __version__; print(__version__)"
   - echo "Extracted version string '$VER'"
