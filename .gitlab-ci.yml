@@ -152,7 +152,7 @@ pypi-publish:
     # - twine upload -u __token__ -p "${api_token}" --verbose dist/*
 
     # TODO: I don't think the above is working, going back to old API keys...
-    - twine upload -u __token__ -p ${TWINE_PASSWORD} --verbose dist/*
+    - twine upload --verbose dist/*
 
 
 release_job:
