@@ -575,10 +575,10 @@ binary_upload:
     - export URL1="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/PlomClient-windows/$VER/$FILENAME1"
     - export URL2="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/PlomClient-macos/$VER/$FILENAME2"
     - export URL3="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/PlomClient-macos/$VER/$FILENAME3"
-    - export OTHER_URL1="https://pypi.org/project/plom"
+    - export OTHER_URL1="https://pypi.org/project/plom-client"
     - export OTHER_URL2="https://flathub.org/apps/details/org.plomgrading.PlomClient"
     - export OTHER_URL3="https://hub.docker.com/r/plomgrading/server"
-    - export OTHER_LINKNAME1="Find Plom on PyPI"
+    - export OTHER_LINKNAME1="Find Plom Client on PyPI"
     - export OTHER_LINKNAME2="Install Plom Client from Flathub (GNU/Linux)"
     - export OTHER_LINKNAME3="Plom Server on DockerHub"
     - echo "OTHER_URL1=$OTHER_URL1" >> release_info.env
