@@ -421,22 +421,76 @@ class Chooser(QDialog):
             ).exec()
             return False
 
-        if Version(__version__) < Version(info["version"]):
-            s = "\nWARNING: old client!"
-            self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
-            msg_ = WarnMsg(
-                self,
-                f"Your client version {__version__} is older than the "
-                f"server {info['version']}: you may want to consider upgrading.",
-                details=(
-                    f"You have Plom Client {__version__} with API {self.APIVersion}\n"
-                    f"Server: {info['product_string']}\n"
-                    f"Server version: {info['version']}"
-                ),
-            )
-            if not self._old_client_note_seen:
-                msg_.exec()
-                self._old_client_note_seen = True
+        reject_list = info.get("client-reject-list", [])
+
+        client_version = Version(__version__)
+        for rej in reject_list:
+            # ignore reject lines that refer to other clients
+            if rej.get("client-id") != "org.plomgrading.PlomClient":
+                continue
+            op = rej.get("operator", "==")
+            ver = rej.get("version")
+            if not ver:
+                # TODO error message for invalid server data?
+                pass
+            ver = Version(ver)  # TODO: all-at-once in try-except?
+            d = False
+            if op == "==":
+                if client_version == ver:
+                    d = True
+            elif op == "<=":
+                if client_version <= ver:
+                    d = True
+            elif op == "<":
+                if client_version < ver:
+                    d = True
+            elif op == ">=":
+                if client_version >= ver:
+                    d = True
+            elif op == ">":
+                if client_version > ver:
+                    d = True
+            else:
+                raise NotImplementedError(
+                    f'Unexpected op "{op}" in row {rej} of server reject data'
+                )
+
+            if not d:
+                continue
+
+            reason = rej.get("reason", "No reason given; client too old?")
+            self.ui.infoLabel.setText(self.ui.infoLabel.text() + "\n" + reason)
+            if rej.get("action", "block") == "warn":
+                msg_ = WarningQuestion(
+                    self,
+                    f"<p>Your client version {__version__} is on the server's reject list:</p>\n"
+                    f"<blockquote>{reason}</blockquote>\n"
+                    "<p>It is strongly recommended that you stop and update"
+                    " your client.  Continue anyway?</p>",
+                    details=(
+                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
+                        f"Server: {info['product_string']}\n"
+                        f"Server version: {info['version']}"
+                    ),
+                )
+                # TODO: re-enable hiding of this note?
+                # if not self._old_client_note_seen:
+                if msg_.exec() != QMessageBox.StandardButton.Yes:
+                    return False
+                # self._old_client_note_seen = True
+            else:
+                WarnMsg(
+                    self,
+                    f"<p>Your client version {__version__} is blocked by the server:</p>\n"
+                    f"<blockquote>{reason}</blockquote>\n"
+                    f"<p>You will need to update your client to connect to this server.</p>",
+                    details=(
+                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
+                        f"Server: {info['product_string']}\n"
+                        f"Server version: {info['version']}"
+                    ),
+                ).exec()
+                return False
         return True
 
     def validate_server(self) -> None:
