@@ -675,7 +675,12 @@ class AddRubricBox(QDialog):
         self.toggle_scope_elements()
 
         # TODO: in the future?
-        flay.addRow("Tags", self.TEtag)
+        hlay = QHBoxLayout()
+        hlay.addWidget(self.TEtag)
+        self.label_pedagogy_tags = QLabel("")
+        self.label_pedagogy_tags.setVisible(False)
+        hlay.addWidget(self.label_pedagogy_tags)
+        flay.addRow("Tags", hlay)
         self.TEtag.setEnabled(False)
         flay.addRow("Meta", self.TEmeta)
 
@@ -796,6 +801,12 @@ class AddRubricBox(QDialog):
                 self.TEtag.setEnabled(True)
             # repack the tags
             self.TEtag.setText(" ".join(tags))
+
+            if com.get("pedagogy_tags"):
+                self.label_pedagogy_tags.setText(
+                    "Pedagogy tags: " + ", ".join(com["pedagogy_tags"])
+                )
+                self.label_pedagogy_tags.setVisible(True)
 
         else:
             self.TE.setPlaceholderText(
