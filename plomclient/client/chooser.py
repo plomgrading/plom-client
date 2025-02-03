@@ -479,7 +479,7 @@ class Chooser(QDialog):
                     return False
                 # self._old_client_note_seen = True
             else:
-                msg_ = WarnMsg(
+                WarnMsg(
                     self,
                     f"<p>Your client version {__version__} is blocked by the server:</p>\n"
                     f"<blockquote>{reason}</blockquote>\n"
@@ -489,8 +489,7 @@ class Chooser(QDialog):
                         f"Server: {info['product_string']}\n"
                         f"Server version: {info['version']}"
                     ),
-                )
-                msg_.exec()
+                ).exec()
                 return False
         return True
 
