@@ -736,16 +736,18 @@ class AddRubricBox(QDialog):
                     raise RuntimeError(f"unexpected kind in {com}")
             if com.get("rid"):
                 self.label_rubric_id.setText(str(com["rid"]))
-            s = f'Created by {com.get("username", "unknown")}'
+            s = ""
             lastmod = com.get("last_modified", "unknown")
-            # Note sure if would be None but seems harmless (or no more harmful
-            # than "unknown" sentintel from legacy anyway)
+            # Note sure it would be None but seems harmless (or no more harmful
+            # than "unknown" sentinel from legacy anyway)
             if lastmod is not None and lastmod != "unknown":
                 rev = com.get("revision", 0)
-                s += f", revision {rev}"
+                s += f"revision {rev}"
                 if rev > 0:
                     s += f", last modified {arrow.get(lastmod).humanize()}"
                     s += f' by {com["modified_by_username"]}'
+                s += ", "
+            s += f'created by {com.get("username", "unknown")}'
             self.last_modified_label.setText(s)
             self.last_modified_label.setWordWrap(True)
             if com.get("versions"):
