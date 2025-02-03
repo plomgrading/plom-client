@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Versioning between client and server is no longer tightly coupled.  Servers can warn or block older out-of-date clients.
 
 ### Fixed
+* You can now see (but not edit) the "pedagogy tags" (learning objectives) associated with a rubric in the rubric edit dialog.  Requires server >= 0.17.2.
+
 
 
 
