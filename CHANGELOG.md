@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.17.2] - 2025-02-03
 
 ### Added
 
@@ -15,9 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * You can now see (but not edit) the "pedagogy tags" (learning objectives) associated with a rubric in the rubric edit dialog.  Requires server >= 0.17.2.
-
-
-
 
 
 ## 0.17.1 - 2025-01-24
@@ -31,4 +28,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.17.1...main
+[0.17.2]: https://gitlab.com/plom/plom-client/-/compare/v0.17.1...v0.17.2
