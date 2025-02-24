@@ -894,6 +894,56 @@ macos13_x86_64_client:
     expire_in: 16 days
 
 
+macos15_arm64_client:
+  image: macos-15-xcode-16
+  tags:
+  - saas-macos-medium-m1
+  rules:
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
+  - if: $CI_PROJECT_PATH == "plom/plom-client"
+  stage: packaging
+  script:
+  - pwd
+  - sw_vers
+  - uname -a
+  - uname -m
+  - echo $SHELL
+  - which python
+  - python --version
+  - pip --version
+  - uname -m
+  - /usr/bin/python3 -m pip --version
+  - curl https://www.python.org/ftp/python/$MACBIN_PY_VER/python-$MACBIN_PY_VER-macos11.pkg --output python.pkg
+  - sudo installer -pkg python.pkg -target /
+  - python3 --version
+  - /usr/bin/python3 --version
+  - /usr/local/bin/python3 --version
+  - /usr/local/bin/python3 -m pip install --upgrade pip
+  - /usr/local/bin/python3 -m pip install -r requirements.txt
+  - /usr/local/bin/python3 -m pip install pyinstaller~=6.12.0
+  - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
+  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - ls dist/
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
+  - echo "Extracted version string '$VER'"
+  - export ZIPNAME=PlomClient-$VER-macos15-arm64.zip
+  - pushd dist
+  - ls
+  - ls -sklR PlomClient-$VER-arm64.app
+  - zip -r $ZIPNAME PlomClient-$VER-arm64.app
+  - popd
+  - mv dist/$ZIPNAME $ZIPNAME
+  - md5 $ZIPNAME > md5sum
+  - ls $ZIPNAME
+  - cat md5sum
+  artifacts:
+    paths:
+    - PlomClient*.zip
+    - md5sum
+    expire_in: 16 days
+
+
 # Build Windows client binaries
 # This section written in PowerShell
 winpyinst:
