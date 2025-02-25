@@ -636,7 +636,6 @@ linux_client_appimage:
     - PlomClient*.AppImage
     - md5sum
     expire_in: 16 days
-  allow_failure: true
 
 
 # TODO: broken by the upgrade to PyQt6, currently set to manual
