@@ -358,6 +358,8 @@ mypy-type-checking:
     - apt-get -y install python3-tomli  # else mypy fails, unsure why as Python 3.12
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
+    # mypy was failing with the Ubuntu built-in one
+    - pip install --break-system-packages -U pillow
     - pip install --break-system-packages mypy~=1.15.0
   script:
     - mypy --version
