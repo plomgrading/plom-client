@@ -319,9 +319,8 @@ class Annotator(QWidget):
         #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
         # )
         features = (
-            "Spelling checking in rubric creation",
+            "Spelling checking in rubric creation.",
             "Persistent held region between papers.",
-            "Page manipulation in annotator.",
         )
         info = f"""
             <h4>Current experimental features</h4>
@@ -342,8 +341,6 @@ class Annotator(QWidget):
         self.parentMarkerUI.set_experimental(True)
         # TODO: some kind of signal/slot, ontoggle...
         self._hold_crop_checkbox.setVisible(True)
-        if self.scene:
-            self.scene.build_page_action_buttons()
 
     def is_experimental(self) -> bool:
         return self.parentMarkerUI.is_experimental()
