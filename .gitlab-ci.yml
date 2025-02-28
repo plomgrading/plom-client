@@ -53,7 +53,7 @@ codespell:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install codespell~=2.4.0
+    - python3 -m pip install codespell~=2.4.1
   script:
     - echo "Need an exception?  See the .codespell-ignore* files"
     - codespell
@@ -232,7 +232,7 @@ black:
   stage: static_analysis
   image: python:3.12
   before_script:
-    - pip3 install "black~=24.10.0"
+    - pip3 install "black~=25.1.0"
   script:
     - black --check --diff .
   allow_failure: true
@@ -294,7 +294,7 @@ coverage:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.6.10
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.6.12
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -329,7 +329,7 @@ pylint:
     - pip install --break-system-packages pyspellchecker stdiomask
     # These are pinned at 3.x.*: should be manually bumped sometimes
     - pip install --break-system-packages astroid~=3.3.8  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=3.3.3
+    - pip install --break-system-packages pylint~=3.3.4
   script:
     - pylint plomclient
   allow_failure: true
@@ -358,7 +358,9 @@ mypy-type-checking:
     - apt-get -y install python3-tomli  # else mypy fails, unsure why as Python 3.12
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages mypy~=1.14.0
+    # mypy was failing with the Ubuntu built-in one
+    - pip install --break-system-packages -U pillow
+    - pip install --break-system-packages mypy~=1.15.0
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -387,7 +389,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.391
+    - pip install --break-system-packages pyright~=1.1.394
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -398,7 +400,7 @@ flake8:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install flake8~=7.1.1
+    - python3 -m pip install flake8~=7.1.2
   script:
     # first show all errors and warnings but don't fail
     - flake8 --exit-zero
@@ -411,7 +413,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.9.2
+    - python3 -m pip install ruff~=0.9.7
   script:
     - ruff check .
     # ruff format .
@@ -422,7 +424,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.9.2
+    - python3 -m pip install ruff~=0.9.7
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
