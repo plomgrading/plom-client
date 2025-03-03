@@ -30,6 +30,7 @@ class TaskTableView(QTableView):
     deferSignal = pyqtSignal()
     reassignSignal = pyqtSignal()
     reassignToMeSignal = pyqtSignal()
+    resetSignal = pyqtSignal()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -59,6 +60,9 @@ class TaskTableView(QTableView):
         menu.addAction(a)
         a = QAction("Tag task", self)
         a.triggered.connect(self.tagSignal.emit)
+        menu.addAction(a)
+        a = QAction("Reset this task", self)
+        a.triggered.connect(self.resetSignal.emit)
         menu.addAction(a)
         # TODO: this menu could be "context aware", not showing
         # claim if we already own it or defer if we don't
