@@ -22,7 +22,7 @@ import sys
 if sys.version_info[0] == 2:
     raise RuntimeError("Plom requires Python 3; it will not work with Python 2")
 
-Plom_API_Version = "113"
+Plom_API_Version = "114"
 Plom_Legacy_Server_API_Version = "60"
 Default_Port = 41984
 

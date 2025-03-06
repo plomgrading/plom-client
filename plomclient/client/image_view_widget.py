@@ -75,14 +75,14 @@ class ImageViewWidget(QWidget):
             these image files on disc or if the QPixmap will reads it once
             and stores it.  See Issue #1842.  For now, safest to assume
             you must maintain it.
-        has_controls (bool): include UI elements for zooming etc.
+        has_controls: include UI elements for zooming etc.
             Default: True.
-        has_rotate_controls (bool): include UI elements for rotation.
+        has_rotate_controls: include UI elements for rotation.
             Default: True.  Does nothing unless `has_controls` is True.
-        compact (bool): whether to include a margin (default True) or
+        compact: whether to include a margin (default True) or
             not.  Correct choice will depend on parent but is probably
             only cosmetic.
-        dark_background (bool): sometimes its useful to have some
+        dark_background: sometimes its useful to have some
             higher-constrast matting around images.  Default: False.
     """
 
@@ -91,10 +91,10 @@ class ImageViewWidget(QWidget):
         parent,
         image_data=None,
         *,
-        has_controls=True,
-        has_rotate_controls=True,
-        compact=True,
-        dark_background=False,
+        has_controls: bool = True,
+        has_rotate_controls: bool = True,
+        compact: bool = True,
+        dark_background: bool = False,
     ):
         super().__init__(parent)
         # Grab an examview widget (a interactive subclass of QGraphicsView)
@@ -109,9 +109,10 @@ class ImageViewWidget(QWidget):
         self.zoomLockB = None
         if has_controls:
             resetB = QToolButton()
-            # resetB.setText("\N{Leftwards Arrow To Bar Over Rightwards Arrow To Bar}")
-            # resetB.setText("\N{Up Down Black Arrow}")
-            resetB.setText("reset")
+            resetB.setText("\N{TOP LEFT CORNER} \N{BOTTOM RIGHT CORNER}")
+            # resetB.setText("\N{SQUARE FOUR CORNERS}")  # too tall?
+            # resetB.setText("\N{LEFTWARDS ARROW TO BAR OVER RIGHTWARDS ARROW TO BAR}")
+            # resetB.setText("\N{UP DOWN BLACK ARROW}")
             resetB.setToolTip("reset zoom")
             resetB.clicked.connect(self.resetView)
             zoomInB = QToolButton()

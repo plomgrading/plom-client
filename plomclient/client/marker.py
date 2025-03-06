@@ -343,6 +343,7 @@ class MarkerClient(QWidget):
         self.ui.tableView.deferSignal.connect(self.defer_task)
         self.ui.tableView.reassignSignal.connect(self.reassign_task)
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
+        self.ui.tableView.resetSignal.connect(self.reset_task)
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
@@ -374,6 +375,7 @@ class MarkerClient(QWidget):
         self.ui.getNextButton.clicked.connect(self.requestNext)
         self.ui.annButton.clicked.connect(self.annotateTest)
         m = QMenu(self)
+        m.addAction("Reset task", self.reset_task)
         m.addAction("Reassign task to me", self.reassign_task_to_me)
         m.addAction("Reassign task...", self.reassign_task)
         m.addAction("Claim task for me", self.claim_task)
@@ -1337,6 +1339,36 @@ class MarkerClient(QWidget):
             InfoMsg(self, "Cannot defer a marked test.").exec()
             return
         self.examModel.deferPaper(task)
+        if advance_to_next:
+            self.requestNext()
+
+    def reset_task(self, *, advance_to_next: bool = True) -> None:
+        """Reset this task, outdating all annotations and putting it back into the pool.
+
+        Keyword Args:
+            advance_to_next: whether to also advance to the next task
+                (default).
+        """
+        task = self.get_current_task_id_or_none()
+        if not task:
+            return
+        msg = SimpleQuestion(
+            self,
+            "This will reset the task and mark any current annotations as out of date.",
+            "Are you sure you wish to proceed?",
+        )
+        if msg.exec() != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self.msgr.reset_task(task)
+        except (
+            PlomNoServerSupportException,
+            PlomRangeException,
+            PlomNoPermission,
+        ) as e:
+            InfoMsg(self, f"{e}").exec()
+            return
+
         if advance_to_next:
             self.requestNext()
 
