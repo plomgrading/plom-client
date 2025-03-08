@@ -58,6 +58,22 @@ def mousewheel_delta_to_scale(d):
     return s
 
 
+def _hack_size_of_all_to_max_of_min_sizes(widgets: list[QWidget]) -> None:
+    """For a list of widgets, hack their size hints to make them appear the same size.
+
+    Each widget has a minimum height, which can be read from its ``sizeHint``.
+    We would like to set the minimum height of all the widgets to be the
+    maximum of their individual minimum heights.  Ditto for widths.
+    """
+    max_minwidth = max([x.sizeHint().width() for x in widgets])
+    max_minheight = max([x.sizeHint().height() for x in widgets])
+    for w in widgets:
+        s = w.sizeHint()
+        s.setWidth(max_minwidth)
+        s.setHeight(max_minheight)
+        w.setMinimumSize(s)
+
+
 class ImageViewWidget(QWidget):
     """Simple view widget for pageimages to be embedded in other windows.
 
@@ -138,6 +154,7 @@ class ImageViewWidget(QWidget):
             buttons.addWidget(zoomInB)
             buttons.addWidget(zoomOutB)
             buttons.addWidget(zoomLockB)
+            _buttons_list = [resetB, zoomInB, zoomOutB, zoomLockB]
             if has_rotate_controls:
                 rotateB_cw = QToolButton()
                 rotateB_cw.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
@@ -150,6 +167,9 @@ class ImageViewWidget(QWidget):
                 buttons.addSpacing(12)
                 buttons.addWidget(rotateB_cw)
                 buttons.addWidget(rotateB_ccw)
+                _buttons_list.extend([rotateB_cw, rotateB_ccw])
+            # b/c of unicode chars, these buttons all have slightly different sizes
+            _hack_size_of_all_to_max_of_min_sizes(_buttons_list)
             buttons.addStretch(1)
             grid.addLayout(buttons)
 
