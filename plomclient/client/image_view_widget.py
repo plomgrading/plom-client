@@ -3,6 +3,7 @@
 # Copyright (C) 2020-2025 Colin B. Macdonald
 
 from pathlib import Path
+from typing import Sequence
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
@@ -58,7 +59,7 @@ def mousewheel_delta_to_scale(d):
     return s
 
 
-def _hack_size_of_all_to_max_of_min_sizes(widgets: list[QWidget]) -> None:
+def _hack_size_of_all_to_max_of_min_sizes(widgets: Sequence[QWidget]) -> None:
     """For a list of widgets, hack their size hints to make them appear the same size.
 
     Each widget has a minimum height, which can be read from its ``sizeHint``.
