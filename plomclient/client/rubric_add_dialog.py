@@ -1212,3 +1212,8 @@ class AddRubricBox(QDialog):
             )
 
         return rubric
+
+    def gimme_change_options(self) -> tuple[bool, bool]:
+        """Return whether this is minor change, and whether to tag tasks."""
+        # TODO: connect to radio buttons
+        return True, True

@@ -2050,9 +2050,18 @@ class Annotator(QWidget):
         """Ask server to create a new rubric with data supplied."""
         return self.parentMarkerUI.sendNewRubricToServer(new_rubric)
 
-    def modifyRubric(self, rid: int, updated_rubric: dict[str, Any]) -> dict[str, Any]:
+    def modifyRubric(
+        self,
+        rid: int,
+        updated_rubric: dict[str, Any],
+        *,
+        minor_change: bool | None = None,
+        tag_tasks: bool | None = None,
+    ) -> dict[str, Any]:
         """Ask server to modify an existing rubric with the new data supplied."""
-        return self.parentMarkerUI.modifyRubricOnServer(rid, updated_rubric)
+        return self.parentMarkerUI.modifyRubricOnServer(
+            rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
+        )
 
     def viewSolutions(self):
         solutionFile = self.parentMarkerUI.getSolutionImage()

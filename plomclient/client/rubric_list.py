@@ -1826,10 +1826,16 @@ class RubricWidget(QWidget):
         if arb.exec() != QDialog.DialogCode.Accepted:
             return
         new_rubric = arb.gimme_rubric_data()
+        minor_change, tag_tasks = arb.gimme_change_options()
 
         if edit:
             try:
-                new_rubric = self._parent.modifyRubric(new_rubric["rid"], new_rubric)
+                new_rubric = self._parent.modifyRubric(
+                    new_rubric["rid"],
+                    new_rubric,
+                    minor_change=minor_change,
+                    tag_tasks=tag_tasks,
+                )
             except PlomNoPermission as e:
                 InfoMsg(self, f"No permission to modify that rubric: {e}").exec()
                 return
@@ -1860,7 +1866,9 @@ class RubricWidget(QWidget):
             if False and random.random() < 0.33:
                 _tmp = new_rubric.copy()
                 _tmp["text"] = _tmp["text"] + " [simulated offline comment change]"
-                self._parent.modifyRubric(_tmp["rid"], _tmp)
+                self._parent.modifyRubric(
+                    _tmp["rid"], _tmp, minor_change=minor_change, tag_tasks=tag_tasks
+                )
 
         else:
             try:
