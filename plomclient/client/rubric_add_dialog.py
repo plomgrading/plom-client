@@ -617,13 +617,13 @@ class AddRubricBox(QDialog):
         b.activated.connect(lambda: self.group_checkbox.setChecked(True))
         hlay.addWidget(b)
         self.group_combobox = b
-        b = QToolButton(text="➕")
+        b = QToolButton(text="\N{HEAVY PLUS SIGN}")
         b.setToolTip("Add new group")
         b.setAutoRaise(True)
         b.clicked.connect(self.add_new_group)
         self.group_add_btn = b
         hlay.addWidget(b)
-        # b = QToolButton(text="➖")
+        # b = QToolButton(text="\N{HEAVY MINUS SIGN}")
         # b.setToolTip("Delete currently-selected group")
         # b.setAutoRaise(True)
         # hlay.addWidget(b)
@@ -863,7 +863,7 @@ class AddRubricBox(QDialog):
                 w = QLineEdit(values[v])
                 w.setPlaceholderText(f"<value for ver{v + 1}>")
                 grid.addWidget(w, nr, v + 1)
-            b = QToolButton(text="➖")  # \N{Minus Sign}
+            b = QToolButton(text="\N{HEAVY MINUS SIGN}")
             b.setToolTip("remove this parameter and values")
             b.setAutoRaise(True)
             f = _func_factory(self, i)
@@ -872,9 +872,9 @@ class AddRubricBox(QDialog):
             nr += 1
 
         if params:
-            b = QToolButton(text="➕ add another")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add another")
         else:
-            b = QToolButton(text="➕ add a parameterized substitution")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add a parameterized substitution")
         b.setAutoRaise(True)
         b.pressed.connect(self.subsAddRow)
         b.setToolTip("Inserted at cursor point; highlighted text as initial value")
