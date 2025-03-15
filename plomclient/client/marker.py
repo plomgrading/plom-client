@@ -1586,6 +1586,7 @@ class MarkerClient(QWidget):
         return self.msgr.McreateRubric(new_rubric)
 
     def modifyRubricOnServer(self, key, updated_rubric) -> dict[str, Any]:
+        # return self.msgr.MmodifyRubric(key, updated_rubric, minor_change=True, tag_tasks=True)
         return self.msgr.MmodifyRubric(key, updated_rubric)
 
     def getSolutionImage(self) -> Path | None:

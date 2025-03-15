@@ -687,6 +687,37 @@ class AddRubricBox(QDialog):
         flay.addRow("Rubric ID", self.label_rubric_id)
         flay.addRow("", self.last_modified_label)
 
+        # usage info and major/minor change
+        # TODO: hide on create, show on edit
+        # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
+        frame = QFrame()
+        frame.setFrameStyle(QFrame.Shape.StyledPanel)
+        vlay = QVBoxLayout(frame)
+        flay.addRow("Usage", frame)
+        # vlay.setContentsMargins(0, 0, 0, 0)
+        hlay = QHBoxLayout()
+        self._uses_label_template = "This rubric is currently used by %s papers"
+        self.uses_label = QLabel(self._uses_label_template % "??")
+        uses_button = QToolButton(text="\N{RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON}")
+        uses_button.setToolTip("Refresh use count")
+        uses_button.setAutoRaise(True)
+        uses_button.clicked.connect(self.refresh_usage)
+        hlay.addWidget(self.uses_label)
+        hlay.addWidget(uses_button)
+        hlay.addItem(
+            QSpacerItem(
+                10, 10, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum
+            )
+        )
+        vlay.addLayout(hlay)
+        b = QRadioButton("major edit and tag tasks")
+        b.setChecked(True)
+        b.setToolTip("All tasks using this Rubric will need to be revisited")
+        vlay.addWidget(b)
+        vlay.addWidget(QRadioButton("major edit (but don't tag)"))
+        vlay.addWidget(QRadioButton("minor edit"))
+        vlay.addWidget(QRadioButton("autodetect"))
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -1020,6 +1051,16 @@ class AddRubricBox(QDialog):
         else:
             self.scopeButton.setArrowType(Qt.ArrowType.RightArrow)
             self.scope_frame.setVisible(False)
+
+    def refresh_usage(self):
+        if not self.is_edit():
+            return
+        # TODO: No no use signals slots or something, not like this
+        annotr = self.parent()._parent
+        rid = self.label_rubric_id.text()
+        _ = annotr.getOtherRubricUsagesFromServer(rid)
+        N = len(_)
+        self.uses_label.setText(self._uses_label_template % str(N))
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ShiftModifier and (
