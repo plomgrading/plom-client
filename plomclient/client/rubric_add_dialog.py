@@ -1063,6 +1063,7 @@ class AddRubricDialog(QDialog):
             self.version_specific_le.setEnabled(False)
 
     def toggle_scope_elements(self):
+        """Show or hide the panel of "scoping" options for rubrics."""
         if self.scopeButton.isChecked():
             self.scopeButton.setArrowType(Qt.ArrowType.DownArrow)
             # QFormLayout.setRowVisible but only in Qt 6.4!
@@ -1073,6 +1074,7 @@ class AddRubricDialog(QDialog):
             self.scope_frame.setVisible(False)
 
     def refresh_usage(self):
+        """Ask Annotator to call the server the find out how many tasks use this rubric."""
         if not self.is_edit():
             return
         # TODO: No no use signals slots or something, not like this
