@@ -654,9 +654,7 @@ class AddRubricDialog(QDialog):
         hlay.addWidget(b)
         vlay.addLayout(hlay)
         hlay = QHBoxLayout()
-        hlay.addItem(
-            QSpacerItem(24, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        )
+        hlay.addSpacing(24)
         # TODO: note default for absolute rubrics?  (once it is the default)
         c = QCheckBox("Exclusive in this group (at most one such rubric can be placed)")
         hlay.addWidget(c)
@@ -687,7 +685,7 @@ class AddRubricDialog(QDialog):
         flay.addRow("Rubric ID", self.label_rubric_id)
         flay.addRow("", self.last_modified_label)
 
-        # usage info and major/minor change
+        # Usage info and major/minor change
         # TODO: hide on create, show on edit
         # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
         frame = QFrame()
@@ -698,25 +696,43 @@ class AddRubricDialog(QDialog):
         hlay = QHBoxLayout()
         self._uses_label_template = "This rubric is currently used by %s papers"
         self.uses_label = QLabel(self._uses_label_template % "??")
-        uses_button = QToolButton(text="\N{RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON}")
+        uses_button = QToolButton(text="\N{ANTICLOCKWISE OPEN CIRCLE ARROW}")
         uses_button.setToolTip("Refresh use count")
         uses_button.setAutoRaise(True)
         uses_button.clicked.connect(self.refresh_usage)
         hlay.addWidget(self.uses_label)
         hlay.addWidget(uses_button)
-        hlay.addItem(
-            QSpacerItem(
-                10, 10, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum
-            )
-        )
+        hlay.addStretch(10)
         vlay.addLayout(hlay)
-        b = QRadioButton("major edit and tag tasks")
+
+        b = QRadioButton(
+            "This is a major edit; all tasks using this rubric will need"
+            " to be revisited (by a human)."
+        )
+        b.setToolTip('The "revision" number will increase; "track changes" enabled')
+        self.majorRB = b
         b.setChecked(True)
-        b.setToolTip("All tasks using this Rubric will need to be revisited")
         vlay.addWidget(b)
-        vlay.addWidget(QRadioButton("major edit (but don't tag)"))
-        vlay.addWidget(QRadioButton("minor edit"))
-        vlay.addWidget(QRadioButton("autodetect"))
+        # QCheckBox does not itself do html
+        cb = QCheckBox('Also tag all tasks with "rubric_changed"')
+        self.tagtasksCB = cb
+        # TODO: probably we should disable this checkbox when majorRB is not checked
+        # cb.setEnabled(False)
+        cb.setChecked(True)
+        hlay = QHBoxLayout()
+        hlay.addSpacing(24)
+        hlay.addWidget(cb)
+        vlay.addLayout(hlay)
+        b = QRadioButton(
+            "This is minor edit; I don't want to update any existing tasks."
+        )
+        b.setToolTip('The "revision" number will stay the same; no "track changes"')
+        self.minorRB = b
+        vlay.addWidget(b)
+        b = QRadioButton("Server default / let server autodetect.")
+        # b.setToolTip("Roughly: major changes for student-visible edits")
+        b.setToolTip("Currently (0.18.0) the server defaults to major edits")
+        vlay.addWidget(b)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -1213,7 +1229,15 @@ class AddRubricDialog(QDialog):
 
         return rubric
 
-    def gimme_change_options(self) -> tuple[bool, bool]:
+    def gimme_change_options(self) -> tuple[bool | None, bool | None]:
         """Return whether this is minor change, and whether to tag tasks."""
-        # TODO: connect to radio buttons
-        return True, True
+        if self.majorRB.isChecked():
+            if self.tagtasksCB.isChecked():
+                return False, True
+            else:
+                return False, False
+        elif self.minorRB.isChecked():
+            # TODO: in principle, one could tag tasks for minor edits...
+            return True, None
+        else:
+            return None, None
