@@ -283,7 +283,7 @@ class WideTextEdit(QTextEdit):
         Note: Ignore the word "tex" and non alphabetical.
 
         Raises:
-            RunTimeError if the AddRubricBox dialog is uninitialized.
+            RunTimeError if the AddRubricDialog is uninitialized.
         """
         if not event:
             return
@@ -307,7 +307,7 @@ class WideTextEdit(QTextEdit):
                         "Rubric Box Dialog is unexpectedly uninitialized"
                     )
 
-                if isinstance(rubric_dialog, AddRubricBox):
+                if isinstance(rubric_dialog, AddRubricDialog):
                     rubric_dialog.correction_widget.set_selected_word(
                         selected_text, self.textCursor()
                     )
@@ -381,7 +381,7 @@ class WideTextEdit(QTextEdit):
         self.setCurrentCharFormat(QTextCharFormat())
 
 
-class AddRubricBox(QDialog):
+class AddRubricDialog(QDialog):
     def __init__(
         self,
         parent,
