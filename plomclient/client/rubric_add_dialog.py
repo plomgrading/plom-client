@@ -686,11 +686,11 @@ class AddRubricDialog(QDialog):
         flay.addRow("", self.last_modified_label)
 
         # Usage info and major/minor change
-        # TODO: hide on create, show on edit
         # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
         vlay = QVBoxLayout(frame)
+        self._major_minor_frame = frame
         flay.addRow("Usage", frame)
         # vlay.setContentsMargins(0, 0, 0, 0)
         hlay = QHBoxLayout()
@@ -742,6 +742,8 @@ class AddRubricDialog(QDialog):
         vlay.addLayout(flay)
         vlay.addWidget(buttons)
         self.setLayout(vlay)
+
+        self._formlayout = flay
 
         # set up widgets
         buttons.accepted.connect(self.accept)
@@ -874,6 +876,8 @@ class AddRubricDialog(QDialog):
             self.last_modified_label.setText(
                 f"You ({self._username}) are creating a new rubric"
             )
+            self._formlayout.setRowVisible(self._major_minor_frame, False)
+
             if add_to_group:
                 assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
                 self.group_checkbox.setChecked(True)
