@@ -760,7 +760,7 @@ class MarkerClient(QWidget):
         )
         if not ok:
             return
-        task = f"q{n:04}g{self.question_idx}"
+        task = paper_question_index_to_task_id_str(n, self.question_idx)
         self._claim_task(task)
 
     def requestNext(self, *, update_select=True):
