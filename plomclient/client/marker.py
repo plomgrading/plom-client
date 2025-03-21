@@ -1352,15 +1352,19 @@ class MarkerClient(QWidget):
         task = self.get_current_task_id_or_none()
         if not task:
             return
+        papernum, qidx = task_id_str_to_paper_question_index(task)
+        question_label = get_question_label(self.exam_spec, qidx)
         msg = SimpleQuestion(
             self,
-            "This will reset the task and mark any current annotations as out of date.",
+            f"This will reset task {task}; any annotations will be discarded."
+            f" Someone will have to mark paper {papernum:04}"
+            f" question {question_label} again!",
             "Are you sure you wish to proceed?",
         )
         if msg.exec() != QMessageBox.StandardButton.Yes:
             return
         try:
-            self.msgr.reset_task(task)
+            self.msgr.reset_task(papernum, qidx)
         except (
             PlomNoServerSupportException,
             PlomRangeException,
