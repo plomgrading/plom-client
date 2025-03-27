@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Clients can reset marking tasks.
 
 ### Removed
 * Support for macOS 13 in our official binaries because we can not longer build on that platform using GitLab CI.  In principle, users could install from source or from `pip` on macOS 13 as PyQt is still available.
