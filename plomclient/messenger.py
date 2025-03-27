@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2020 Andrew Rechnitzer
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2023 Julian Lapenna
 # Copyright (C) 2024 Bryan Tanady
 
@@ -475,6 +475,41 @@ class Messenger(BaseMessenger):
             try:
                 response = self.patch_auth(f"/MK/tasks/{code}/reassign/{username}")
                 response.raise_for_status()
+            except requests.HTTPError as e:
+                if response.status_code == 401:
+                    raise PlomAuthenticationException() from None
+                if response.status_code == 404:
+                    raise PlomRangeException(response.reason) from None
+                if response.status_code == 406:
+                    raise PlomNoPermission(response.reason) from None
+                raise PlomSeriousException(f"Some other sort of error {e}") from None
+
+    def reset_task(self, code: str) -> bool:
+        """Reset a task, outdating all annotations.
+
+        Args:
+            code: a task code such as `"q0123g2"`.
+
+        Returns:
+            True on success.
+
+        Raises:
+            PlomRangeException: no such task
+            PlomNoPermission: you don't have permission to reset tasks.
+            PlomNoServerSupportException: server too old, does not support.
+            PlomAuthenticationException: no logged in.
+            PlomSeriousException: generic unexpected error.
+        """
+        if self.is_server_api_less_than(114):
+            raise PlomNoServerSupportException(
+                "Server too old: does not support task reset"
+            )
+
+        with self.SRmutex:
+            try:
+                response = self.patch_auth(f"/MK/tasks/{code}/reset")
+                response.raise_for_status()
+                return response.json()
             except requests.HTTPError as e:
                 if response.status_code == 401:
                     raise PlomAuthenticationException() from None
