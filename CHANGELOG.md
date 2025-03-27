@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Removed
+* Support for macOS 13 in our official binaries because we can not longer build on that platform using GitLab CI.  In principle, users could install from source or from `pip` on macOS 13 as PyQt is still available.
+
 ### Changed
 * Versioning between client and server is no longer tightly coupled.  Servers can warn or block older out-of-date clients.
 

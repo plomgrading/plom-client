@@ -551,12 +551,12 @@ binary_upload:
     - echo $VER
     - export LINKNAME0="Plom Client for GNU/Linux (AppImage)"
     - export LINKNAME1="Plom Client for Windows (Windows ≥ 10, x86-64)"
-    - export LINKNAME2="Plom Client for older Mac (x86_64, macOS ≥ 13)"
-    - export LINKNAME3="Plom Client for newer Mac (arm64, macOS ≥ 13)"
+    - export LINKNAME2="Plom Client for older Mac (x86_64, macOS ≥ 14)"
+    - export LINKNAME3="Plom Client for newer Mac (arm64, macOS ≥ 14)"
     - export FILENAME0="PlomClient-$VER-x86_64.AppImage"
     - export FILENAME1="PlomClient-$VER.exe"
-    - export FILENAME2="PlomClient-$VER-macos13-x86_64.zip"
-    - export FILENAME3="PlomClient-$VER-macos13-arm64.zip"
+    - export FILENAME2="PlomClient-$VER-macos14-x86_64.zip"
+    - export FILENAME3="PlomClient-$VER-macos14-arm64.zip"
     - echo "#### artifact md5 hashes" >> "release_desc.md"
     - echo "" >> "release_desc.md"
     - md5sum dist/plom*.tar.gz | sed -e "s/^/    /" | sed -e "s/dist\///" >> "release_desc.md"
@@ -713,8 +713,8 @@ linuxbin_ubuntu2204:
 #   Also "--enable-shared", but it seems to work without any of these things?
 # - macOS <= 10.14: older asdf, use `asdf local` not `asdf shell`
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
-macos13_universal_client:
-  image: macos-13-xcode-14
+macos14_universal_client:
+  image: macos-14-xcode-15
   tags:
   - saas-macos-medium-m1
   rules:
@@ -773,7 +773,7 @@ macos13_universal_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
-  - export ZIPNAME=PlomClient-$VER-macos13.zip
+  - export ZIPNAME=PlomClient-$VER-macos14.zip
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-universal2.app
@@ -790,8 +790,8 @@ macos13_universal_client:
     expire_in: 16 days
 
 
-macos13_arm64_client:
-  image: macos-13-xcode-14
+macos14_arm64_client:
+  image: macos-14-xcode-15
   tags:
   - saas-macos-medium-m1
   rules:
@@ -823,7 +823,7 @@ macos13_arm64_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
-  - export ZIPNAME=PlomClient-$VER-macos13-arm64.zip
+  - export ZIPNAME=PlomClient-$VER-macos14-arm64.zip
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-arm64.app
@@ -840,8 +840,8 @@ macos13_arm64_client:
     expire_in: 16 days
 
 
-macos13_x86_64_client:
-  image: macos-13-xcode-14
+macos14_x86_64_client:
+  image: macos-14-xcode-15
   tags:
   - saas-macos-medium-m1
   rules:
@@ -879,7 +879,7 @@ macos13_x86_64_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/__init__.py`
   - echo "Extracted version string '$VER'"
-  - export ZIPNAME=PlomClient-$VER-macos13-x86_64.zip
+  - export ZIPNAME=PlomClient-$VER-macos14-x86_64.zip
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-x86_64.app
