@@ -28,10 +28,10 @@
 #       when: never
 #     - if: '$CI_COMMIT_BRANCH'
 
-image: docker:27.4.0
+image: docker:27.5.1
 
 services:
-  - docker:27.4.0-dind
+  - docker:27.5.1-dind
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -389,7 +389,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.394
+    - pip install --break-system-packages pyright~=1.1.398
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
