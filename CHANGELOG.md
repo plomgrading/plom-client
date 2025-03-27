@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Versioning between client and server is no longer tightly coupled.  Servers can warn or block older out-of-date clients.
+* Clients can specify major or minor edits when changing rubrics.
 
 ### Fixed
 
