@@ -22,7 +22,6 @@ from plomclient import __version__
 from plomclient import Plom_API_Version
 from plomclient import Plom_Legacy_Server_API_Version
 from plomclient import Default_Port
-from plomclient import undo_json_packing_of_version_map
 from plomclient.plom_exceptions import PlomSeriousException
 from plomclient.plom_exceptions import (
     PlomAPIException,
@@ -45,6 +44,7 @@ from plomclient.plom_exceptions import (
     PlomTaskDeletedError,
     PlomNoServerSupportException,
 )
+from plomclient.version_maps import undo_json_packing_of_version_map
 
 
 # We can support earlier servers by special-case code, so

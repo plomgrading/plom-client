@@ -40,7 +40,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient import isValidStudentID
 from plomclient.plom_exceptions import (
     PlomBenignException,
     PlomConflict,
@@ -48,6 +47,7 @@ from plomclient.plom_exceptions import (
     PlomSeriousException,
     PlomTakenException,
 )
+from plomclient.rules import isValidStudentID
 from plomclient.rules import censorStudentName as censorName
 
 from . import ui_files
