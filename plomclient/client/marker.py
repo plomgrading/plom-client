@@ -1967,7 +1967,7 @@ class MarkerClient(QWidget):
         # after revoking, Downloader's msgr will be invalid
         self.Qapp.downloader.detach_messenger()
         try:
-            self.msgr.closeUser()
+            self.msgr.closeUser(revoke_token=True)
         except PlomAuthenticationException:
             log.warning("User tried to logout but was already logged out.")
             pass

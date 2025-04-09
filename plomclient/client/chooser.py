@@ -561,7 +561,7 @@ class Chooser(QDialog):
         if not self.messenger:
             return
         try:
-            self.messenger.closeUser()
+            self.messenger.closeUser(revoke_token=True)
         except PlomAuthenticationException as e:
             log.info(f"Authentication error during logout: {e}")
             pass
@@ -599,7 +599,7 @@ class Chooser(QDialog):
                 return
 
         try:
-            self.messenger.requestAndSaveToken(user, pwd)
+            self.messenger.requestAndSaveToken(user, pwd, exclusive=True)
         except PlomAPIException as e:
             WarnMsg(
                 self,
