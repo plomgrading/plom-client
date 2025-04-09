@@ -6,6 +6,7 @@
 # Copyright (C) 2022-2023 Edith Coates
 # Copyright (C) 2023 Tam Nguyen
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Philip D. Loewen
 
 from __future__ import annotations
 
@@ -19,9 +20,8 @@ import requests
 import urllib3
 
 from plomclient import __version__
-from plomclient import Plom_API_Version
-from plomclient import Plom_Legacy_Server_API_Version
 from plomclient import Default_Port
+from plomclient.version_maps import undo_json_packing_of_version_map
 from plomclient.plom_exceptions import PlomSeriousException
 from plomclient.plom_exceptions import (
     PlomAPIException,
@@ -44,17 +44,18 @@ from plomclient.plom_exceptions import (
     PlomTaskDeletedError,
     PlomNoServerSupportException,
 )
-from plomclient.version_maps import undo_json_packing_of_version_map
 
+
+Plom_API_Version = 114  # Our API version
+Plom_Legacy_Server_API_Version = 60
 
 # We can support earlier servers by special-case code, so
 # define an allow-list of versions we support.
 Supported_Server_API_Versions = [
-    int(Plom_Legacy_Server_API_Version),
+    Plom_Legacy_Server_API_Version,
     112,  # 2024-09
     113,  # 2025-01
     114,  # 2025-
-    int(Plom_API_Version),
 ]
 # Brief changelog
 #
@@ -224,7 +225,7 @@ class BaseMessenger:
         """
         if self.get_server_API_version() is None:
             return None
-        return self.get_server_API_version() == int(Plom_Legacy_Server_API_Version)
+        return self.get_server_API_version() == Plom_Legacy_Server_API_Version
 
     def is_server_api_less_than(self, api_number: int) -> bool | None:
         """Check if the server API is strictly less than a value.
@@ -333,6 +334,42 @@ class BaseMessenger:
 
         assert self.session
         return self.session.put(self.base + url, *args, **kwargs)
+
+    def put_auth(self, url: str, *args, **kwargs) -> requests.Response:
+        """Perform a PUT method on a URL, with a token for authorization."""
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.default_timeout
+
+        if not self.token:
+            raise PlomAuthenticationException("Trying auth'd operation w/o token")
+
+        assert not self.is_legacy_server()
+
+        assert isinstance(self.token, dict)
+        # Django-based servers pass token in the header
+        token_str = self.token["token"]
+        kwargs["headers"] = {"Authorization": f"Token {token_str}"}
+
+        assert self.session
+        return self.session.put(self.base + url, *args, **kwargs)
+
+    def delete_auth(self, url: str, *args, **kwargs) -> requests.Response:
+        """Perform a DELETE method on a URL with a token for authorization."""
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.default_timeout
+
+        if not self.token:
+            raise PlomAuthenticationException("Trying auth'd operation w/o token")
+
+        assert not self.is_legacy_server()
+
+        assert isinstance(self.token, dict)
+        # Django-based servers pass token in the header
+        token_str = self.token["token"]
+        kwargs["headers"] = {"Authorization": f"Token {token_str}"}
+
+        assert self.session
+        return self.session.delete(self.base + url, *args, **kwargs)
 
     def delete(self, url: str, *args, **kwargs) -> requests.Response:
         """Perform a DELETE method on a URL."""
@@ -484,8 +521,8 @@ class BaseMessenger:
         self._server_API_version = int(ver)
         if self._server_API_version not in Supported_Server_API_Versions:
             raise PlomAPIException(
-                f"Server API version {ver} is not supported because its "
-                f"not in {Supported_Server_API_Versions}"
+                f"Server API version {ver} is not supported. "
+                f"Supported versions: {Supported_Server_API_Versions}."
             )
 
     def get_server_API_version(self) -> int | None:
@@ -606,7 +643,7 @@ class BaseMessenger:
                 json={
                     "user": user,
                     "pw": pw,
-                    "api": Plom_Legacy_Server_API_Version,
+                    "api": str(Plom_Legacy_Server_API_Version),
                     "client_ver": __version__,
                 },
                 timeout=5,
@@ -638,7 +675,7 @@ class BaseMessenger:
                 json={
                     "username": user,
                     "password": pw,
-                    "api": Plom_API_Version,
+                    "api": str(Plom_API_Version),  # >= 0.18.0 supports int or str
                     "client_ver": __version__,
                 },
             )
@@ -727,8 +764,7 @@ class BaseMessenger:
         """Get the specification of the exam from the server.
 
         Returns:
-            The server's spec, a dictionary with string keys that describes
-            the assessment.
+            The server's spec, as in :func:`plom.SpecVerifier`.
 
         Exceptions:
             PlomServerNotReady: server does not yet have a spec.
