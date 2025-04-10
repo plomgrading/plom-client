@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient import isValidStudentID
+from plomclient.rules import isValidStudentID
 
 
 # little helper to jsonify pathlib.Path to str

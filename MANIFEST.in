@@ -16,10 +16,10 @@ include CONTRIBUTORS CHANGELOG.md LICENSE.md
 include requirements.txt
 
 include plomclient/demo_rubrics.toml
-include plomclient/default_keys.toml
-include plomclient/wasd_keys.toml
-include plomclient/ijkl_keys.toml
-include plomclient/esdf_french_keys.toml
+include plomclient/client/default_keys.toml
+include plomclient/client/wasd_keys.toml
+include plomclient/client/ijkl_keys.toml
+include plomclient/client/esdf_french_keys.toml
 
 include plomclient/client/ui_files/*.ui
 include plomclient/client/cursors/*.png
@@ -27,5 +27,3 @@ include plomclient/client/icons/*.svg
 include plomclient/client/icons/*.png
 include plomclient/client/help_img/nav*.png
 include plomclient/client/help_img/click_drag.gif
-
-# TODO: docs?
