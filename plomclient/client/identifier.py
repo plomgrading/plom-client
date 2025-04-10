@@ -371,7 +371,7 @@ class IDClient(QWidget):
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         log.debug("Something has triggered a shutdown event")
         log.debug("Revoking login token")
-        self.msgr.closeUser()
+        self.msgr.closeUser(revoke_token=True)
         self.my_shutdown_signal.emit(1)
         if event:
             event.accept()
