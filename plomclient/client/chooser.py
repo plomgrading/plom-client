@@ -561,6 +561,7 @@ class Chooser(QDialog):
         if not self.messenger:
             return
         try:
+            # Note: we requested exclusive token access on start-up, so revoke on logout
             self.messenger.closeUser(revoke_token=True)
         except PlomAuthenticationException as e:
             log.info(f"Authentication error during logout: {e}")
@@ -599,6 +600,9 @@ class Chooser(QDialog):
                 return
 
         try:
+            # Note: we request exclusive access so that an error is generated
+            # if we're already logged in in another client.  We also revoke
+            # the token on closeUser later in the code.
             self.messenger.requestAndSaveToken(user, pwd, exclusive=True)
         except PlomAPIException as e:
             WarnMsg(
