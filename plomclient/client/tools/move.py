@@ -2,6 +2,7 @@
 # Copyright (C) 2018-2020 Andrew Rechnitzer
 # Copyright (C) 2020-2023 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
+# Copyright (C) 2025 Bryan Tanady
 
 from PyQt6.QtGui import QUndoCommand
 from PyQt6.QtWidgets import QGraphicsItem
@@ -53,7 +54,7 @@ class CommandMoveItem(QUndoCommand):
         # same - if so then merge things.
         if self.xitem != other.xitem:
             return False
-        self.delta = other.delta
+        self.delta += other.delta
         return True
 
 
@@ -65,6 +66,7 @@ class UndoStackMoveMixin:
             change == QGraphicsItem.GraphicsItemChange.ItemPositionChange
             and self.scene()
         ):
-            command = CommandMoveItem(self, value)
+            delta = value - self.pos()
+            command = CommandMoveItem(self, delta)
             self.scene().undoStack.push(command)
         return super().itemChange(change, value)
