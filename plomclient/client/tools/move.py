@@ -74,8 +74,7 @@ class CommandMoveItem(QUndoCommand):
 
 
 class UndoStackMoveMixin:
-    """A mixin class to avoid copy-pasting itemChange over many *Item classes.
-    """
+    """A mixin class to avoid copy-pasting itemChange over many *Item classes."""
 
     def itemChange(self, change, value):
         """A callback function handling a change in QGraphicsItem's state.
