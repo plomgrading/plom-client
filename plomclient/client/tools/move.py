@@ -22,7 +22,7 @@ class CommandMoveItem(QUndoCommand):
         self.setText("Move")
 
     def id(self) -> int:
-        """An integer unique to the command class, used as prerequisite of commands merging"""
+        """An integer unique to the command class, used as prerequisite of commands merging."""
         return 101
 
     def redo(self):
@@ -50,8 +50,7 @@ class CommandMoveItem(QUndoCommand):
         )
 
     def mergeWith(self, other) -> bool:
-        """
-        Overrides commands merging, base implementation: https://doc.qt.io/qt-6/qundocommand.html#mergeWith.
+        """Overrides commands merging, base implementation: https://doc.qt.io/qt-6/qundocommand.html#mergeWith.
 
         Note: QUndoStack::push(cmd) first checks whether cmd has the same id with the command
         at the top of the stack. If they share same ids, qt will try to merge them by calling
@@ -61,7 +60,7 @@ class CommandMoveItem(QUndoCommand):
             other: the other command to be merged.
 
         Returns:
-            True if "self" and "other" commands are mergable, otherwise False.
+            True if "self" and "other" commands are mergeable, otherwise False.
         """
         # Most commands cannot be merged - make sure the moved items are the
         # same - if so then merge things.
@@ -75,8 +74,7 @@ class CommandMoveItem(QUndoCommand):
 
 
 class UndoStackMoveMixin:
-    """A mixin class to avoid copy-pasting this method over many *Item classes.
-    Overrides the itemChange method.
+    """A mixin class to avoid copy-pasting itemChange over many *Item classes.
     """
 
     def itemChange(self, change, value):
