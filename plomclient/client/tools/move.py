@@ -21,8 +21,8 @@ class CommandMoveItem(QUndoCommand):
         self.delta = delta
         self.setText("Move")
 
-    def id(self):
-        # Give it an id number for merging of undo/redo commands
+    def id(self) -> int:
+        """An integer unique to the command class, used as prerequisite of commands merging"""
         return 101
 
     def redo(self):
@@ -49,23 +49,48 @@ class CommandMoveItem(QUndoCommand):
             QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True
         )
 
-    def mergeWith(self, other):
+    def mergeWith(self, other) -> bool:
+        """
+        Overrides commands merging, base implementation: https://doc.qt.io/qt-6/qundocommand.html#mergeWith.
+
+        Note: QUndoStack::push(cmd) first checks whether cmd has the same id with the command
+        at the top of the stack. If they share same ids, qt will try to merge them by calling
+        mergeWith. Ref: https://doc.qt.io/qt-6/qundostack.html#push
+
+        Args:
+            other: the other command to be merged.
+
+        Returns:
+            True if "self" and "other" commands are mergable, otherwise False.
+        """
         # Most commands cannot be merged - make sure the moved items are the
         # same - if so then merge things.
         if self.xitem != other.xitem:
             return False
+
+        # since we are merging commands, we need the cumulative effect so we don't
+        # lose the effect of any command being merged.
         self.delta += other.delta
         return True
 
 
 class UndoStackMoveMixin:
-    # a mixin class to avoid copy-pasting this method over many *Item classes.
-    # Overrides the itemChange method.
+    """A mixin class to avoid copy-pasting this method over many *Item classes.
+    Overrides the itemChange method.
+    """
+
     def itemChange(self, change, value):
+        """A callback function handling a change in QGraphicsItem's state.
+
+        Args:
+            change: type of state change.
+            value: the value representing the change of state.
+        """
         if (
             change == QGraphicsItem.GraphicsItemChange.ItemPositionChange
             and self.scene()
         ):
+            # value represents last position (QPointF) after object is moved.
             delta = value - self.pos()
             command = CommandMoveItem(self, delta)
             self.scene().undoStack.push(command)
