@@ -9,16 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-* Clients can reset marking tasks.
+* Client can reset marking tasks.
 
 ### Removed
 * Support for macOS 13 in our official binaries because we can not longer build on that platform using GitLab CI.  In principle, users could install from source or from `pip` on macOS 13 as PyQt is still available.
 
 ### Changed
 * Versioning between client and server is no longer tightly coupled.  Servers can warn or block older out-of-date clients.
-* Clients can specify major or minor edits when changing rubrics.
+* Clients can specify major or minor edits when changing rubrics, and control tagging.
+* Adjust for upstream API changes.
 
 ### Fixed
+* Fixed some bugs in the undo stack related to moving objects.
+* Logging into the new server with the same account from two locations is prevented at login, preventing confusing situations whereby logging out of one gave confusing crashes.
 
 
 
