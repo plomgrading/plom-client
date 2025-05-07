@@ -15,7 +15,7 @@ __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
 # Also hardcoded in AppImageBuilder.yml
-__version__ = "0.17.3.dev0"
+__version__ = "0.18.0.dev0"
 
 import sys
 
@@ -26,16 +26,8 @@ Plom_API_Version = "114"
 Plom_Legacy_Server_API_Version = "60"
 Default_Port = 41984
 
-# Image types we expect the client to be able to handle, in lowercase
-# TODO: think about JBIG, etc: other stuff that commonly lives in PDF
-PlomImageExts = ("png", "jpg", "jpeg")
-
 # TODO: this should be a default and the PageScene should have a physical size.
 ScenePixelHeight = 2000
-
-from .rules import isValidStudentID
-
-from .version_maps import undo_json_packing_of_version_map
 
 from .tagging import (
     is_valid_tag_text,

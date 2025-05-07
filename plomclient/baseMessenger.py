@@ -6,6 +6,7 @@
 # Copyright (C) 2022-2023 Edith Coates
 # Copyright (C) 2023 Tam Nguyen
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Philip D. Loewen
 
 from __future__ import annotations
 
@@ -19,10 +20,8 @@ import requests
 import urllib3
 
 from plomclient import __version__
-from plomclient import Plom_API_Version
-from plomclient import Plom_Legacy_Server_API_Version
 from plomclient import Default_Port
-from plomclient import undo_json_packing_of_version_map
+from plomclient.version_maps import undo_json_packing_of_version_map
 from plomclient.plom_exceptions import PlomSeriousException
 from plomclient.plom_exceptions import (
     PlomAPIException,
@@ -46,16 +45,28 @@ from plomclient.plom_exceptions import (
     PlomNoServerSupportException,
 )
 
+Plom_API_Version = 114  # Our API version
+Plom_Legacy_Server_API_Version = 60
 
 # We can support earlier servers by special-case code, so
 # define an allow-list of versions we support.
 Supported_Server_API_Versions = [
-    int(Plom_Legacy_Server_API_Version),
-    112,
-    113,  # new /MK/tasks/{code}/reassign/{username}
-    114,  # new /MK/tasks/{code}/reset/, new params for /MK/rubric/{key}
-    int(Plom_API_Version),
+    Plom_Legacy_Server_API_Version,
+    112,  # 2024-09
+    113,  # 2025-01
+    114,  # 2025-
 ]
+# Brief changelog
+#
+# * 113
+#    - new /MK/tasks/{code}/reassign/{username}
+# * 114
+#    - new /api/v0/tasks/{papernum}/{qidx}/reset/
+#    - changes /api/v0/tasks/{papernum}/{qidx}/reassign/{username}
+#    - new params for /MK/rubric/{key}
+#    - added "exclusive" option to push:/get_token/
+#    - added "revoke_token" option to delete:/close_user/
+#    - new delete:/get_token/ revokes token
 
 
 log = logging.getLogger("messenger")
@@ -216,7 +227,7 @@ class BaseMessenger:
         """
         if self.get_server_API_version() is None:
             return None
-        return self.get_server_API_version() == int(Plom_Legacy_Server_API_Version)
+        return self.get_server_API_version() == Plom_Legacy_Server_API_Version
 
     def is_server_api_less_than(self, api_number: int) -> bool | None:
         """Check if the server API is strictly less than a value.
@@ -325,6 +336,42 @@ class BaseMessenger:
 
         assert self.session
         return self.session.put(self.base + url, *args, **kwargs)
+
+    def put_auth(self, url: str, *args, **kwargs) -> requests.Response:
+        """Perform a PUT method on a URL, with a token for authorization."""
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.default_timeout
+
+        if not self.token:
+            raise PlomAuthenticationException("Trying auth'd operation w/o token")
+
+        assert not self.is_legacy_server()
+
+        assert isinstance(self.token, dict)
+        # Django-based servers pass token in the header
+        token_str = self.token["token"]
+        kwargs["headers"] = {"Authorization": f"Token {token_str}"}
+
+        assert self.session
+        return self.session.put(self.base + url, *args, **kwargs)
+
+    def delete_auth(self, url: str, *args, **kwargs) -> requests.Response:
+        """Perform a DELETE method on a URL with a token for authorization."""
+        if "timeout" not in kwargs:
+            kwargs["timeout"] = self.default_timeout
+
+        if not self.token:
+            raise PlomAuthenticationException("Trying auth'd operation w/o token")
+
+        assert not self.is_legacy_server()
+
+        assert isinstance(self.token, dict)
+        # Django-based servers pass token in the header
+        token_str = self.token["token"]
+        kwargs["headers"] = {"Authorization": f"Token {token_str}"}
+
+        assert self.session
+        return self.session.delete(self.base + url, *args, **kwargs)
 
     def delete(self, url: str, *args, **kwargs) -> requests.Response:
         """Perform a DELETE method on a URL."""
@@ -476,8 +523,8 @@ class BaseMessenger:
         self._server_API_version = int(ver)
         if self._server_API_version not in Supported_Server_API_Versions:
             raise PlomAPIException(
-                f"Server API version {ver} is not supported because its "
-                f"not in {Supported_Server_API_Versions}"
+                f"Server API version {ver} is not supported. "
+                f"Supported versions: {Supported_Server_API_Versions}."
             )
 
     def get_server_API_version(self) -> int | None:
@@ -570,16 +617,28 @@ class BaseMessenger:
                     raise PlomAuthenticationException(response.reason) from None
                 raise PlomSeriousException(f"Some other sort of error {e}") from None
 
-    def requestAndSaveToken(self, user: str, pw: str) -> None:
+    def requestAndSaveToken(
+        self, user: str, pw: str, *, exclusive: bool = False
+    ) -> None:
         """Get a authorisation token from the server.
 
         The token is then used to authenticate future transactions with the server.
+
+        Args:
+            user: the username.
+            pw: the password.
+
+        Keyword Args:
+            exclusive: default False.  True means we want a brand-new
+                unused token.
 
         Raises:
             PlomAPIException: a mismatch between server/client versions.
             PlomExistingLoginException: user already has a token:
                 currently, we do not support getting another one on
-                legacy servers.  TBD on the new server.
+                legacy servers.  On the current server, you'll get this
+                error if you ask for exclusive access but a token already
+                exists.  This behaviour might change in the future.
             PlomAuthenticationException: wrong password, account
                 disabled, etc: check contents for details.
             PlomSeriousException: something else unexpected such as a
@@ -588,7 +647,7 @@ class BaseMessenger:
         if self.is_legacy_server():
             self._requestAndSaveToken_legacy(user, pw)
         else:
-            self._requestAndSaveToken_webplom(user, pw)
+            self._requestAndSaveToken_webplom(user, pw, exclusive=exclusive)
 
     def _requestAndSaveToken_legacy(self, user: str, pw: str) -> None:
         self.SRmutex.acquire()
@@ -598,7 +657,7 @@ class BaseMessenger:
                 json={
                     "user": user,
                     "pw": pw,
-                    "api": Plom_Legacy_Server_API_Version,
+                    "api": str(Plom_Legacy_Server_API_Version),
                     "client_ver": __version__,
                 },
                 timeout=5,
@@ -622,7 +681,9 @@ class BaseMessenger:
         finally:
             self.SRmutex.release()
 
-    def _requestAndSaveToken_webplom(self, user: str, pw: str) -> None:
+    def _requestAndSaveToken_webplom(
+        self, user: str, pw: str, *, exclusive: bool = False
+    ) -> None:
         """Get an authorisation token from a new-style server."""
         with self.SRmutex:
             response = self.post_raw(
@@ -630,8 +691,9 @@ class BaseMessenger:
                 json={
                     "username": user,
                     "password": pw,
-                    "api": Plom_API_Version,
+                    "api": str(Plom_API_Version),  # API >= 114 supports int or str
                     "client_ver": __version__,
+                    "want_exclusive_access": exclusive,  # API >= 114 no effect on < 114
                 },
             )
             try:
@@ -644,7 +706,6 @@ class BaseMessenger:
                 elif response.status_code == 400:
                     raise PlomAPIException(response.reason) from None
                 elif response.status_code == 409:
-                    # TODO: not sure django-server prevents simultaneous logins
                     raise PlomExistingLoginException(response.reason) from None
                 raise PlomSeriousException(f"Some other sort of error {e}") from None
             except requests.ConnectionError as err:
@@ -654,38 +715,71 @@ class BaseMessenger:
                 ) from None
 
     def clearAuthorisation(self, user: str, pw: str) -> None:
-        self.SRmutex.acquire()
-        try:
-            response = self.delete(
-                "/authorisation", json={"user": user, "password": pw}
-            )
-            response.raise_for_status()
-        except requests.HTTPError as e:
-            if response.status_code == 401:
-                raise PlomAuthenticationException() from None
-            raise PlomSeriousException(f"Some other sort of error {e}") from None
-        finally:
-            self.SRmutex.release()
+        """User self-indicates they wish to clear any and all existing authorisations, authenticating with username/password.
 
-    def closeUser(self) -> None:
-        """User self-indicates they are logging out, surrender token and tasks.
+        This method is used when you don't have an existing connection
+        (you have a username/password instead of a token).  See also
+        the closely-related :method:`closeUser` which uses the token.
 
         Raises:
-            PlomAuthenticationException: Ironically, the user must be
-                logged in to call this.  A second call will raise this.
+            PlomAuthenticationException: Cannot login.
             PlomSeriousException: other problems such as trying to close
                 another user, other than yourself.
         """
-        if self.is_legacy_server():
-            path = f"/users/{self.user}"
-        else:
-            path = "/close_user/"
         with self.SRmutex:
             try:
-                response = self.delete(
-                    path,
-                    json={"user": self.user, "token": self.token},
-                )
+                if self.is_legacy_server():
+                    response = self.delete(
+                        "/authorisation", json={"user": user, "password": pw}
+                    )
+                elif self.is_server_api_less_than(114):
+                    raise PlomNoServerSupportException(
+                        "older server does not support clear auth"
+                    )
+                else:
+                    response = self.delete(
+                        "/get_token/", json={"username": user, "password": pw}
+                    )
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                if response.status_code == 401:
+                    raise PlomAuthenticationException() from None
+                raise PlomSeriousException(f"Some other sort of error {e}") from None
+
+    def closeUser(self, *, revoke_token: bool = False) -> None:
+        """User self-indicates they are logging out, surrender tasks, based on token auth.
+
+        This method is used when you have an existing connection (you
+        have a token).  See also the closely-related
+        :method:`clearAuthorisation` which uses username and password
+        instead.
+
+        Keyword Args:
+            revoke_token: default False.  Pass True if you'd also like to
+                destroy the token.  Generally used with ``exclusive`` in
+                in :method:`requestAndSaveToken` as a ham-fisted approach
+                to single-session enforcement.
+
+        Raises:
+            PlomAuthenticationException: Ironically, the user must be
+                logged in to call this.  If revoke_token was true, a
+                second call will raise this.
+            PlomSeriousException: other problems such as trying to close
+                another user, other than yourself.
+        """
+        with self.SRmutex:
+            try:
+                if self.is_legacy_server():
+                    response = self.delete(
+                        f"/users/{self.user}",
+                        json={"user": self.user, "token": self.token},
+                    )
+                else:
+                    url = "/close_user/"
+                    if revoke_token:
+                        # added in API 114, previous versions *always* revoke the token
+                        url += "?revoke_token"
+                    response = self.delete_auth(url)
                 response.raise_for_status()
             except requests.HTTPError as e:
                 if response.status_code == 401:
@@ -719,8 +813,7 @@ class BaseMessenger:
         """Get the specification of the exam from the server.
 
         Returns:
-            The server's spec, a dictionary with string keys that describes
-            the assessment.
+            The server's spec, as in :func:`plom.SpecVerifier`.
 
         Exceptions:
             PlomServerNotReady: server does not yet have a spec.
@@ -728,9 +821,12 @@ class BaseMessenger:
         with self.SRmutex:
             try:
                 if self.is_legacy_server():
+                    # legacy will give the spec to anybody, authorized or not
                     response = self.get("/info/spec")
-                else:
+                elif self.is_server_api_less_than(114):
                     response = self.get_auth("/info/spec")
+                else:
+                    response = self.get_auth("/api/v0/spec")
                 response.raise_for_status()
                 return response.json()
             except requests.HTTPError as e:

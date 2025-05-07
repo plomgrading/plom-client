@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-import plomclient
+import plomclient.client
 
 from .useful_classes import WarnMsg
 
@@ -94,7 +94,7 @@ def get_keybindings_list():
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            with open(resources.files(plomclient) / f, "rb") as fh:
+            with open(resources.files(plomclient.client) / f, "rb") as fh:
                 overlay = tomllib.load(fh)
         metadata = overlay.pop("__metadata__", {})
         for k, v in metadata.items():
@@ -112,7 +112,7 @@ def get_keybinding_overlay(name):
         overlay = {}
     else:
         log.info("Loading keybindings from %s", f)
-        with open(resources.files(plomclient) / f, "rb") as fh:
+        with open(resources.files(plomclient.client) / f, "rb") as fh:
             overlay = tomllib.load(fh)
     # note copy unnecessary as we have fresh copy from file
     overlay.pop("__metadata__", None)
@@ -140,10 +140,9 @@ def get_key_bindings(name, custom_overlay={}):
     Could be refactored to cache the base data and non-custom overlays,
     if it is too slow.
     """
-    # TODO: I think plom.client would be better, but can't get it to work
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
-    with open(resources.files(plomclient) / f, "rb") as fh:
+    with open(resources.files(plomclient.client) / f, "rb") as fh:
         default_keydata = tomllib.load(fh)
     default_keydata.pop("__metadata__")
 
@@ -157,7 +156,7 @@ def get_key_bindings(name, custom_overlay={}):
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            with open(resources.files(plomclient) / f, "rb") as fh:
+            with open(resources.files(plomclient.client) / f, "rb") as fh:
                 overlay = tomllib.load(fh)
             overlay.pop("__metadata__", None)
         # keymap["overlay"] = overlay

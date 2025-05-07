@@ -40,7 +40,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient import isValidStudentID
 from plomclient.plom_exceptions import (
     PlomBenignException,
     PlomConflict,
@@ -48,6 +47,7 @@ from plomclient.plom_exceptions import (
     PlomSeriousException,
     PlomTakenException,
 )
+from plomclient.rules import isValidStudentID
 from plomclient.rules import censorStudentName as censorName
 
 from . import ui_files
@@ -371,7 +371,7 @@ class IDClient(QWidget):
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         log.debug("Something has triggered a shutdown event")
         log.debug("Revoking login token")
-        self.msgr.closeUser()
+        self.msgr.closeUser(revoke_token=True)
         self.my_shutdown_signal.emit(1)
         if event:
             event.accept()

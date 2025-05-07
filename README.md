@@ -5,12 +5,6 @@ This is the marking client for [Plom](https://plomgrading.org).
 <img src="https://plomgrading.org/images/plomclient.png" width="800px" alt="The plom annotation client in action">
 
 
-## Work-in-progress
-
-This repo is work in progress to maintain Plom Client separate from the rest of the Plom source code.
-
-NOT STABLE: you can expect rebases and history rewrites.
-
 
 ## Translations
 

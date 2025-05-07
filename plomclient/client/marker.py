@@ -760,7 +760,7 @@ class MarkerClient(QWidget):
         )
         if not ok:
             return
-        task = f"q{n:04}g{self.question_idx}"
+        task = paper_question_index_to_task_id_str(n, self.question_idx)
         self._claim_task(task)
 
     def requestNext(self, *, update_select=True):
@@ -1251,6 +1251,8 @@ class MarkerClient(QWidget):
         task = self.get_current_task_id_or_none()
         if not task:
             return
+        papernum, qidx = task_id_str_to_paper_question_index(task)
+
         if assign_to is None:
             # TODO: combobox or similar to choose users
             assign_to, ok = QInputDialog.getText(
@@ -1261,9 +1263,10 @@ class MarkerClient(QWidget):
             )
             if not ok:
                 return
+
         try:
             # TODO: consider augmenting with a reason, e.g., reason="help" kwarg
-            self.msgr.reassign_task(task, assign_to)
+            self.msgr.reassign_task(papernum, qidx, assign_to)
         except (
             PlomNoServerSupportException,
             PlomRangeException,
@@ -1352,15 +1355,19 @@ class MarkerClient(QWidget):
         task = self.get_current_task_id_or_none()
         if not task:
             return
+        papernum, qidx = task_id_str_to_paper_question_index(task)
+        question_label = get_question_label(self.exam_spec, qidx)
         msg = SimpleQuestion(
             self,
-            "This will reset the task and mark any current annotations as out of date.",
+            f"This will reset task {task}; any annotations will be discarded."
+            f" Someone will have to mark paper {papernum:04}"
+            f" question {question_label} again!",
             "Are you sure you wish to proceed?",
         )
         if msg.exec() != QMessageBox.StandardButton.Yes:
             return
         try:
-            self.msgr.reset_task(task)
+            self.msgr.reset_task(papernum, qidx)
         except (
             PlomNoServerSupportException,
             PlomRangeException,
@@ -1969,7 +1976,7 @@ class MarkerClient(QWidget):
         # after revoking, Downloader's msgr will be invalid
         self.Qapp.downloader.detach_messenger()
         try:
-            self.msgr.closeUser()
+            self.msgr.closeUser(revoke_token=True)
         except PlomAuthenticationException:
             log.warning("User tried to logout but was already logged out.")
             pass
