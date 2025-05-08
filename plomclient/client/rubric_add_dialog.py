@@ -715,10 +715,18 @@ class AddRubricDialog(QDialog):
         vlay.addWidget(b)
         # QCheckBox does not itself do html
         cb = QCheckBox('Also tag all tasks with "rubric_changed"')
-        self.tagtasksCB = cb
-        # TODO: probably we should disable this checkbox when majorRB is not checked
-        # cb.setEnabled(False)
         cb.setChecked(True)
+        self.tagtasksCB = cb
+
+        def _on_major_checkbox_change(checked):
+            if checked:
+                cb.setEnabled(True)
+                cb.setChecked(True)
+            else:
+                cb.setEnabled(False)
+                cb.setChecked(False)
+
+        self.majorRB.toggled.connect(_on_major_checkbox_change)
         hlay = QHBoxLayout()
         hlay.addSpacing(24)
         hlay.addWidget(cb)
