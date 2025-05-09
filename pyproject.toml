@@ -52,7 +52,7 @@ dependencies = [
     "pyspellchecker>=0.8.1",
     "pytest>=6.0.0",
     "pytest-qt>=4.1.0",
-    "PyQt6>=6.2.0",
+    "PyQt6>=6.4.0",  # needed for QFormLayout.setRowVisible, 6.4.2 available in Debian 12
     "requests",
     "requests-toolbelt",
     "stdiomask>=0.0.6",

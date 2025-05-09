@@ -38,7 +38,7 @@ from .useful_classes import SimpleQuestion, ErrorMsg, InfoMsg, WarnMsg
 from .useful_classes import BigMessageDialog
 from .rubric_wrangler import RubricWrangler
 from plomclient.rubric_utils import compute_score, diff_rubric, render_rubric_as_html
-from .rubric_add_dialog import AddRubricBox
+from .rubric_add_dialog import AddRubricDialog
 from .rubric_other_usage_dialog import RubricOtherUsageDialog
 
 from .rubric_conflict_dialog import RubricConflictDialog
@@ -1809,7 +1809,7 @@ class RubricWidget(QWidget):
             None, does its work through side effects on the comment list.
         """
         reapable = self.get_nonrubric_text_from_page()
-        arb = AddRubricBox(
+        dialog = AddRubricDialog(
             self,
             self.username,
             self.max_mark,
@@ -1823,13 +1823,19 @@ class RubricWidget(QWidget):
             experimental=self._parent.is_experimental(),
             add_to_group=add_to_group,
         )
-        if arb.exec() != QDialog.DialogCode.Accepted:
+        if dialog.exec() != QDialog.DialogCode.Accepted:
             return
-        new_rubric = arb.gimme_rubric_data()
+        new_rubric = dialog.gimme_rubric_data()
+        minor_change, tag_tasks = dialog.gimme_change_options()
 
         if edit:
             try:
-                new_rubric = self._parent.modifyRubric(new_rubric["rid"], new_rubric)
+                new_rubric = self._parent.modifyRubric(
+                    new_rubric["rid"],
+                    new_rubric,
+                    minor_change=minor_change,
+                    tag_tasks=tag_tasks,
+                )
             except PlomNoPermission as e:
                 InfoMsg(self, f"No permission to modify that rubric: {e}").exec()
                 return
@@ -1860,7 +1866,9 @@ class RubricWidget(QWidget):
             if False and random.random() < 0.33:
                 _tmp = new_rubric.copy()
                 _tmp["text"] = _tmp["text"] + " [simulated offline comment change]"
-                self._parent.modifyRubric(_tmp["rid"], _tmp)
+                self._parent.modifyRubric(
+                    _tmp["rid"], _tmp, minor_change=minor_change, tag_tasks=tag_tasks
+                )
 
         else:
             try:

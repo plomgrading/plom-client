@@ -283,7 +283,7 @@ class WideTextEdit(QTextEdit):
         Note: Ignore the word "tex" and non alphabetical.
 
         Raises:
-            RunTimeError if the AddRubricBox dialog is uninitialized.
+            RunTimeError if the AddRubricDialog is uninitialized.
         """
         if not event:
             return
@@ -307,7 +307,7 @@ class WideTextEdit(QTextEdit):
                         "Rubric Box Dialog is unexpectedly uninitialized"
                     )
 
-                if isinstance(rubric_dialog, AddRubricBox):
+                if isinstance(rubric_dialog, AddRubricDialog):
                     rubric_dialog.correction_widget.set_selected_word(
                         selected_text, self.textCursor()
                     )
@@ -381,7 +381,7 @@ class WideTextEdit(QTextEdit):
         self.setCurrentCharFormat(QTextCharFormat())
 
 
-class AddRubricBox(QDialog):
+class AddRubricDialog(QDialog):
     def __init__(
         self,
         parent,
@@ -617,13 +617,13 @@ class AddRubricBox(QDialog):
         b.activated.connect(lambda: self.group_checkbox.setChecked(True))
         hlay.addWidget(b)
         self.group_combobox = b
-        b = QToolButton(text="➕")
+        b = QToolButton(text="\N{HEAVY PLUS SIGN}")
         b.setToolTip("Add new group")
         b.setAutoRaise(True)
         b.clicked.connect(self.add_new_group)
         self.group_add_btn = b
         hlay.addWidget(b)
-        # b = QToolButton(text="➖")
+        # b = QToolButton(text="\N{HEAVY MINUS SIGN}")
         # b.setToolTip("Delete currently-selected group")
         # b.setAutoRaise(True)
         # hlay.addWidget(b)
@@ -654,9 +654,7 @@ class AddRubricBox(QDialog):
         hlay.addWidget(b)
         vlay.addLayout(hlay)
         hlay = QHBoxLayout()
-        hlay.addItem(
-            QSpacerItem(24, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        )
+        hlay.addSpacing(24)
         # TODO: note default for absolute rubrics?  (once it is the default)
         c = QCheckBox("Exclusive in this group (at most one such rubric can be placed)")
         hlay.addWidget(c)
@@ -687,6 +685,63 @@ class AddRubricBox(QDialog):
         flay.addRow("Rubric ID", self.label_rubric_id)
         flay.addRow("", self.last_modified_label)
 
+        # Usage info and major/minor change
+        # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
+        frame = QFrame()
+        frame.setFrameStyle(QFrame.Shape.StyledPanel)
+        vlay = QVBoxLayout(frame)
+        self._major_minor_frame = frame
+        flay.addRow("Usage", frame)
+        # vlay.setContentsMargins(0, 0, 0, 0)
+        hlay = QHBoxLayout()
+        self._uses_label_template = "This rubric is currently used by %s papers"
+        self.uses_label = QLabel(self._uses_label_template % "??")
+        uses_button = QToolButton(text="\N{ANTICLOCKWISE OPEN CIRCLE ARROW}")
+        uses_button.setToolTip("Refresh use count")
+        uses_button.setAutoRaise(True)
+        uses_button.clicked.connect(self.refresh_usage)
+        hlay.addWidget(self.uses_label)
+        hlay.addWidget(uses_button)
+        hlay.addStretch(10)
+        vlay.addLayout(hlay)
+
+        b = QRadioButton(
+            "This is a major edit; all tasks using this rubric will need"
+            " to be revisited (by a human)."
+        )
+        b.setToolTip('The "revision" number will increase; "track changes" enabled')
+        self.majorRB = b
+        b.setChecked(True)
+        vlay.addWidget(b)
+        # QCheckBox does not itself do html
+        cb = QCheckBox('Also tag all tasks with "rubric_changed"')
+        cb.setChecked(True)
+        self.tagtasksCB = cb
+
+        def _on_major_checkbox_change(checked):
+            if checked:
+                cb.setEnabled(True)
+                cb.setChecked(True)
+            else:
+                cb.setEnabled(False)
+                cb.setChecked(False)
+
+        self.majorRB.toggled.connect(_on_major_checkbox_change)
+        hlay = QHBoxLayout()
+        hlay.addSpacing(24)
+        hlay.addWidget(cb)
+        vlay.addLayout(hlay)
+        b = QRadioButton(
+            "This is minor edit; I don't want to update any existing tasks."
+        )
+        b.setToolTip('The "revision" number will stay the same; no "track changes"')
+        self.minorRB = b
+        vlay.addWidget(b)
+        b = QRadioButton("Server default / let server autodetect.")
+        # b.setToolTip("Roughly: major changes for student-visible edits")
+        b.setToolTip("Currently (0.18.0) the server defaults to major edits")
+        vlay.addWidget(b)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -695,6 +750,8 @@ class AddRubricBox(QDialog):
         vlay.addLayout(flay)
         vlay.addWidget(buttons)
         self.setLayout(vlay)
+
+        self._formlayout = flay
 
         # set up widgets
         buttons.accepted.connect(self.accept)
@@ -827,6 +884,8 @@ class AddRubricBox(QDialog):
             self.last_modified_label.setText(
                 f"You ({self._username}) are creating a new rubric"
             )
+            self._formlayout.setRowVisible(self._major_minor_frame, False)
+
             if add_to_group:
                 assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
                 self.group_checkbox.setChecked(True)
@@ -863,7 +922,7 @@ class AddRubricBox(QDialog):
                 w = QLineEdit(values[v])
                 w.setPlaceholderText(f"<value for ver{v + 1}>")
                 grid.addWidget(w, nr, v + 1)
-            b = QToolButton(text="➖")  # \N{Minus Sign}
+            b = QToolButton(text="\N{HEAVY MINUS SIGN}")
             b.setToolTip("remove this parameter and values")
             b.setAutoRaise(True)
             f = _func_factory(self, i)
@@ -872,9 +931,9 @@ class AddRubricBox(QDialog):
             nr += 1
 
         if params:
-            b = QToolButton(text="➕ add another")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add another")
         else:
-            b = QToolButton(text="➕ add a parameterized substitution")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add a parameterized substitution")
         b.setAutoRaise(True)
         b.pressed.connect(self.subsAddRow)
         b.setToolTip("Inserted at cursor point; highlighted text as initial value")
@@ -1012,6 +1071,7 @@ class AddRubricBox(QDialog):
             self.version_specific_le.setEnabled(False)
 
     def toggle_scope_elements(self):
+        """Show or hide the panel of "scoping" options for rubrics."""
         if self.scopeButton.isChecked():
             self.scopeButton.setArrowType(Qt.ArrowType.DownArrow)
             # QFormLayout.setRowVisible but only in Qt 6.4!
@@ -1020,6 +1080,17 @@ class AddRubricBox(QDialog):
         else:
             self.scopeButton.setArrowType(Qt.ArrowType.RightArrow)
             self.scope_frame.setVisible(False)
+
+    def refresh_usage(self):
+        """Ask Annotator to call the server the find out how many tasks use this rubric."""
+        if not self.is_edit():
+            return
+        # TODO: No no use signals slots or something, not like this
+        annotr = self.parent()._parent
+        rid = self.label_rubric_id.text()
+        _ = annotr.getOtherRubricUsagesFromServer(rid)
+        N = len(_)
+        self.uses_label.setText(self._uses_label_template % str(N))
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ShiftModifier and (
@@ -1171,3 +1242,16 @@ class AddRubricBox(QDialog):
             )
 
         return rubric
+
+    def gimme_change_options(self) -> tuple[bool | None, bool | None]:
+        """Return whether this is minor change, and whether to tag tasks."""
+        if self.majorRB.isChecked():
+            if self.tagtasksCB.isChecked():
+                return False, True
+            else:
+                return False, False
+        elif self.minorRB.isChecked():
+            # TODO: in principle, one could tag tasks for minor edits...
+            return True, None
+        else:
+            return None, None
