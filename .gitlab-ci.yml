@@ -328,8 +328,8 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     # These are pinned at 3.x.*: should be manually bumped sometimes
-    - pip install --break-system-packages astroid~=3.3.8  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=3.3.4
+    - pip install --break-system-packages astroid~=3.3.10  # codespell:ignore astroid
+    - pip install --break-system-packages pylint~=3.3.7
   script:
     - pylint plomclient
   allow_failure: true
@@ -389,7 +389,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.398
+    - pip install --break-system-packages pyright~=1.1.400
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -400,7 +400,7 @@ flake8:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install flake8~=7.1.2
+    - python3 -m pip install flake8~=7.2.0
   script:
     # first show all errors and warnings but don't fail
     - flake8 --exit-zero
