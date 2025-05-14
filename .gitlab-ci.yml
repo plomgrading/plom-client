@@ -328,8 +328,8 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     # These are pinned at 3.x.*: should be manually bumped sometimes
-    - pip install --break-system-packages astroid~=3.3.8  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=3.3.4
+    - pip install --break-system-packages astroid~=3.3.10  # codespell:ignore astroid
+    - pip install --break-system-packages pylint~=3.3.7
   script:
     - pylint plomclient
   allow_failure: true
@@ -389,7 +389,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.398
+    - pip install --break-system-packages pyright~=1.1.400
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -400,7 +400,7 @@ flake8:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install flake8~=7.1.2
+    - python3 -m pip install flake8~=7.2.0
   script:
     # first show all errors and warnings but don't fail
     - flake8 --exit-zero
@@ -413,7 +413,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.11.2
+    - python3 -m pip install ruff~=0.11.9
   script:
     - ruff check .
     # ruff format .
@@ -424,7 +424,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.11.2
+    - python3 -m pip install ruff~=0.11.9
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
@@ -434,7 +434,7 @@ count-no-docstring:
     - ruff check --select $EXCEPTIONS --statistics --exit-zero
     - echo "Total $HOWMANY things without docstrings, please don't increase it"
     # Dear hackers: please try to decrease this number
-    - bash -c "[[ $HOWMANY -le 446 ]]"
+    - bash -c "[[ $HOWMANY -le 440 ]]"
   allow_failure: true
 
 
@@ -767,7 +767,7 @@ macos14_universal_client:
   - /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.12.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
   - ls dist/
@@ -817,7 +817,7 @@ macos14_arm64_client:
   - /usr/local/bin/python3 --version
   - /usr/local/bin/python3 -m pip install --upgrade pip
   - /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.12.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
@@ -873,7 +873,7 @@ macos14_x86_64_client:
   # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
   - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
-  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=6.12.0
+  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
   - ls dist/
@@ -923,7 +923,7 @@ macos15_arm64_client:
   - /usr/local/bin/python3 --version
   - /usr/local/bin/python3 -m pip install --upgrade pip
   - /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.12.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
@@ -965,7 +965,7 @@ winpyinst:
   - c:\python311\python -m pip install -r requirements.txt
   - refreshenv
   # Delay pyinstaller for a month or so, sometimes output flagged as virus (Issue #1353)
-  - c:\python311\python -m pip install pyinstaller~=6.12.0
+  - c:\python311\python -m pip install pyinstaller~=6.13.0
   - refreshenv
   - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
