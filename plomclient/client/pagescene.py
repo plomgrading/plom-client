@@ -1707,7 +1707,7 @@ class PageScene(QGraphicsScene):
             pt = ept - QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
-            
+
             # Issue #3761: setFocus() may be ignored if there are previous focus
             currentFocus = self.focusItem()
             if currentFocus:
