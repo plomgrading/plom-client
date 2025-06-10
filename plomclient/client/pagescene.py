@@ -1708,7 +1708,7 @@ class PageScene(QGraphicsScene):
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
 
-            # Issue #3761: setFocus() may be ignored if there are previous focus
+            # Issue #3761: setFocus() may be ignored if there is previous focus
             currentFocus = self.focusItem()
             if currentFocus:
                 currentFocus.clearFocus()
@@ -1751,7 +1751,7 @@ class PageScene(QGraphicsScene):
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
 
-            # Issue #3761: setFocus() may be ignored if there are previous focus
+            # Issue #3761: setFocus() may be ignored if there is previous focus
             currentFocus = self.focusItem()
             if currentFocus:
                 currentFocus.clearFocus()
