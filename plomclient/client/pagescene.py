@@ -1688,8 +1688,6 @@ class PageScene(QGraphicsScene):
                 under.setTextInteractionFlags(
                     Qt.TextInteractionFlag.TextEditorInteraction
                 )
-
-                # setFocusItem has no effect if we are currently focusing on other views
                 self.setFocusItem(under, Qt.FocusReason.MouseFocusReason)
                 super().mousePressEvent(event)
                 return
@@ -1709,8 +1707,12 @@ class PageScene(QGraphicsScene):
             pt = ept - QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
-
-            self.setFocusItem(command.blurb, Qt.FocusReason.MouseFocusReason)
+            
+            # Issue #3761: setFocus() may be ignored if there are previous focus
+            currentFocus = self.focusItem()
+            if currentFocus:
+                currentFocus.clearFocus()
+            command.blurb.setFocus()
             self.undoStack.push(command)
 
             log.debug(
@@ -1749,6 +1751,7 @@ class PageScene(QGraphicsScene):
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
 
+            # Issue #3761: setFocus() may be ignored if there are previous focus
             currentFocus = self.focusItem()
             if currentFocus:
                 currentFocus.clearFocus()
