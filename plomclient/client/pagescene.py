@@ -5,7 +5,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Aidan Murphy
-# Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2024-2025 Bryan Tanady
 
 # a different kind of annotations... this is about code typing
 from __future__ import annotations
@@ -1688,6 +1688,8 @@ class PageScene(QGraphicsScene):
                 under.setTextInteractionFlags(
                     Qt.TextInteractionFlag.TextEditorInteraction
                 )
+
+                # setFocusItem has no effect if we are currently focusing on other views
                 self.setFocusItem(under, Qt.FocusReason.MouseFocusReason)
                 super().mousePressEvent(event)
                 return
@@ -1707,7 +1709,8 @@ class PageScene(QGraphicsScene):
             pt = ept - QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
-            command.blurb.setFocus()
+
+            self.setFocusItem(command.blurb, Qt.FocusReason.MouseFocusReason)
             self.undoStack.push(command)
 
             log.debug(
@@ -1745,6 +1748,10 @@ class PageScene(QGraphicsScene):
             pt -= QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
+
+            currentFocus = self.focusItem()
+            if currentFocus:
+                currentFocus.clearFocus()
             command.blurb.setFocus()
             self.undoStack.push(command)
 
