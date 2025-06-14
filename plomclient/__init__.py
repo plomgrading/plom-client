@@ -17,17 +17,9 @@ __license__ = "AGPL-3.0-or-later"
 # Also hardcoded in AppImageBuilder.yml
 __version__ = "0.18.2.dev0"
 
-import sys
-
-if sys.version_info[0] == 2:
-    raise RuntimeError("Plom requires Python 3; it will not work with Python 2")
-
 Plom_API_Version = "114"
 Plom_Legacy_Server_API_Version = "60"
 Default_Port = 41984
-
-# TODO: this should be a default and the PageScene should have a physical size.
-ScenePixelHeight = 2000
 
 from .tagging import (
     is_valid_tag_text,
