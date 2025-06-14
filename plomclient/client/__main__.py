@@ -24,7 +24,7 @@ from textwrap import shorten
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QTimer
 from PyQt6.QtWidgets import QApplication, QMessageBox, QStyleFactory
 
-from plomclient import Default_Port, __version__
+from plomclient.common import Default_Port, __version__
 from plomclient.client import Chooser
 from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
 from plomclient.misc_utils import utc_now_to_string

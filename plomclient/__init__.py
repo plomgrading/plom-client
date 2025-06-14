@@ -19,7 +19,6 @@ __version__ = "0.18.2.dev0"
 
 Plom_API_Version = "114"
 Plom_Legacy_Server_API_Version = "60"
-Default_Port = 41984
 
 from .tagging import (
     is_valid_tag_text,

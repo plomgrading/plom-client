@@ -44,9 +44,8 @@ from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
-from plomclient import __version__
+from plomclient.common import Default_Port, __version__
 from plomclient import Plom_API_Version
-from plomclient import Default_Port
 from plomclient.plom_exceptions import (
     PlomException,
     PlomSeriousException,
