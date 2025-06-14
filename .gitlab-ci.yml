@@ -294,7 +294,7 @@ coverage:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.6.12
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.9.1
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -360,7 +360,7 @@ mypy-type-checking:
     - pip install --break-system-packages pyspellchecker stdiomask
     # mypy was failing with the Ubuntu built-in one
     - pip install --break-system-packages -U pillow
-    - pip install --break-system-packages mypy~=1.15.0
+    - pip install --break-system-packages mypy~=1.16.0
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -389,7 +389,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.400
+    - pip install --break-system-packages pyright~=1.1.402
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
