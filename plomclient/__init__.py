@@ -15,13 +15,3 @@ __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
 Plom_API_Version = "114"
-Plom_Legacy_Server_API_Version = "60"
-
-from .tagging import (
-    is_valid_tag_text,
-    plom_valid_tag_text_pattern,
-    plom_valid_tag_text_description,
-)
-
-# TODO: what you get from "from plomclient import *"
-# __all__ = ["client"]
