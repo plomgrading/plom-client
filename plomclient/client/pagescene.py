@@ -5,7 +5,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Aidan Murphy
-# Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2024-2025 Bryan Tanady
 
 # a different kind of annotations... this is about code typing
 from __future__ import annotations
@@ -1707,6 +1707,11 @@ class PageScene(QGraphicsScene):
             pt = ept - QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
+
+            # Issue #3761: setFocus() may be ignored if there is previous focus
+            currentFocus = self.focusItem()
+            if currentFocus:
+                currentFocus.clearFocus()
             command.blurb.setFocus()
             self.undoStack.push(command)
 
@@ -1745,6 +1750,11 @@ class PageScene(QGraphicsScene):
             pt -= QPointF(0, command.blurb.boundingRect().height() / 2)
             command.blurb.setPos(pt)
             command.blurb.enable_interactive()
+
+            # Issue #3761: setFocus() may be ignored if there is previous focus
+            currentFocus = self.focusItem()
+            if currentFocus:
+                currentFocus.clearFocus()
             command.blurb.setFocus()
             self.undoStack.push(command)
 
