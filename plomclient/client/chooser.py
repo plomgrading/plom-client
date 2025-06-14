@@ -44,7 +44,7 @@ from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
-from plomclient.common import Default_Port, __version__
+from plomclient.common import Default_Port
 from plomclient import Plom_API_Version
 from plomclient.plom_exceptions import (
     PlomException,
@@ -58,6 +58,7 @@ from plomclient.plom_exceptions import (
     PlomNoServerSupportException,
 )
 from plomclient.messenger import Messenger
+from . import __version__
 from . import MarkerClient, IDClient
 from . import ui_files
 from .downloader import Downloader

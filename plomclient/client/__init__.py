@@ -12,8 +12,10 @@ __license__ = "AGPL-3.0-or-later"
 # TODO: this should be a default and the PageScene should have a physical size.
 ScenePixelHeight = 2000
 
+# Also hardcoded in AppImageBuilder.yml
+__version__ = "0.18.1.dev0"
 
-from plomclient import __version__
+
 from .marker import MarkerClient
 from .identifier import IDClient
 from .chooser import Chooser

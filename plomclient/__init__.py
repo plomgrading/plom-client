@@ -14,9 +14,6 @@ __copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, 
 __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
-# Also hardcoded in AppImageBuilder.yml
-__version__ = "0.18.2.dev0"
-
 Plom_API_Version = "114"
 Plom_Legacy_Server_API_Version = "60"
 

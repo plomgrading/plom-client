@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2021-2024 Colin B. Macdonald
+# Copyright (C) 2021-2025 Colin B. Macdonald
 
 import platform
 from textwrap import dedent
@@ -7,7 +7,7 @@ from textwrap import dedent
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
 from PyQt6.QtWidgets import QMessageBox
 
-from plomclient import __version__
+from . import __version__
 
 # TODO: requests version
 # TODO: use resources to important contributors list?

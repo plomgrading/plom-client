@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2020 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2021 Elizabeth Xiao
 # Copyright (C) 2022 Edith Coates
 
@@ -24,10 +24,11 @@ from textwrap import shorten
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QTimer
 from PyQt6.QtWidgets import QApplication, QMessageBox, QStyleFactory
 
-from plomclient.common import Default_Port, __version__
+from plomclient.common import Default_Port
 from plomclient.client import Chooser
 from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
 from plomclient.misc_utils import utc_now_to_string
+from . import __version__
 
 
 def add_popup_to_toplevel_exception_handler() -> None:
