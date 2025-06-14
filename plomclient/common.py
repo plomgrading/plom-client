@@ -6,7 +6,7 @@
 
 # Any utilities that don't have there own version can use this one
 # Also hardcoded in AppImageBuilder.yml
-__version__ = "0.19.0.dev0"
+__version__ = "0.18.1.dev0"
 
 import sys
 
