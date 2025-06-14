@@ -25,10 +25,10 @@ from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QTimer
 from PyQt6.QtWidgets import QApplication, QMessageBox, QStyleFactory
 
 from plomclient.common import Default_Port
-from plomclient.client import Chooser
-from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
 from plomclient.misc_utils import utc_now_to_string
 from . import __version__
+from . import Chooser
+from .useful_classes import ErrorMsg, WarningQuestion
 
 
 def add_popup_to_toplevel_exception_handler() -> None:
