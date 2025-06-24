@@ -5,7 +5,7 @@
 # Copyright (C) 2024 Aden Chan
 
 # Any utilities that don't have there own version can use this one
-# Also hardcoded in AppImageBuilder.yml
+# (maybe in future this need not match the client version)
 __version__ = "0.18.2.dev0"
 
 import sys
