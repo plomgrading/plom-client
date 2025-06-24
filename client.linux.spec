@@ -5,7 +5,7 @@
 
 from pathlib import Path
 import spellchecker
-from plomclient import __version__
+from plomclient.client import __version__
 
 block_cipher = None
 dict_path = spellchecker.__path__[0] + '/resources'
