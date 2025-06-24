@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2025 Andrew Rechnitzer
-# Copyright (C) 2020-2023 Colin B. Macdonald
+# Copyright (C) 2020-2023, 2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2021 Elizabeth Xiao
 # Copyright (C) 2023 Julian Lapenna
@@ -22,7 +22,7 @@ import sys
 
 from stdiomask import getpass
 
-from plomclient import Default_Port
+from plomclient.common import Default_Port
 
 from .random_marking_utils import (
     build_random_rubrics,

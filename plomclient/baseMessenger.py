@@ -19,8 +19,7 @@ from typing import Any
 import requests
 import urllib3
 
-from plomclient import __version__
-from plomclient import Default_Port
+from plomclient.common import Default_Port, __version__
 from plomclient.version_maps import undo_json_packing_of_version_map
 from plomclient.plom_exceptions import PlomSeriousException
 from plomclient.plom_exceptions import (

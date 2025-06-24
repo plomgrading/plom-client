@@ -51,7 +51,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient import __version__
+from . import __version__
 from plomclient.plom_exceptions import (
     PlomAuthenticationException,
     PlomBadTagError,

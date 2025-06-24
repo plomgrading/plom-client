@@ -3,9 +3,18 @@
 # Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2024 Bryan Tanady
 
+import re
 from pathlib import Path
 import spellchecker
-from plomclient import __version__
+
+# importing gives error: libfontconfig.so.1: cannot open shared object file
+# # from plomclient.client import __version__
+# so instead we grep it from the code instead..., yuck?
+# TODO: perhaps pyproject.toml and related tooling can help here somehow
+with open("plomclient/client/__init__.py", "r") as f:
+    contents = f.read()
+(__version__,) = re.findall(r'__version__ = "(.+)"', contents)
+
 
 block_cipher = None
 dict_path = spellchecker.__path__[0] + '/resources'

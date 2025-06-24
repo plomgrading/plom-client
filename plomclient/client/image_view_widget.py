@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient import ScenePixelHeight
+from . import ScenePixelHeight
 
 from .backGrid import BackGrid
 
