@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 
 from . import CommandTool, UndoStackMoveMixin
 
+
 class CommandSlantedBox(CommandTool):
     def __init__(self, scene, path):
         super().__init__(scene)
@@ -19,22 +20,23 @@ class CommandSlantedBox(CommandTool):
             raise ValueError("Wrong number of arguments for SlantedBox from_pickle")
 
         points_list = X[0]
-        
+
         if len(points_list) < 4:
             raise ValueError("Not enough points to define a SlantedBox")
-        
-        p1 = QPointF(points_list[0]['x'], points_list[0]['y'])
-        p2 = QPointF(points_list[1]['x'], points_list[1]['y'])
-        p3 = QPointF(points_list[2]['x'], points_list[2]['y'])
-        p4 = QPointF(points_list[3]['x'], points_list[3]['y'])
-        
+
+        p1 = QPointF(points_list[0]["x"], points_list[0]["y"])
+        p2 = QPointF(points_list[1]["x"], points_list[1]["y"])
+        p3 = QPointF(points_list[2]["x"], points_list[2]["y"])
+        p4 = QPointF(points_list[3]["x"], points_list[3]["y"])
+
         path = QPainterPath(p1)
         path.lineTo(p2)
         path.lineTo(p3)
         path.lineTo(p4)
         path.closeSubpath()
-        
+
         return cls(scene, path)
+
 
 class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
     def __init__(self, path, style):
@@ -56,6 +58,6 @@ class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
         for i in range(self._path.elementCount()):
             element = self._path.elementAt(i)
             if element.isMoveTo() or element.isLineTo():
-                 elements.append({'x': element.x + self.x(), 'y': element.y + self.y()})
+                elements.append({"x": element.x + self.x(), "y": element.y + self.y()})
 
         return ["SlantedBox", elements]

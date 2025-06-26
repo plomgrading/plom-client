@@ -103,11 +103,11 @@ from .elastics import (
 from .useful_classes import SimpleQuestion
 
 from .draw_operations import (
-    LineToolDrawer, 
+    LineToolDrawer,
     BoxToolDrawer,
-    RubricToolDrawer, 
-    TickToolDrawer, 
-    CrossToolDrawer, 
+    RubricToolDrawer,
+    TickToolDrawer,
+    CrossToolDrawer,
     TextToolDrawer,
     DeleteToolDrawer,
     ZoomToolDrawer,
@@ -385,6 +385,7 @@ class UnderlyingImages(QGraphicsItemGroup):
     def min_dimension(self):
         return min(self.boundingRect().height(), self.boundingRect().width())
 
+
 # things for nice rubric/text drag-box tool
 # work out how to draw line from current point
 # to nearby point on a given rectangle
@@ -509,14 +510,13 @@ class PageScene(QGraphicsScene):
                 return True
         return False
 
-
     def mousePressEvent(self, event):
         if self.active_drawer:
             return self.active_drawer.mouse_press(event)
-        
+
         if self.avoidBox.contains(event.scenePos()):
             return
-        
+
         if self.mode == "line":
             self.active_drawer = LineToolDrawer(self, event)
             return
@@ -547,7 +547,7 @@ class PageScene(QGraphicsScene):
         elif self.mode == "pen":
             self.active_drawer = PenToolDrawer(self, event)
             return
-        
+
         elif self.mode == "move":
             self.views()[0].setCursor(Qt.CursorShape.ClosedHandCursor)
             super().mousePressEvent(event)
@@ -568,17 +568,19 @@ class PageScene(QGraphicsScene):
                 msg = QMessageBox(_parent)
                 msg.setIcon(QMessageBox.Icon.Information)
                 msg.setWindowTitle("Image Information")
-                msg.setText("You can double-click on an Image to modify its scale and border.")
+                msg.setText(
+                    "You can double-click on an Image to modify its scale and border."
+                )
                 msg.setStandardButtons(QMessageBox.StandardButton.Ok)
                 msg.exec()
 
         else:
             super().mousePressEvent(event)
-    
+
     def mouseMoveEvent(self, event):
         if self.active_drawer:
             return self.active_drawer.mouse_move(event)
-        
+
         if self.mode == "rubric":
             self.ghostItem.setPos(event.scenePos())
             if not self.ghostItem.isVisible():
@@ -587,7 +589,6 @@ class PageScene(QGraphicsScene):
             return
         return super().mouseMoveEvent(event)
 
-    
     def mouseReleaseEvent(self, event):
         """Delegates mouse release events to an active drawer or simple tool."""
         if self.active_drawer:
@@ -606,8 +607,6 @@ class PageScene(QGraphicsScene):
             page_view.setZoomSelector()
         else:
             super().mouseReleaseEvent(event)
-
-
 
     def buildUnderLay(self):
         if self.underImage:
@@ -2023,7 +2022,7 @@ class PageScene(QGraphicsScene):
             self.active_drawer.cancel()
             self.active_drawer = None
             return
-        
+
         # log.debug("Flags = {}".format(self.__getFlags()))
 
     def isDrawing(self):
