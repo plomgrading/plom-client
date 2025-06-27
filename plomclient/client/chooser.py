@@ -623,9 +623,8 @@ class Chooser(QDialog):
                 "  * Perhaps a previous session crashed?\n"
                 "  * Do you have another client running,\n"
                 "    e.g., on another computer?\n\n"
-                "Should I force-logout the existing authorisation?"
-                " (and then you can try to log in again)\n\n"
-                "The other client will likely crash.",
+                "Select OK to force-logout the existing authorisation.\n"
+                "The other client will likely crash, but this session will continue.",
             )
             if msg.exec() == QMessageBox.StandardButton.Yes:
                 self.messenger.clearAuthorisation(user, pwd)
