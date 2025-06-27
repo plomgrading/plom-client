@@ -7,6 +7,7 @@
 # Copyright (C) 2021 Peter Lee
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Philip D. Loewen
 
 """Plom's Chooser dialog."""
 
@@ -623,8 +624,10 @@ class Chooser(QDialog):
                 "  * Perhaps a previous session crashed?\n"
                 "  * Do you have another client running,\n"
                 "    e.g., on another computer?\n\n"
-                "Select OK to force-logout the existing authorisation.\n"
-                "The other client will likely crash, but this session will continue.",
+                "We can terminate your other session. "
+                "This will crash the other client, "
+                "but the current session will continue.\n"
+                "Proceed?",
             )
             if msg.exec() == QMessageBox.StandardButton.Yes:
                 self.messenger.clearAuthorisation(user, pwd)
