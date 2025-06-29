@@ -19,6 +19,20 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+
+    <widget class="QLabel" name="imageLabel">
+        <property name="pixmap">
+            <pixmap>plomLogo.png</pixmap>
+        </property>
+        <property name="alignment">
+            <set>Qt::AlignHCenter|Qt::AlignVCenter</set>
+        </property>
+        <property name="scaledContents">
+            <bool>false</bool>
+        </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="serverGBox">
      <property name="enabled">
       <bool>true</bool>
