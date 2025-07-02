@@ -1,5 +1,4 @@
-"""
-Handles all drawing operations for the Plom client.
+"""Handles all drawing operations for the Plom client.
 
 This module defines the logic for all the drawing tools available in the client,
 including creating, modifying, and deleting annotations on a page.
@@ -37,17 +36,14 @@ from .pageview import PageView
 
 
 class MultiStageDrawer:
-    """
-    An abstract base class for a multi-stage drawing operation.
+    """An abstract base class for a multi-stage drawing operation.
 
     Each specific tool that requires a sequence of mouse events (press, move,
     release) will have its own concrete Drawer class that inherits from this one.
     """
 
     def __init__(self, scene, event):
-        """
-        Initializes the drawer with a reference to the main scene and the
-        initial mouse event that triggered its creation.
+        """Initializes the drawer with a reference to the main scene and the initial mouse event.
 
         Args:
             scene (PageScene): A reference to the main scene where drawing occurs.
@@ -58,34 +54,26 @@ class MultiStageDrawer:
         self.is_finished = False
 
     def mouse_move(self, event):
-        """
-        Abstract method to handle a mouse move event.
-        """
+        """Abstract method to handle a mouse move event."""
         pass
 
     def mouse_release(self, event):
-        """
-        Abstract method to handle a mouse release event.
-        """
+        """Abstract method to handle a mouse release event."""
         pass
 
     def cancel(self):
-        """
-        Abstract method to cancel the operation and clean up temporary items.
-        """
+        """Abstract method to cancel the operation and clean up temporary items."""
         pass
 
 
 class LineToolDrawer(MultiStageDrawer):
-    """
-    Handles all drawing logic for the 'Line' tool.
+    """Handles all drawing logic for the 'Line' tool.
 
     This includes creating simple lines and the slanted rectangles feature.
     """
 
     def __init__(self, scene, event):
-        """
-        Initializes the LineToolDrawer.
+        """Initializes the LineToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -100,9 +88,7 @@ class LineToolDrawer(MultiStageDrawer):
         self.scene.addItem(self.line_item)
 
     def _get_arrow_flag(self, event):
-        """
-        Determines which version of the line tool to use based on modifier keys.
-        """
+        """Determines which version of the line tool to use based on modifier keys."""
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ShiftModifier
@@ -117,17 +103,12 @@ class LineToolDrawer(MultiStageDrawer):
             return 1
 
     def mouse_move(self, event):
-        """
-        Updates the temporary line to follow the mouse cursor.
-        """
+        """Updates the temporary line to follow the mouse cursor."""
         self.current_pos = event.scenePos()
         self.line_item.setLine(QLineF(self.origin_pos, self.current_pos))
 
     def mouse_release(self, event):
-        """
-        Finalizes the drawing operation, creating either a line or a slanted
-        rectangle, and pushes the corresponding command to the undo stack.
-        """
+        """Finalizes the drawing operation, creating either a line or a slanted rectangle, and pushes the corresponding command to the undo stack."""
         command = None
 
         if (self.origin_pos - self.current_pos).manhattanLength() > 24:
@@ -145,9 +126,7 @@ class LineToolDrawer(MultiStageDrawer):
         self.is_finished = True
 
     def _create_slanted_box(self, height):
-        """
-        Helper function to perform the vector math for a slanted rectangle.
-        """
+        """Helper function to perform the vector math for a slanted rectangle."""
         p1 = self.origin_pos
         p2 = self.current_pos
         v1 = p2 - p1
@@ -183,22 +162,17 @@ class LineToolDrawer(MultiStageDrawer):
         return CommandSlantedBox(self.scene, path)
 
     def cancel(self):
-        """
-        Removes the temporary line item from the scene.
-        """
+        """Removes the temporary line item from the scene."""
         if self.line_item and self.line_item.scene():
             self.scene.removeItem(self.line_item)
         self.line_item = None
 
 
 class BoxToolDrawer(MultiStageDrawer):
-    """
-    Handles all drawing logic for the 'Box' tool (both rectangles and ellipses).
-    """
+    """Handles all drawing logic for the 'Box' tool (both rectangles and ellipses)."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the BoxToolDrawer.
+        """Initializes the BoxToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -225,9 +199,7 @@ class BoxToolDrawer(MultiStageDrawer):
             self.scene.addItem(self.temp_item)
 
     def _get_box_flag(self, event):
-        """
-        Determines whether to draw a box or an ellipse.
-        """
+        """Determines whether to draw a box or an ellipse."""
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ShiftModifier
@@ -237,9 +209,7 @@ class BoxToolDrawer(MultiStageDrawer):
             return 1  # Box
 
     def mouse_move(self, event):
-        """
-        Updates the size of the temporary shape as the user drags the mouse.
-        """
+        """Updates the size of the temporary shape as the user drags the mouse."""
         if not self.temp_item:
             return
 
@@ -257,9 +227,7 @@ class BoxToolDrawer(MultiStageDrawer):
         self.temp_item.setRect(rect)
 
     def mouse_release(self, event):
-        """
-        Finalizes the shape and pushes the correct command to the undo stack.
-        """
+        """Finalizes the shape and pushes the correct command to the undo stack."""
         command = None
 
         if self.temp_item:
@@ -281,22 +249,17 @@ class BoxToolDrawer(MultiStageDrawer):
         self.is_finished = True
 
     def cancel(self):
-        """
-        Removes the temporary shape from the scene.
-        """
+        """Removes the temporary shape from the scene."""
         if self.temp_item and self.temp_item.scene():
             self.scene.removeItem(self.temp_item)
         self.temp_item = None
 
 
 class RubricToolDrawer(MultiStageDrawer):
-    """
-    Handles the complex click-or-drag logic for the Rubric tool.
-    """
+    """Handles the complex click-or-drag logic for the Rubric tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the RubricToolDrawer.
+        """Initializes the RubricToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -320,9 +283,7 @@ class RubricToolDrawer(MultiStageDrawer):
             self.mouse_press(event)
 
     def _stamp_rubric(self):
-        """
-        Helper to place a rubric annotation at the ghost item's position.
-        """
+        """Helper to place a rubric annotation at the ghost item's position."""
         pt = self.scene.ghostItem.pos()
         if not self.scene.isLegalRubric(
             self.scene.current_rubric
@@ -332,9 +293,7 @@ class RubricToolDrawer(MultiStageDrawer):
         self.scene.undoStack.push(command)
 
     def mouse_press(self, event):
-        """
-        Handles mouse press events for the rubric tool.
-        """
+        """Handles mouse press events for the rubric tool."""
         if self.state == 0:
             if self.scene.textUnderneathGhost():
                 self._finish()
@@ -364,9 +323,7 @@ class RubricToolDrawer(MultiStageDrawer):
             self._finish()
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the rubric tool.
-        """
+        """Handles mouse move events for the rubric tool."""
         self.scene.ghostItem.setPos(event.scenePos())
 
         if self.state == 1:
@@ -387,9 +344,7 @@ class RubricToolDrawer(MultiStageDrawer):
                 self.path_item.setPath(self.scene.whichLineToDraw(ghost_rect, box_rect))
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the rubric tool.
-        """
+        """Handles mouse release events for the rubric tool."""
         if self.state == 1:
             final_rect = self.temp_box_item.rect()
             self.scene.removeItem(self.temp_box_item)
@@ -416,9 +371,7 @@ class RubricToolDrawer(MultiStageDrawer):
                 self.mouse_move(event)
 
     def cancel(self):
-        """
-        Cancel the current drawing operation and clean up.
-        """
+        """Cancel the current drawing operation and clean up."""
         if self.state == 2:
             self.scene.undoStack.endMacro()
             self.scene.undo()
@@ -429,24 +382,20 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.path_item)
 
     def _finish(self):
-        """
-        Finalize the operation successfully.
-        """
+        """Finalize the operation successfully."""
         self.scene._hideGhost()
         self.is_finished = True
 
 
 class TickToolDrawer(MultiStageDrawer):
-    """
-    Handles the click-or-drag logic for the Tick tool.
+    """Handles the click-or-drag logic for the Tick tool.
 
     This class follows the same complex logic as the RubricToolDrawer,
     but stamps a Tick/Cross/QMark instead of a rubric.
     """
 
     def __init__(self, scene, event):
-        """
-        Initializes the TickToolDrawer.
+        """Initializes the TickToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -462,9 +411,7 @@ class TickToolDrawer(MultiStageDrawer):
         self.mouse_press(event)
 
     def _stamp(self, event):
-        """
-        Places a Tick, Cross, or Question Mark based on the mouse/key event.
-        """
+        """Places a Tick, Cross, or Question Mark based on the mouse/key event."""
         pt = event.scenePos()
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
@@ -481,9 +428,7 @@ class TickToolDrawer(MultiStageDrawer):
         self.scene.undoStack.push(command)
 
     def mouse_press(self, event):
-        """
-        Handles mouse press events for the tick tool.
-        """
+        """Handles mouse press events for the tick tool."""
         if self.state == 0:
             self.state = 1
             self.origin_pos = event.scenePos()
@@ -507,9 +452,7 @@ class TickToolDrawer(MultiStageDrawer):
             self._finish()
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the tick tool.
-        """
+        """Handles mouse move events for the tick tool."""
         if self.state == 1:
             if self.temp_box_item:
                 self.current_pos = event.scenePos()
@@ -537,9 +480,7 @@ class TickToolDrawer(MultiStageDrawer):
                 self.path_item.setPath(self.scene.whichLineToDraw(ghost_rect, box_rect))
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the tick tool.
-        """
+        """Handles mouse release events for the tick tool."""
         if self.state == 1:
             final_rect = self.temp_box_item.rect()
             self.scene.removeItem(self.temp_box_item)
@@ -565,9 +506,7 @@ class TickToolDrawer(MultiStageDrawer):
                 self.mouse_move(event)
 
     def cancel(self):
-        """
-        Cancels the current drawing operation.
-        """
+        """Cancels the current drawing operation."""
         if self.state == 2:
             self.scene.undoStack.endMacro()
             self.scene.undo()
@@ -577,21 +516,15 @@ class TickToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.path_item)
 
     def _finish(self):
-        """
-        Finalize and signal completion.
-        """
+        """Finalize and signal completion."""
         self.is_finished = True
 
 
 class CrossToolDrawer(TickToolDrawer):
-    """
-    Handles the click-or-drag logic for the Cross tool.
-    """
+    """Handles the click-or-drag logic for the Cross tool."""
 
     def _stamp(self, event):
-        """
-        Places a Cross, Tick, or Question Mark based on the mouse/key event.
-        """
+        """Places a Cross, Tick, or Question Mark based on the mouse/key event."""
         pt = event.scenePos()
         # This logic is the same as the Tick tool's, but the default action is a Cross.
         if (event.button() == Qt.MouseButton.RightButton) or (
@@ -610,13 +543,10 @@ class CrossToolDrawer(TickToolDrawer):
 
 
 class TextToolDrawer(MultiStageDrawer):
-    """
-    Handles the logic for the Text tool.
-    """
+    """Handles the logic for the Text tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the TextToolDrawer.
+        """Initializes the TextToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -637,9 +567,7 @@ class TextToolDrawer(MultiStageDrawer):
         self.mouse_press(event)
 
     def _handle_existing_text(self, item):
-        """
-        If the item under the cursor is an editable TextItem, give it focus.
-        """
+        """If the item under the cursor is an editable TextItem, give it focus."""
         if item is not None and isinstance(item, TextItem):
             if item.group() is None:
                 item.enable_interactive()
@@ -648,9 +576,7 @@ class TextToolDrawer(MultiStageDrawer):
         return False
 
     def _stamp(self, event):
-        """
-        Places a new, empty text item and gives it focus for typing.
-        """
+        """Places a new, empty text item and gives it focus for typing."""
         pt = event.scenePos()
         command = CommandText(self.scene, pt, "")
         text_item = command.obj
@@ -662,9 +588,7 @@ class TextToolDrawer(MultiStageDrawer):
         text_item.setFocus()
 
     def mouse_press(self, event):
-        """
-        Handles mouse press events for the text tool.
-        """
+        """Handles mouse press events for the text tool."""
         if self.state == 0:
             self.state = 1
             self.origin_pos = event.scenePos()
@@ -688,9 +612,7 @@ class TextToolDrawer(MultiStageDrawer):
             self._finish()
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the text tool.
-        """
+        """Handles mouse move events for the text tool."""
         if self.state == 1:
             if self.temp_box_item:
                 self.current_pos = event.scenePos()
@@ -716,9 +638,7 @@ class TextToolDrawer(MultiStageDrawer):
                 self.path_item.setPath(self.scene.whichLineToDraw(ghost_rect, box_rect))
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the text tool.
-        """
+        """Handles mouse release events for the text tool."""
         if self.state == 1:
             final_rect = self.temp_box_item.rect()
             self.scene.removeItem(self.temp_box_item)
@@ -744,9 +664,7 @@ class TextToolDrawer(MultiStageDrawer):
                 self.mouse_move(event)
 
     def cancel(self):
-        """
-        Cancels the current drawing operation.
-        """
+        """Cancels the current drawing operation."""
         if self.state == 2:
             self.scene.undoStack.endMacro()
             self.scene.undo()
@@ -756,20 +674,15 @@ class TextToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.path_item)
 
     def _finish(self):
-        """
-        Finalizes the operation.
-        """
+        """Finalizes the operation."""
         self.is_finished = True
 
 
 class DeleteToolDrawer(MultiStageDrawer):
-    """
-    Handles the click-or-drag logic for the Delete tool.
-    """
+    """Handles the click-or-drag logic for the Delete tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the DeleteToolDrawer.
+        """Initializes the DeleteToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -787,9 +700,7 @@ class DeleteToolDrawer(MultiStageDrawer):
         self.scene.addItem(self.temp_box_item)
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the delete tool.
-        """
+        """Handles mouse move events for the delete tool."""
         self.is_dragging = True
         self.current_pos = event.scenePos()
         if self.temp_box_item:
@@ -798,9 +709,7 @@ class DeleteToolDrawer(MultiStageDrawer):
             )
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the delete tool.
-        """
+        """Handles mouse release events for the delete tool."""
         del_list = []
         if not self.is_dragging:  # Simple click
             nearby_rect = QRectF(
@@ -837,28 +746,21 @@ class DeleteToolDrawer(MultiStageDrawer):
         self._finish()
 
     def cancel(self):
-        """
-        Cancels the current drawing operation.
-        """
+        """Cancels the current drawing operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
 
     def _finish(self):
-        """
-        Finalizes the operation.
-        """
+        """Finalizes the operation."""
         self.cancel()
         self.is_finished = True
 
 
 class ZoomToolDrawer(MultiStageDrawer):
-    """
-    Handles the click-or-drag logic for the Zoom tool.
-    """
+    """Handles the click-or-drag logic for the Zoom tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the ZoomToolDrawer.
+        """Initializes the ZoomToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -884,9 +786,7 @@ class ZoomToolDrawer(MultiStageDrawer):
             self.scene.addItem(self.temp_box_item)
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the zoom tool.
-        """
+        """Handles mouse move events for the zoom tool."""
         if self.temp_box_item:
             self.is_dragging = True
             self.current_pos = event.scenePos()
@@ -895,9 +795,7 @@ class ZoomToolDrawer(MultiStageDrawer):
             )
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the zoom tool.
-        """
+        """Handles mouse release events for the zoom tool."""
         if not self.temp_box_item:
             return
 
@@ -915,37 +813,28 @@ class ZoomToolDrawer(MultiStageDrawer):
         self._finish_and_update_selector()
 
     def _finish_and_update_selector(self):
-        """
-        Finishes the zoom operation and updates the zoom selector.
-        """
+        """Finishes the zoom operation and updates the zoom selector."""
         page_view = self.scene.views()[0]
         assert isinstance(page_view, PageView)
         page_view.setZoomSelector(True)
         self._finish()
 
     def cancel(self):
-        """
-        Cancels the zoom operation.
-        """
+        """Cancels the zoom operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
 
     def _finish(self):
-        """
-        Finalizes the operation.
-        """
+        """Finalizes the operation."""
         self.cancel()
         self.is_finished = True
 
 
 class CropToolDrawer(MultiStageDrawer):
-    """
-    Handles the click-or-drag logic for the Crop tool.
-    """
+    """Handles the click-or-drag logic for the Crop tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the CropToolDrawer.
+        """Initializes the CropToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -962,9 +851,7 @@ class CropToolDrawer(MultiStageDrawer):
         self.scene.addItem(self.temp_box_item)
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the crop tool.
-        """
+        """Handles mouse move events for the crop tool."""
         self.current_pos = event.scenePos()
         if self.temp_box_item:
             self.temp_box_item.setRect(
@@ -972,9 +859,7 @@ class CropToolDrawer(MultiStageDrawer):
             )
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the crop tool.
-        """
+        """Handles mouse release events for the crop tool."""
         minbox = max(256, 0.2 * self.scene.underImage.min_dimension)
 
         if (
@@ -986,28 +871,21 @@ class CropToolDrawer(MultiStageDrawer):
         self._finish()
 
     def cancel(self):
-        """
-        Cancels the crop operation.
-        """
+        """Cancels the crop operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
 
     def _finish(self):
-        """
-        Finalizes the operation.
-        """
+        """Finalizes the operation."""
         self.cancel()
         self.is_finished = True
 
 
 class PenToolDrawer(MultiStageDrawer):
-    """
-    Handles the free-form drawing logic for the Pen tool.
-    """
+    """Handles the free-form drawing logic for the Pen tool."""
 
     def __init__(self, scene, event):
-        """
-        Initializes the PenToolDrawer.
+        """Initializes the PenToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
@@ -1030,9 +908,7 @@ class PenToolDrawer(MultiStageDrawer):
         self.scene.addItem(self.path_item)
 
     def _get_pen_flag(self, event):
-        """
-        Determines the pen type based on the mouse event.
-        """
+        """Determines the pen type based on the mouse event."""
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ShiftModifier
@@ -1047,17 +923,13 @@ class PenToolDrawer(MultiStageDrawer):
             return 1  # Normal Pen
 
     def mouse_move(self, event):
-        """
-        Handles mouse move events for the pen tool.
-        """
+        """Handles mouse move events for the pen tool."""
         self.current_pos = event.scenePos()
         self.path.lineTo(self.current_pos)
         self.path_item.setPath(self.path)
 
     def mouse_release(self, event):
-        """
-        Handles mouse release events for the pen tool.
-        """
+        """Handles mouse release events for the pen tool."""
         command = None
         if self.path.length() <= 1:
             blob_size = 4 if self.pen_flag == 2 else 2
@@ -1079,15 +951,11 @@ class PenToolDrawer(MultiStageDrawer):
         self._finish()
 
     def cancel(self):
-        """
-        Cancels the pen drawing operation.
-        """
+        """Cancels the pen drawing operation."""
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
 
     def _finish(self):
-        """
-        Finalizes the operation.
-        """
+        """Finalizes the operation."""
         self.cancel()
         self.is_finished = True
