@@ -18,7 +18,7 @@ from time import sleep
 from typing import Any
 
 import PIL.Image
-from PyQt6.QtCore import QEvent, QLineF, QPointF, QRectF, Qt
+from PyQt6.QtCore import QEvent, QPointF, QRectF, Qt
 from PyQt6.QtGui import (
     QBrush,
     QColor,
@@ -36,16 +36,12 @@ from PyQt6.QtGui import (
 )
 from PyQt6.QtWidgets import (
     QGraphicsColorizeEffect,
-    QGraphicsEllipseItem,
     QGraphicsItem,
     QGraphicsItemGroup,
-    QGraphicsLineItem,
     QGraphicsOpacityEffect,
-    QGraphicsPathItem,
     QGraphicsPixmapItem,
     QGraphicsRectItem,
     QGraphicsScene,
-    QGraphicsSceneDragDropEvent,
     QGraphicsTextItem,
     QGraphicsView,
     QMenu,
@@ -63,7 +59,7 @@ from .image_view_widget import mousewheel_delta_to_scale
 # in some places we make assumptions that our view is this subclass
 from .pageview import PageView
 
-from .tools import DefaultTickRadius, DefaultPenWidth, AnnFontSizePts
+from .tools import DefaultPenWidth, AnnFontSizePts
 from .tools import (
     CrossItem,
     DeltaItem,
@@ -117,6 +113,26 @@ from .draw_operations import (
 
 
 log = logging.getLogger("scene")
+
+COMMAND_MAP = {
+    "Arrow": CommandArrow,
+    "ArrowDouble": CommandArrowDouble,
+    "Box": CommandBox,
+    "SlantedBox": CommandSlantedBox,
+    "Crop": CommandCrop,
+    "Cross": CommandCross,
+    "Delete": CommandDelete,
+    "Ellipse": CommandEllipse,
+    "Highlight": CommandHighlight,
+    "Image": CommandImage,
+    "Line": CommandLine,
+    "Pen": CommandPen,
+    "PenArrow": CommandPenArrow,
+    "QMark": CommandQMark,
+    "Rubric": CommandRubric,
+    "Text": CommandText,
+    "Tick": CommandTick,
+}
 
 
 class ScoreBox(QGraphicsTextItem):
@@ -1573,7 +1589,7 @@ class PageScene(QGraphicsScene):
                 }
                 log.info("Rewrote legacy GroupDeltaText %d as a Rubric", r["rid"])
                 X = ["Rubric", X[1], X[2], r]
-            CmdCls = globals().get("Command{}".format(X[0]), None)
+            CmdCls = COMMAND_MAP.get(X[0])
             if CmdCls and getattr(CmdCls, "from_pickle", None):
                 # TODO: use try-except here?
                 self.undoStack.push(CmdCls.from_pickle(X, scene=self))
