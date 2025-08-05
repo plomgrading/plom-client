@@ -6,6 +6,7 @@
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
 
