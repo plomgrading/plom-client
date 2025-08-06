@@ -85,7 +85,6 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
     Returns:
         integer 0, 1, 2, or 3 as documented above.
     """
-
     if not rubric.get("published", True):
         return 0
 
