@@ -777,15 +777,19 @@ class Annotator(QWidget):
     def prev_tab(self):
         self.rubric_widget.prev_tab()
 
-    def next_minor_tool(self, dir=1, always_move=False):
+    def next_minor_tool(self, dir: int = 1, *, always_move: bool = False) -> None:
         """Switch to current minor tool or advance to next minor tool.
 
         Args:
-            dir (int): +1 for next (default), -1 for previous.
-            always_move (bool): the minor tools keep track of the
+            dir: +1 for next (default), -1 for previous.
+
+        Keyword Args:
+            always_move: the minor tools keep track of the
                 last-used tool.  Often, but not always, we want to
                 switch back to the last-used tool.  False by default.
         """
+        if not self.scene:
+            return
         L = self._list_of_minor_modes
         # if always-move then select the next/previous tool according to dir
         # elif in a tool-mode then select next/prev tool according to dir
