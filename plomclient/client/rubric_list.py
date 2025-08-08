@@ -65,7 +65,8 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
     """Checks the 'legality' of a particular rubric - returning one of several possible indicators.
 
     Those states are:
-    0 = incompatible - the kind of rubric is not compatible with the current state
+    0 = incompatible - the kind of rubric is not compatible with the current state,
+        or the rubric is unpublished.
     1 = compatible but out of range - the kind of rubric is compatible with
         the state but applying that rubric will take the score out of range
         [0, max_mark] (so cannot be used).
