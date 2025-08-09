@@ -40,7 +40,6 @@ variables:
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
   PYINSTALLER_VER: 6.14.2
-  WINBIN_PY_VER_SHORT: 311
 
 stages:
   - static_analysis
@@ -959,25 +958,25 @@ winpyinst:
   - saas-windows-medium-amd64
   stage: packaging
   before_script:
-  - choco install -y python$WINBIN_PY_VER_SHORT
+  - choco install -y python311
   - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   - refreshenv
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip --version
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip install --user --upgrade pip
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip --version
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip install --user --upgrade setuptools packaging wheel
+  - c:\python311\python -m pip --version
+  - c:\python311\python -m pip install --user --upgrade pip
+  - c:\python311\python -m pip --version
+  - c:\python311\python -m pip install --user --upgrade setuptools packaging wheel
   - refreshenv
   script:
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip install -r requirements.txt
+  - c:\python311\python -m pip install -r requirements.txt
   - refreshenv
   # Delay pyinstaller for a month or so, sometimes output flagged as virus (Issue #1353)
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip install pyinstaller~=$PYINSTALLER_VER
+  - c:\python311\python -m pip install pyinstaller~=$PYINSTALLER_VER
   - refreshenv
-  - c:\python$WINBIN_PY_VER_SHORT\python -m pip install . --no-deps  # pyinstaller spec needs version
+  - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
-  - c:\python$WINBIN_PY_VER_SHORT\python -m plomclient.client -h
-  - c:\python$WINBIN_PY_VER_SHORT\scripts\pyinstaller client.windows.spec
-  - $VER = &"c:\python$WINBIN_PY_VER_SHORT\python" -c "from plomclient.client import __version__; print(__version__)"
+  - c:\python311\python -m plomclient.client -h
+  - c:\python311\scripts\pyinstaller client.windows.spec
+  - $VER = &"c:\python311\python" -c "from plomclient.client import __version__; print(__version__)"
   - echo "Extracted version string '$VER'"
   - $NAME = "PlomClient-$VER.exe"
   - move dist\PlomClient*.exe $NAME
