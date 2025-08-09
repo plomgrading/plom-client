@@ -39,6 +39,7 @@ variables:
   MACBIN_PY_MAJOR_MINOR_VER: "3.12"
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
+  PYINSTALLER_VER: 6.14.2
 
 stages:
   - static_analysis
@@ -771,7 +772,7 @@ macos14_universal_client:
   - /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
   - ls dist/
@@ -821,7 +822,7 @@ macos14_arm64_client:
   - /usr/local/bin/python3 --version
   - /usr/local/bin/python3 -m pip install --upgrade pip
   - /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
@@ -877,7 +878,7 @@ macos14_x86_64_client:
   # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
   - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
-  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
+  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
   - ls dist/
@@ -927,7 +928,7 @@ macos15_arm64_client:
   - /usr/local/bin/python3 --version
   - /usr/local/bin/python3 -m pip install --upgrade pip
   - /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=6.13.0
+  - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
@@ -969,7 +970,7 @@ winpyinst:
   - c:\python311\python -m pip install -r requirements.txt
   - refreshenv
   # Delay pyinstaller for a month or so, sometimes output flagged as virus (Issue #1353)
-  - c:\python311\python -m pip install pyinstaller~=6.13.0
+  - c:\python311\python -m pip install pyinstaller~=$PYINSTALLER_VER
   - refreshenv
   - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
