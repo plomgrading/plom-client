@@ -331,7 +331,7 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     # These are pinned at 3.x.*: should be manually bumped sometimes
-    - pip install --break-system-packages astroid~=3.3.10  # codespell:ignore astroid
+    - pip install --break-system-packages astroid~=3.3.11  # codespell:ignore astroid
     - pip install --break-system-packages pylint~=3.3.7
   script:
     - pylint plomclient
@@ -363,7 +363,8 @@ mypy-type-checking:
     - pip install --break-system-packages pyspellchecker stdiomask
     # mypy was failing with the Ubuntu built-in one
     - pip install --break-system-packages -U pillow
-    - pip install --break-system-packages mypy~=1.16.0
+    # mypy 1.17.x cannot check against Python 3.8 code
+    - pip install --break-system-packages mypy~=1.16.1
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -392,7 +393,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.402
+    - pip install --break-system-packages pyright~=1.1.403
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -403,7 +404,7 @@ flake8:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install flake8~=7.2.0
+    - python3 -m pip install flake8~=7.3.0
   script:
     # first show all errors and warnings but don't fail
     - flake8 --exit-zero
