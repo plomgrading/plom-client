@@ -958,25 +958,25 @@ winpyinst:
   - saas-windows-medium-amd64
   stage: packaging
   before_script:
-  - choco install -y python311
+  - choco install -y python312
   - Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
   - refreshenv
-  - c:\python311\python -m pip --version
-  - c:\python311\python -m pip install --user --upgrade pip
-  - c:\python311\python -m pip --version
-  - c:\python311\python -m pip install --user --upgrade setuptools packaging wheel
+  - c:\python312\python -m pip --version
+  - c:\python312\python -m pip install --user --upgrade pip
+  - c:\python312\python -m pip --version
+  - c:\python312\python -m pip install --user --upgrade setuptools packaging wheel
   - refreshenv
   script:
-  - c:\python311\python -m pip install -r requirements.txt
+  - c:\python312\python -m pip install -r requirements.txt
   - refreshenv
   # Delay pyinstaller for a month or so, sometimes output flagged as virus (Issue #1353)
-  - c:\python311\python -m pip install pyinstaller~=$PYINSTALLER_VER
+  - c:\python312\python -m pip install pyinstaller~=$PYINSTALLER_VER
   - refreshenv
-  - c:\python311\python -m pip install . --no-deps  # pyinstaller spec needs version
+  - c:\python312\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
-  - c:\python311\python -m plomclient.client -h
-  - c:\python311\scripts\pyinstaller client.windows.spec
-  - $VER = &"c:\python311\python" -c "from plomclient.client import __version__; print(__version__)"
+  - c:\python312\python -m plomclient.client -h
+  - c:\python312\scripts\pyinstaller client.windows.spec
+  - $VER = &"c:\python312\python" -c "from plomclient.client import __version__; print(__version__)"
   - echo "Extracted version string '$VER'"
   - $NAME = "PlomClient-$VER.exe"
   - move dist\PlomClient*.exe $NAME
