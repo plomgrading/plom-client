@@ -90,7 +90,8 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
         return 0
 
     if rubric["versions"]:
-        if version not in rubric["versions"]:
+        verlist = [int(v.strip()) for v in rubric["versions"].split(",")]
+        if version not in verlist:
             return 3
 
     if not scene:
