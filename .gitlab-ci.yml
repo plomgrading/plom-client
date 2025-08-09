@@ -782,6 +782,8 @@ macos14_universal_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
   - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
   - export ZIPNAME=PlomClient-$VER-macos14.zip
   - pushd dist
   - ls
@@ -832,6 +834,8 @@ macos14_arm64_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
   - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
   - export ZIPNAME=PlomClient-$VER-macos14-arm64.zip
   - pushd dist
   - ls
@@ -888,6 +892,8 @@ macos14_x86_64_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
   - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
   - export ZIPNAME=PlomClient-$VER-macos14-x86_64.zip
   - pushd dist
   - ls
@@ -938,6 +944,8 @@ macos15_arm64_client:
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
   - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
   - export ZIPNAME=PlomClient-$VER-macos15-arm64.zip
   - pushd dist
   - ls
