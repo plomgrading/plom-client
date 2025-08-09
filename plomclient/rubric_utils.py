@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2022-2024 Colin B. Macdonald
+# Copyright (C) 2022-2025 Colin B. Macdonald
 # Copyright (C) 2024 Aidan Murphy
 # Copyright (C) 2025 Andrew Rechnitzer
 
@@ -341,7 +341,7 @@ def diff_rubric(p: dict[str, Any], r: dict[str, Any]) -> tuple[bool, str]:
         rval = False
         out += br
         out += _diff_compact(
-            str(p.get("versions")), str(r.get("versions")), label="versions:"
+            p.get("versions", ""), r.get("versions", ""), label="versions:"
         )
     if p.get("parameters") != r.get("parameters"):
         rval = False

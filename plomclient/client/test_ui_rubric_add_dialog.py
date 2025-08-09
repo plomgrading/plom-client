@@ -250,7 +250,7 @@ def test_AddRubricDialog_specific_to_version(qtbot) -> None:
         out = d.gimme_rubric_data()
         # by default, you get the current version upon clicking the checkbox
         # but users can type into the lineedit as well
-        assert out["versions"] == [v, 3]
+        assert out["versions"] == f"{v}, 3"
 
 
 def test_AddRubricDialog_change_existing_versions(qtbot) -> None:
@@ -258,7 +258,7 @@ def test_AddRubricDialog_change_existing_versions(qtbot) -> None:
         "rid": 1234,
         "kind": "neutral",
         "text": "some text",
-        "versions": [1, 3],
+        "versions": "1, 3",
     }
     d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
     qtbot.addWidget(d)
@@ -267,7 +267,7 @@ def test_AddRubricDialog_change_existing_versions(qtbot) -> None:
     qtbot.mouseClick(d.version_specific_cb, Qt.MouseButton.LeftButton)
     d.accept()
     out = d.gimme_rubric_data()
-    assert out["versions"] == []
+    assert out["versions"] == ""
 
     d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
     qtbot.addWidget(d)
@@ -275,7 +275,7 @@ def test_AddRubricDialog_change_existing_versions(qtbot) -> None:
     qtbot.keyClicks(d.version_specific_le, ", 2")
     d.accept()
     out = d.gimme_rubric_data()
-    assert set(out["versions"]) == set([1, 2, 3])
+    assert out["versions"] in ("1, 3, 2", "1, 2, 3")
 
 
 def test_AddRubricDialog_add_to_group(qtbot) -> None:
