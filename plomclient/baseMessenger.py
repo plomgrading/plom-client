@@ -1245,7 +1245,9 @@ class BaseMessenger:
             return self.get_one_rubric(int(new_rubric))
         if self.is_server_api_less_than(115):
             # list of versions to string of versions
-            new_rubric["versions"] = ", ".join(new_rubric.get("versions", []))
+            new_rubric["versions"] = ", ".join(
+                [str(x) for x in new_rubric.get("versions", [])]
+            )
         return new_rubric
 
     def MgetOtherRubricUsages(self, rid: int) -> list[dict[str, Any]]:
@@ -1336,7 +1338,7 @@ class BaseMessenger:
         if self.is_server_api_less_than(115):
             # list of versions to string of versions
             for r in rubrics:
-                r["versions"] = ", ".join(r.get("versions", []))
+                r["versions"] = ", ".join([str(x) for x in r.get("versions", [])])
         return rubrics
 
     def _legacy_getRubrics(self, question: int | None = None) -> list[dict[str, Any]]:
@@ -1375,7 +1377,7 @@ class BaseMessenger:
                 r.setdefault("last_modified", "unknown")
                 r.setdefault("modified_by_username", "")
                 # list of versions to string of versions
-                r["versions"] = ", ".join(r.get("versions", []))
+                r["versions"] = ", ".join([str(x) for x in r.get("versions", [])])
             return rubrics
 
     def MmodifyRubric(
@@ -1490,7 +1492,9 @@ class BaseMessenger:
             return self.get_one_rubric(int(new_rubric))
         if self.is_server_api_less_than(115):
             # list of versions to string of versions
-            new_rubric["versions"] = ", ".join(new_rubric.get("versions", []))
+            new_rubric["versions"] = ", ".join(
+                [str(x) for x in new_rubric.get("versions", [])]
+            )
         return new_rubric
 
     def get_pagedata(self, code):
