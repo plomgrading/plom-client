@@ -407,7 +407,7 @@ class AddRubricDialog(QDialog):
             maxMark (int): the maximum score for this question.
             question_idx (int): which question?
             question_label (str): human-readable label for the question.
-            version (int): which version?
+            version (int): which version is currently being marked?
             maxver (int): the largest version: versions range from 1
                 to this value.
             com (dict/None): if None, we're creating a new rubric.
@@ -575,7 +575,7 @@ class AddRubricDialog(QDialog):
         self.version_specific_cb = cb
         le = QLineEdit()
 
-        # Regular expression: to be kept in-sync with get_versions_list()
+        # Regular expression for validating version list
         #
         #   whitespace only or...
         #       ╭─┴─╮
@@ -809,9 +809,7 @@ class AddRubricDialog(QDialog):
             self.last_modified_label.setWordWrap(True)
             if com.get("versions"):
                 self.version_specific_cb.setChecked(True)
-                self.version_specific_le.setText(
-                    ", ".join(str(x) for x in com["versions"])
-                )
+                self.version_specific_le.setText(com.get("versions"))
             params = com.get("parameters", [])
             if not params:
                 # in case it was empty string or None or ...
@@ -1004,28 +1002,6 @@ class AddRubricDialog(QDialog):
             params.append((param, values))
         return params
 
-    def get_versions_list(self) -> list[int]:
-        """Extract the version-specific list as a list of ints.
-
-        If the input of the textbox is empty, or not acceptable
-        just return an empty list (meaning no version restriction).
-
-        Maintenance note: see also the RegExp validator of the
-        LineEdit which must be kept in sync with this.  If they
-        do not match, we risk getting ValueError from the int
-        conversion here.
-        """
-        if not self.version_specific_cb.isChecked():
-            return []
-        if not self.version_specific_le.hasAcceptableInput():
-            return []
-        _vers = self.version_specific_le.text()
-        _vers = _vers.strip("[]")
-        _vers = _vers.strip()
-        if _vers:
-            return [int(x) for x in _vers.split(",")]
-        return []
-
     def add_new_group(self):
         groups = []
         for n in range(self.group_combobox.count()):
@@ -1215,7 +1191,10 @@ class AddRubricDialog(QDialog):
         else:
             raise RuntimeError("no radio was checked")
 
-        vers = self.get_versions_list()
+        if not self.version_specific_cb.isChecked():
+            vers = ""
+        else:
+            vers = self.version_specific_le.text()
 
         params = self.get_parameters()
 
