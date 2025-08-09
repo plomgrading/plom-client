@@ -694,6 +694,8 @@ linuxbin_ubuntu2204:
     - pyinstaller client.linux.spec
     - export VER=$(python3 -c "from plomclient.client import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
+    # ensure its not empty
+    - if [[ -z "$VER" ]]; then exit 1; fi
     - export NAME=PlomClient-$VER-linux-ubuntu2204.bin
     - mv dist/PlomClient*.bin $NAME
     - chmod 755 $NAME
