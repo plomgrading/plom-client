@@ -6,6 +6,7 @@
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Aidan Murphy
 # Copyright (C) 2024-2025 Bryan Tanady
+# Copyright (C) 2025 Deep Shah
 
 # a different kind of annotations... this is about code typing
 from __future__ import annotations

@@ -1,3 +1,13 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2018-2025 Andrew Rechnitzer
+# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020 Victoria Schuster
+# Copyright (C) 2022 Joey Shi
+# Copyright (C) 2024 Aden Chan
+# Copyright (C) 2024 Aidan Murphy
+# Copyright (C) 2024-2025 Bryan Tanady
+# Copyright (C) 2025 Deep Shah
+
 """Handles all drawing operations for the Plom client.
 
 This module defines the logic for all the drawing tools available in the client,
