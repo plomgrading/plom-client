@@ -6,6 +6,7 @@
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
 
@@ -64,7 +65,8 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
     """Checks the 'legality' of a particular rubric - returning one of several possible indicators.
 
     Those states are:
-    0 = incompatible - the kind of rubric is not compatible with the current state
+    0 = incompatible - the kind of rubric is not compatible with the current state,
+        or the rubric is unpublished.
     1 = compatible but out of range - the kind of rubric is compatible with
         the state but applying that rubric will take the score out of range
         [0, max_mark] (so cannot be used).
@@ -84,8 +86,12 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
     Returns:
         integer 0, 1, 2, or 3 as documented above.
     """
+    if not rubric.get("published", True):
+        return 0
+
     if rubric["versions"]:
-        if version not in rubric["versions"]:
+        verlist = [int(v.strip()) for v in rubric["versions"].split(",")]
+        if version not in verlist:
             return 3
 
     if not scene:

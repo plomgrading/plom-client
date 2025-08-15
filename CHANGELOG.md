@@ -9,12 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Support for upcoming Plom 0.19 server.
 
 ### Removed
 
 ### Changed
 
 ### Fixed
+* Fixed Pyinstaller-based binary built on Ubuntu 22.04.
+
+
+
+## [0.18.1] - 2025-06-24
+
+### Fixed
+* Fix text tool failing to gain focus.
 
 
 
@@ -59,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.18.0...main
+[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.18.1...main
+[0.18.1]: https://gitlab.com/plom/plom-client/-/compare/v0.18.0...v0.18.1
 [0.18.0]: https://gitlab.com/plom/plom-client/-/compare/v0.17.2...v0.18.0
 [0.17.2]: https://gitlab.com/plom/plom-client/-/compare/v0.17.1...v0.17.2

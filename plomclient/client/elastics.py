@@ -11,8 +11,6 @@ import logging
 from PyQt6.QtCore import QLineF, QPointF, QRectF
 from PyQt6.QtGui import QPainterPath
 
-# from plomclient import AnnFontSizePts, ScenePixelHeight
-
 
 log = logging.getLogger("scene")
 

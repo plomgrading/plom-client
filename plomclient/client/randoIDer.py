@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2024 Andrew Rechnitzer
-# Copyright (C) 2020-2023 Colin B. Macdonald
+# Copyright (C) 2020-2023, 2025 Colin B. Macdonald
 # Copyright (C) 2021 Elizabeth Xiao
 
 """Randomly ID papers for testing purposes."""
@@ -16,7 +16,7 @@ import sys
 
 from stdiomask import getpass
 
-from plomclient import Default_Port
+from plomclient.common import Default_Port
 
 from .random_identifying_utils import do_rando_identifying
 

@@ -7,6 +7,7 @@
 # Copyright (C) 2021 Peter Lee
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Philip D. Loewen
 
 """Plom's Chooser dialog."""
 
@@ -44,9 +45,8 @@ from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
 
-from plomclient import __version__
-from plomclient import Plom_API_Version
-from plomclient import Default_Port
+from plomclient.common import Default_Port
+from plomclient.baseMessenger import Plom_API_Version
 from plomclient.plom_exceptions import (
     PlomException,
     PlomSeriousException,
@@ -59,6 +59,7 @@ from plomclient.plom_exceptions import (
     PlomNoServerSupportException,
 )
 from plomclient.messenger import Messenger
+from . import __version__
 from . import MarkerClient, IDClient
 from . import ui_files
 from .downloader import Downloader
@@ -94,6 +95,7 @@ def readLastTime() -> dict[str, Any]:
 
 
 class Chooser(QDialog):
+
     def __init__(self, Qapp):
         self.APIVersion = Plom_API_Version
         super().__init__()
@@ -124,9 +126,7 @@ class Chooser(QDialog):
         # Default to INFO log level
         logging.getLogger().setLevel(self.lastTime.get("LogLevel", "Info").upper())
 
-        s = "Plom Client {} (communicates with api {})".format(
-            __version__, self.APIVersion
-        )
+        s = f"Plom Client {__version__} (communicates with api {self.APIVersion})"
         log.info(s)
 
         self._workdir = Path(tempfile.mkdtemp(prefix="plom_"))
@@ -624,9 +624,10 @@ class Chooser(QDialog):
                 "  * Perhaps a previous session crashed?\n"
                 "  * Do you have another client running,\n"
                 "    e.g., on another computer?\n\n"
-                "Should I force-logout the existing authorisation?"
-                " (and then you can try to log in again)\n\n"
-                "The other client will likely crash.",
+                "We can terminate your other session. "
+                "This will crash the other client, "
+                "but the current session will continue.\n"
+                "Proceed?",
             )
             if msg.exec() == QMessageBox.StandardButton.Yes:
                 self.messenger.clearAuthorisation(user, pwd)

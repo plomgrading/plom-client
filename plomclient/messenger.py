@@ -2,7 +2,7 @@
 # Copyright (C) 2018-2020 Andrew Rechnitzer
 # Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2023 Julian Lapenna
-# Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2024-2025 Bryan Tanady
 # Copyright (C) 2025 Philip D. Loewen
 # Copyright (C) 2025 Aidan Murphy
 
@@ -11,33 +11,32 @@
 from __future__ import annotations
 
 import hashlib
-from io import BytesIO
 import json
 import logging
 import mimetypes
-import pathlib
 import tempfile
+from io import BytesIO
+from pathlib import Path
 from typing import Any
 
 import requests
 from requests_toolbelt import MultipartEncoder
 
 from plomclient.baseMessenger import BaseMessenger
-from plomclient.plom_exceptions import PlomSeriousException
 from plomclient.plom_exceptions import (
     PlomAuthenticationException,
     PlomConflict,
+    PlomNoPermission,
     PlomNoServerSupportException,
-    PlomTakenException,
+    PlomQuotaLimitExceeded,
     PlomRangeException,
-    PlomVersionMismatchException,
+    PlomSeriousException,
+    PlomTakenException,
     PlomTaskChangedError,
     PlomTaskDeletedError,
     PlomTimeoutError,
-    PlomQuotaLimitExceeded,
-    PlomNoPermission,
+    PlomVersionMismatchException,
 )
-
 
 __all__ = [
     "Messenger",
@@ -657,7 +656,7 @@ class Messenger(BaseMessenger):
 
         orig_plomfile_name = plomfile.name
         with tempfile.TemporaryDirectory() as td:
-            hack_pfile = pathlib.Path(td) / plomfile.name
+            hack_pfile = Path(td) / plomfile.name
             with open(hack_pfile, "w") as f:
                 json.dump(pdict, f, indent="  ")
                 f.write("\n")
@@ -666,6 +665,8 @@ class Messenger(BaseMessenger):
             with self.SRmutex:
                 try:
                     with open(annotated_img, "rb") as fh, open(hack_pfile, "rb") as f2:
+                        # Note this is not passed as JSON: its key-value strings
+                        # (and note you cannot pass json= when using files=)
                         # doesn't like ints, so convert ints to strings
                         param = {
                             "user": self.user,

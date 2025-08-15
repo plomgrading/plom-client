@@ -5,7 +5,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Aidan Murphy
-# Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2024-2025 Bryan Tanady
 
 # a different kind of annotations... this is about code typing
 from __future__ import annotations
@@ -49,11 +49,11 @@ from PyQt6.QtWidgets import (
     QToolButton,
 )
 
-from plomclient import ScenePixelHeight
 from plomclient.plom_exceptions import PlomInconsistentRubric
 from plomclient.misc_utils import pprint_score
 from plomclient.rubric_utils import compute_score
 
+from . import ScenePixelHeight
 from .image_view_widget import mousewheel_delta_to_scale
 
 # in some places we make assumptions that our view is this subclass
