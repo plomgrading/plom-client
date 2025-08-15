@@ -10,8 +10,10 @@
 [Desktop Entry]
 Name=Plom Client
 Name[hu]=Plom-ügyfél
+Name[fr]=Client Plom
 Comment=Paperless Open Marking
 Comment[hu]=Papír nélküli nyílt osztályozás
+Comment[fr]=Évaluations dématérialisées
 Exec=plom-client
 Icon=org.plomgrading.PlomClient
 Type=Application
