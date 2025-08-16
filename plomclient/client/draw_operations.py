@@ -14,6 +14,9 @@ This module defines the logic for all the drawing tools available in the client,
 including creating, modifying, and deleting annotations on a page.
 """
 
+# a different kind of annotations... this is about code typing
+from __future__ import annotations
+
 from PyQt6.QtCore import QLineF, QPointF, Qt, QRectF
 from PyQt6.QtGui import QGuiApplication, QPainterPath, QTransform, QPen, QColor
 from PyQt6.QtWidgets import (
