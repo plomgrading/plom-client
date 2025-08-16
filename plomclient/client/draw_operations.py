@@ -229,14 +229,14 @@ class BoxToolDrawer(MultiStageDrawer):
 
         if self.box_flag == 1:
             rect = QRectF(self.origin_pos, self.current_pos).normalized()
+            self.temp_item.setRect(rect)
         elif self.box_flag == 2:
             rx = abs(self.origin_pos.x() - self.current_pos.x())
             ry = abs(self.origin_pos.y() - self.current_pos.y())
             rect = QRectF(
                 self.origin_pos.x() - rx, self.origin_pos.y() - ry, 2 * rx, 2 * ry
             )
-
-        self.temp_item.setRect(rect)
+            self.temp_item.setRect(rect)
 
     def mouse_release(self, event):
         """Finalizes the shape and pushes the correct command to the undo stack."""
