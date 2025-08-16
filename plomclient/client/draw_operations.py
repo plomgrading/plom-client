@@ -74,6 +74,10 @@ class MultiStageDrawer:
         """Abstract method to handle a mouse release event."""
         pass
 
+    def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
+        """Abstract method to handle a mouse press event."""
+        pass
+
     def cancel(self):
         """Abstract method to cancel the operation and clean up temporary items."""
         pass
