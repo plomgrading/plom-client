@@ -26,6 +26,8 @@ from PyQt6.QtWidgets import (
 )
 
 from .tools import (
+    CommandArrow,
+    CommandArrowDouble,
     CommandLine,
     CommandSlantedBox,
     CommandBox,
@@ -86,7 +88,8 @@ class MultiStageDrawer:
 class LineToolDrawer(MultiStageDrawer):
     """Handles all drawing logic for the 'Line' tool.
 
-    This includes creating simple lines and the slanted rectangles feature.
+    This includes creating simple lines and maybe in the future the
+    slanted rectangles feature.  Issue #5019.
     """
 
     def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
@@ -124,17 +127,27 @@ class LineToolDrawer(MultiStageDrawer):
         self.current_pos = event.scenePos()
         self.line_item.setLine(QLineF(self.origin_pos, self.current_pos))
 
-    def mouse_release(self, event):
-        """Finalizes the drawing operation, creating either a line or a slanted rectangle, and pushes the corresponding command to the undo stack."""
+    def mouse_release(self, event) -> None:
+        """Finalizes the drawing operation, creating a line or perhaps other object.
+
+        We create either a simple line or in the future maybe
+        or a slanted rectangle.  Push the corresponding command
+        to the undo stack.
+        """
         command = None
 
         if (self.origin_pos - self.current_pos).manhattanLength() > 24:
             if self.arrow_flag == 1:
                 command = CommandLine(self.scene, self.origin_pos, self.current_pos)
             elif self.arrow_flag == 2:
-                command = self._create_slanted_box(height=80.0)
+                # TODO: we might be porting to tilted/slanted boxes instead, Issue #5019
+                command = CommandArrow(self.scene, self.origin_pos, self.current_pos)
+                # command = self._create_slanted_box(height=80.0)
             elif self.arrow_flag == 4:
-                command = self._create_slanted_box(height=120.0)
+                # command = self._create_slanted_box(height=120.0)
+                command = CommandArrowDouble(
+                    self.scene, self.origin_pos, self.current_pos
+                )
 
         if command:
             self.scene.undoStack.push(command)
