@@ -58,17 +58,19 @@ class MultiStageDrawer:
 
         Args:
             scene (PageScene): A reference to the main scene where drawing occurs.
+                This is a `QGraphicsScene` but probably it needs to be the
+                subclass PageScene (from Plom Client).
             event: The initial mouse press or drag event.
         """
         self.scene = scene
         self.origin_pos = event.scenePos()
         self.is_finished = False
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Abstract method to handle a mouse move event."""
         pass
 
-    def mouse_release(self, event):
+    def mouse_release(self, event: QGraphicsSceneMouseEvent) -> None:
         """Abstract method to handle a mouse release event."""
         pass
 
