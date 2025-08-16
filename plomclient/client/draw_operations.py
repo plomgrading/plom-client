@@ -8,7 +8,7 @@
 # Copyright (C) 2024-2025 Bryan Tanady
 # Copyright (C) 2025 Deep Shah
 
-"""Handles all drawing operations for the Plom client.
+"""Handles drawing operations for the Plom client Annotator.
 
 This module defines the logic for all the drawing tools available in the client,
 including creating, modifying, and deleting annotations on a page.
@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QGraphicsEllipseItem,
     QGraphicsPathItem,
     QGraphicsSceneDragDropEvent,
+    QGraphicsSceneMouseEvent,
 )
 
 from .tools import (
@@ -52,12 +53,12 @@ class MultiStageDrawer:
     release) will have its own concrete Drawer class that inherits from this one.
     """
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the drawer with a reference to the main scene and the initial mouse event.
 
         Args:
             scene (PageScene): A reference to the main scene where drawing occurs.
-            event (QEvent): The initial mouse press or drag event.
+            event: The initial mouse press or drag event.
         """
         self.scene = scene
         self.origin_pos = event.scenePos()
@@ -82,12 +83,12 @@ class LineToolDrawer(MultiStageDrawer):
     This includes creating simple lines and the slanted rectangles feature.
     """
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the LineToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.current_pos = self.origin_pos
@@ -181,17 +182,18 @@ class LineToolDrawer(MultiStageDrawer):
 class BoxToolDrawer(MultiStageDrawer):
     """Handles all drawing logic for the 'Box' tool (both rectangles and ellipses)."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the BoxToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.current_pos = self.origin_pos
         self.box_flag = self._get_box_flag(event)
-        self.temp_item = None
+        # TODO: probably this can be lots of things
+        self.temp_item: None | QGraphicsRectItem | QGraphicsEllipseItem = None
         self.minimum_side_length = 24
 
         if self.box_flag == 1:  # Rectangle
@@ -268,12 +270,12 @@ class BoxToolDrawer(MultiStageDrawer):
 class RubricToolDrawer(MultiStageDrawer):
     """Handles the complex click-or-drag logic for the Rubric tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the RubricToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.state = 0  # 0=idle, 1=drawing box, 2=drawing line
@@ -404,12 +406,12 @@ class TickToolDrawer(MultiStageDrawer):
     but stamps a Tick/Cross/QMark instead of a rubric.
     """
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the TickToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.state = 0
@@ -555,12 +557,12 @@ class CrossToolDrawer(TickToolDrawer):
 class TextToolDrawer(MultiStageDrawer):
     """Handles the logic for the Text tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the TextToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.state = 0
@@ -691,12 +693,12 @@ class TextToolDrawer(MultiStageDrawer):
 class DeleteToolDrawer(MultiStageDrawer):
     """Handles the click-or-drag logic for the Delete tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the DeleteToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.current_pos = self.origin_pos
@@ -769,12 +771,12 @@ class DeleteToolDrawer(MultiStageDrawer):
 class ZoomToolDrawer(MultiStageDrawer):
     """Handles the click-or-drag logic for the Zoom tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the ZoomToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.temp_box_item = None
@@ -843,12 +845,12 @@ class ZoomToolDrawer(MultiStageDrawer):
 class CropToolDrawer(MultiStageDrawer):
     """Handles the click-or-drag logic for the Crop tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the CropToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.current_pos = self.origin_pos
@@ -894,12 +896,12 @@ class CropToolDrawer(MultiStageDrawer):
 class PenToolDrawer(MultiStageDrawer):
     """Handles the free-form drawing logic for the Pen tool."""
 
-    def __init__(self, scene, event):
+    def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the PenToolDrawer.
 
         Args:
             scene (PageScene): The scene to draw on.
-            event (QEvent): The mouse event that triggered the drawer.
+            event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
         self.current_pos = self.origin_pos
