@@ -113,7 +113,7 @@ class LineToolDrawer(MultiStageDrawer):
         else:
             return 1
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Updates the temporary line to follow the mouse cursor."""
         self.current_pos = event.scenePos()
         self.line_item.setLine(QLineF(self.origin_pos, self.current_pos))
@@ -220,7 +220,7 @@ class BoxToolDrawer(MultiStageDrawer):
         else:
             return 1  # Box
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Updates the size of the temporary shape as the user drags the mouse."""
         if not self.temp_item:
             return
@@ -279,7 +279,7 @@ class RubricToolDrawer(MultiStageDrawer):
         """
         super().__init__(scene, event)
         self.state = 0  # 0=idle, 1=drawing box, 2=drawing line
-        self.temp_box_item = None
+        self.temp_box_item: None | QGraphicsRectItem = None
         self.path_item = None
         self.permanent_box_item = None
         self.minimum_side_length = 24
@@ -304,7 +304,7 @@ class RubricToolDrawer(MultiStageDrawer):
         command = CommandRubric(self.scene, pt, self.scene.current_rubric)
         self.scene.undoStack.push(command)
 
-    def mouse_press(self, event):
+    def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse press events for the rubric tool."""
         if self.state == 0:
             if self.scene.textUnderneathGhost():
@@ -321,6 +321,7 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.addItem(self.temp_box_item)
 
         elif self.state == 2:
+            assert self.path_item is not None
             final_path = self.path_item.path()
             self.scene.removeItem(self.path_item)
             self.path_item = None
@@ -334,7 +335,7 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.undoStack.endMacro()
             self._finish()
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the rubric tool."""
         self.scene.ghostItem.setPos(event.scenePos())
 
@@ -415,16 +416,17 @@ class TickToolDrawer(MultiStageDrawer):
         """
         super().__init__(scene, event)
         self.state = 0
-        self.temp_box_item = None
+        self.temp_box_item: QGraphicsRectItem | None = None
         self.path_item = None
         self.permanent_box_item = None
         self.minimum_side_length = 24
 
         self.mouse_press(event)
 
-    def _stamp(self, event):
+    def _stamp(self, event: QGraphicsSceneMouseEvent) -> None:
         """Places a Tick, Cross, or Question Mark based on the mouse/key event."""
         pt = event.scenePos()
+        command: CommandCross | CommandQMark | CommandTick
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ShiftModifier
@@ -439,7 +441,7 @@ class TickToolDrawer(MultiStageDrawer):
             command = CommandTick(self.scene, pt)
         self.scene.undoStack.push(command)
 
-    def mouse_press(self, event):
+    def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse press events for the tick tool."""
         if self.state == 0:
             self.state = 1
@@ -447,10 +449,12 @@ class TickToolDrawer(MultiStageDrawer):
             self.temp_box_item = QGraphicsRectItem(
                 QRectF(self.origin_pos, self.origin_pos)
             )
+            assert self.temp_box_item is not None
             self.temp_box_item.setPen(self.scene.ink)
             self.temp_box_item.setBrush(self.scene.lightBrush)
             self.scene.addItem(self.temp_box_item)
         elif self.state == 2:
+            assert self.path_item is not None
             final_path = self.path_item.path()
             self.scene.removeItem(self.path_item)
             self.path_item = None
@@ -463,7 +467,7 @@ class TickToolDrawer(MultiStageDrawer):
             self.scene.undoStack.endMacro()
             self._finish()
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the tick tool."""
         if self.state == 1:
             if self.temp_box_item:
@@ -535,9 +539,10 @@ class TickToolDrawer(MultiStageDrawer):
 class CrossToolDrawer(TickToolDrawer):
     """Handles the click-or-drag logic for the Cross tool."""
 
-    def _stamp(self, event):
+    def _stamp(self, event: QGraphicsSceneMouseEvent) -> None:
         """Places a Cross, Tick, or Question Mark based on the mouse/key event."""
         pt = event.scenePos()
+        command: CommandTick | CommandQMark | CommandCross
         # This logic is the same as the Tick tool's, but the default action is a Cross.
         if (event.button() == Qt.MouseButton.RightButton) or (
             QGuiApplication.queryKeyboardModifiers()
@@ -566,7 +571,7 @@ class TextToolDrawer(MultiStageDrawer):
         """
         super().__init__(scene, event)
         self.state = 0
-        self.temp_box_item = None
+        self.temp_box_item: QGraphicsRectItem | None = None
         self.path_item = None
         self.permanent_box_item = None
         self.minimum_side_length = 24
@@ -587,7 +592,7 @@ class TextToolDrawer(MultiStageDrawer):
                 return True
         return False
 
-    def _stamp(self, event):
+    def _stamp(self, event: QGraphicsSceneMouseEvent) -> None:
         """Places a new, empty text item and gives it focus for typing."""
         pt = event.scenePos()
         command = CommandText(self.scene, pt, "")
@@ -599,7 +604,7 @@ class TextToolDrawer(MultiStageDrawer):
         text_item.enable_interactive()
         text_item.setFocus()
 
-    def mouse_press(self, event):
+    def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse press events for the text tool."""
         if self.state == 0:
             self.state = 1
@@ -607,10 +612,12 @@ class TextToolDrawer(MultiStageDrawer):
             self.temp_box_item = QGraphicsRectItem(
                 QRectF(self.origin_pos, self.origin_pos)
             )
+            assert self.temp_box_item is not None
             self.temp_box_item.setPen(self.scene.ink)
             self.temp_box_item.setBrush(self.scene.lightBrush)
             self.scene.addItem(self.temp_box_item)
         elif self.state == 2:
+            assert self.path_item is not None
             final_path = self.path_item.path()
             self.scene.removeItem(self.path_item)
             self.path_item = None
@@ -623,7 +630,7 @@ class TextToolDrawer(MultiStageDrawer):
             self.scene.undoStack.endMacro()
             self._finish()
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the text tool."""
         if self.state == 1:
             if self.temp_box_item:
@@ -711,7 +718,7 @@ class DeleteToolDrawer(MultiStageDrawer):
         self.temp_box_item.setBrush(self.scene.deleteBrush)
         self.scene.addItem(self.temp_box_item)
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the delete tool."""
         self.is_dragging = True
         self.current_pos = event.scenePos()
@@ -797,7 +804,7 @@ class ZoomToolDrawer(MultiStageDrawer):
             self.temp_box_item.setBrush(self.scene.zoomBrush)
             self.scene.addItem(self.temp_box_item)
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the zoom tool."""
         if self.temp_box_item:
             self.is_dragging = True
@@ -806,7 +813,7 @@ class ZoomToolDrawer(MultiStageDrawer):
                 QRectF(self.origin_pos, self.current_pos).normalized()
             )
 
-    def mouse_release(self, event):
+    def mouse_release(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse release events for the zoom tool."""
         if not self.temp_box_item:
             return
@@ -862,7 +869,7 @@ class CropToolDrawer(MultiStageDrawer):
         self.temp_box_item.setBrush(self.scene.deleteBrush)
         self.scene.addItem(self.temp_box_item)
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the crop tool."""
         self.current_pos = event.scenePos()
         if self.temp_box_item:
@@ -934,13 +941,13 @@ class PenToolDrawer(MultiStageDrawer):
         else:
             return 1  # Normal Pen
 
-    def mouse_move(self, event):
+    def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the pen tool."""
         self.current_pos = event.scenePos()
         self.path.lineTo(self.current_pos)
         self.path_item.setPath(self.path)
 
-    def mouse_release(self, event):
+    def mouse_release(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse release events for the pen tool."""
         command = None
         if self.path.length() <= 1:
