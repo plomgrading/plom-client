@@ -937,10 +937,15 @@ class MarkerClient(QWidget):
             return
         self.ui.tableView.selectRow(pr)
         # this might redraw it twice: oh well this is not common operation
+        # TODO: not sure, it may be more common now...
         self._updateCurrentlySelectedRow()
         # Clean up the table
         self.ui.tableView.resizeColumnsToContents()
         self.ui.tableView.resizeRowsToContents()
+        if self._annotator:
+            # if the annotator is open, we update it
+            # TODO: seems like signals and slots problem
+            self.annotateTest()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
