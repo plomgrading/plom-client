@@ -1355,6 +1355,8 @@ class MarkerClient(QWidget):
         ):
             InfoMsg(self, "Cannot defer a marked test.").exec()
             return
+        # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
+        # with choices [defer] [cancel]
         self.examModel.deferPaper(task)
         if advance_to_next:
             self.requestNext()
