@@ -1426,7 +1426,8 @@ class MarkerClient(QWidget):
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
         self.ui.tableView.clicked.connect(self.annotateTest)
-        annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)
+        # not sure why this needs a typing exception...
+        annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
 
