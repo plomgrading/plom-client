@@ -68,4 +68,5 @@ class TiltedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
             if element.isMoveTo() or element.isLineTo():
                 elements.append({"x": element.x + self.x(), "y": element.y + self.y()})
 
+        # TODO: may want *elements, flatter representation consistent w/ other tools
         return ["TiltedBox", elements]
