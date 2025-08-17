@@ -2,6 +2,10 @@
 # Copyright (C) 2025 Deep Shah
 # Copyright (C) 2025 Colin B. Macdonald
 
+from __future__ import annotations
+
+from typing import Any
+
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QPainterPath, QPen, QBrush
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
@@ -10,7 +14,7 @@ from . import CommandTool, UndoStackMoveMixin
 
 
 class CommandSlantedBox(CommandTool):
-    def __init__(self, scene, path):
+    def __init__(self, scene, path) -> None:
         super().__init__(scene)
         self.obj = SlantedBoxItem(path, scene.style)
         self.setText("SlantedBox")
@@ -43,7 +47,7 @@ class CommandSlantedBox(CommandTool):
 
 
 class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
-    def __init__(self, path, style):
+    def __init__(self, path, style) -> None:
         super().__init__()
         self.saveable = True
         self._path = path
@@ -57,7 +61,7 @@ class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
         self.setPen(QPen(style["annot_color"], style["pen_width"]))
         self.setBrush(QBrush(style["box_tint"]))
 
-    def pickle(self):
+    def pickle(self) -> list[Any]:
         elements = []
         for i in range(self._path.elementCount()):
             element = self._path.elementAt(i)
