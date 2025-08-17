@@ -564,6 +564,7 @@ class Annotator(QWidget):
         self.question_label = question_label
         self.testName = testName
         s = "{} of {}: {}".format(self.question_label, testName, tgvID)
+        # TODO: might be the parent! is this signal/slot thing?
         self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
@@ -1136,6 +1137,7 @@ class Annotator(QWidget):
             tmp_tgv = None
 
         # Workaround getting too far ahead of Marker's upload queue
+        # TODO: surely this can move to Marker... pop open the side panel if hidden
         queue_len = self.parentMarkerUI.get_upload_queue_length()
         if queue_len >= 3:
             WarnMsg(
@@ -1149,6 +1151,8 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
+        # TODO: close_current_question should emit(tmp_tgv)
+        # TODO: self.caller_give_us_more.emit(tmp_tgv)
         stuff = self.parentMarkerUI.getMorePapers(tmp_tgv)
         if not stuff:
             InfoMsg(self, "No more to grade?").exec()
