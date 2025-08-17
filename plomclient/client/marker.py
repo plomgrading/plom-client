@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Brody Sanderson
 
 """The Plom Marker client."""
 

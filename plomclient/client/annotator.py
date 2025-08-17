@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Brody Sanderson
 # Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
