@@ -89,7 +89,7 @@ from .tools import (
     CommandRotatePage,
     CommandShiftPage,
     CommandRemovePage,
-    CommandSlantedBox,
+    CommandTiltedBox,
 )
 from .elastics import (
     which_horizontal_step,
@@ -119,7 +119,7 @@ COMMAND_MAP = {
     "Arrow": CommandArrow,
     "ArrowDouble": CommandArrowDouble,
     "Box": CommandBox,
-    "SlantedBox": CommandSlantedBox,
+    "TiltedBox": CommandTiltedBox,
     "Crop": CommandCrop,
     "Cross": CommandCross,
     "Delete": CommandDelete,

@@ -32,7 +32,7 @@ from .tools import (
     CommandArrow,
     CommandArrowDouble,
     CommandLine,
-    CommandSlantedBox,
+    CommandTiltedBox,
     CommandBox,
     CommandEllipse,
     CommandRubric,
@@ -92,7 +92,7 @@ class LineToolDrawer(MultiStageDrawer):
     """Handles all drawing logic for the 'Line' tool.
 
     This includes creating simple lines and maybe in the future the
-    slanted rectangles feature.  Issue #5019.
+    tilted rectangles feature.  Issue #5019.
     """
 
     def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
@@ -134,7 +134,7 @@ class LineToolDrawer(MultiStageDrawer):
         """Finalizes the drawing operation, creating a line or perhaps other object.
 
         We create either a simple line or in the future maybe
-        or a slanted rectangle.  Push the corresponding command
+        or a tilted rectangle.  Push the corresponding command
         to the undo stack.
         """
         command = None
@@ -143,11 +143,11 @@ class LineToolDrawer(MultiStageDrawer):
             if self.arrow_flag == 1:
                 command = CommandLine(self.scene, self.origin_pos, self.current_pos)
             elif self.arrow_flag == 2:
-                # TODO: we might be porting to tilted/slanted boxes instead, Issue #5019
+                # TODO: we might be porting to tilted boxes instead, Issue #5019
                 command = CommandArrow(self.scene, self.origin_pos, self.current_pos)
-                # command = self._create_slanted_box(height=80.0)
+                # command = self._create_tilted_box(height=80.0)
             elif self.arrow_flag == 4:
-                # command = self._create_slanted_box(height=120.0)
+                # command = self._create_tilted_box(height=120.0)
                 command = CommandArrowDouble(
                     self.scene, self.origin_pos, self.current_pos
                 )
@@ -158,8 +158,8 @@ class LineToolDrawer(MultiStageDrawer):
         self.cancel()
         self.is_finished = True
 
-    def _create_slanted_box(self, height):
-        """Helper function to perform the vector math for a slanted rectangle."""
+    def _create_tilted_box(self, height):
+        """Helper function to perform the vector math for a tilted rectangle."""
         p1 = self.origin_pos
         p2 = self.current_pos
         v1 = p2 - p1
@@ -192,7 +192,7 @@ class LineToolDrawer(MultiStageDrawer):
         path.lineTo(p4)
         path.closeSubpath()
 
-        return CommandSlantedBox(self.scene, path)
+        return CommandTiltedBox(self.scene, path)
 
     def cancel(self):
         """Removes the temporary line item from the scene."""
