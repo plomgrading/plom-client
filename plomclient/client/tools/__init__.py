@@ -43,3 +43,5 @@ from .penArrow import CommandPenArrow, PenArrowItem
 from .questionMark import CommandQMark, QMarkItem
 from .text import CommandText, TextItem, GhostText
 from .tick import CommandTick, TickItem
+
+from .slanted_box import CommandSlantedBox, SlantedBoxItem
