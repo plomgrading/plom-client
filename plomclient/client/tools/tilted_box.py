@@ -2,6 +2,10 @@
 # Copyright (C) 2025 Deep Shah
 # Copyright (C) 2025 Colin B. Macdonald
 
+from __future__ import annotations
+
+from typing import Any
+
 from PyQt6.QtCore import QPointF
 from PyQt6.QtGui import QPainterPath, QPen, QBrush
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
@@ -9,11 +13,11 @@ from PyQt6.QtWidgets import QGraphicsItem, QGraphicsPathItem
 from . import CommandTool, UndoStackMoveMixin
 
 
-class CommandSlantedBox(CommandTool):
-    def __init__(self, scene, path):
+class CommandTiltedBox(CommandTool):
+    def __init__(self, scene, path) -> None:
         super().__init__(scene)
-        self.obj = SlantedBoxItem(path, scene.style)
-        self.setText("SlantedBox")
+        self.obj = TiltedBoxItem(path, scene.style)
+        self.setText("TiltedBox")
 
     @classmethod
     def from_pickle(cls, X, *, scene):
@@ -21,12 +25,12 @@ class CommandSlantedBox(CommandTool):
         X = X[1:]
 
         if len(X) != 1:
-            raise ValueError("Wrong number of arguments for SlantedBox from_pickle")
+            raise ValueError("Wrong number of arguments for TiltedBox from_pickle")
 
         points_list = X[0]
 
         if len(points_list) < 4:
-            raise ValueError("Not enough points to define a SlantedBox")
+            raise ValueError("Not enough points to define a TiltedBox")
 
         p1 = QPointF(points_list[0]["x"], points_list[0]["y"])
         p2 = QPointF(points_list[1]["x"], points_list[1]["y"])
@@ -42,8 +46,8 @@ class CommandSlantedBox(CommandTool):
         return cls(scene, path)
 
 
-class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
-    def __init__(self, path, style):
+class TiltedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
+    def __init__(self, path, style) -> None:
         super().__init__()
         self.saveable = True
         self._path = path
@@ -57,11 +61,12 @@ class SlantedBoxItem(UndoStackMoveMixin, QGraphicsPathItem):
         self.setPen(QPen(style["annot_color"], style["pen_width"]))
         self.setBrush(QBrush(style["box_tint"]))
 
-    def pickle(self):
+    def pickle(self) -> list[Any]:
         elements = []
         for i in range(self._path.elementCount()):
             element = self._path.elementAt(i)
             if element.isMoveTo() or element.isLineTo():
                 elements.append({"x": element.x + self.x(), "y": element.y + self.y()})
 
-        return ["SlantedBox", elements]
+        # TODO: may want *elements, flatter representation consistent w/ other tools
+        return ["TiltedBox", elements]
