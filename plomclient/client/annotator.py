@@ -1431,12 +1431,6 @@ class Annotator(QWidget):
 
     def loadWindowSettings(self):
         """Loads the window settings."""
-        # load the window geometry, else maximise.
-        if self.parentMarkerUI.annotatorSettings["geometry"] is not None:
-            self.restoreGeometry(self.parentMarkerUI.annotatorSettings["geometry"])
-        else:
-            self.showMaximized()
-
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
         if self.parentMarkerUI.annotatorSettings.get("_config"):
@@ -1476,7 +1470,6 @@ class Annotator(QWidget):
         Returns:
             None: modifies self.parentMarkerUI and self.scene
         """
-        self.parentMarkerUI.annotatorSettings["geometry"] = self.saveGeometry()
         self.parentMarkerUI.annotatorSettings["viewRectangle"] = (
             self.view.getCurrentViewRect()
         )

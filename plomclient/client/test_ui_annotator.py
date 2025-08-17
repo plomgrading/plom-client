@@ -13,7 +13,6 @@ class MockMarker(QWidget):
 
     annotatorSettings = {
         "keybinding_name": None,
-        "geometry": None,
         "zoomState": None,
         "compact": None,
         "keybinding_custom_overlay": None,
