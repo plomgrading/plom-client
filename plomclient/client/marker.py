@@ -387,7 +387,7 @@ class MarkerClient(QWidget):
         m.addAction("Which papers...", self.change_tag_range_options)
         self.ui.getNextButton.setMenu(m)
         self.ui.getNextButton.clicked.connect(self.requestNext)
-        self.ui.annButton.clicked.connect(self.annotateTest)
+        self.ui.annButton.clicked.connect(self.annButton_clicked)
         m = QMenu(self)
         m.addAction("Reset task", self.reset_task)
         m.addAction("Reassign task to me", self.reassign_task_to_me)
@@ -407,6 +407,21 @@ class MarkerClient(QWidget):
         self.ui.technicalButton.clicked.connect(self.show_hide_technical)
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
+
+    def annButton_clicked(self):
+        # TODO: this is the state after *just* toggling, we are reacting
+        if not self.annButton.isChecked():
+            assert self._annotator, "illegal: checked annButton but no Annotator"
+            self._annotator.close()
+            # self.exit_annotate_mode()
+        else:
+            self.annotateTest()
+
+    def exit_annotate_mode(self):
+        self._annotator = None
+        self.ui.annButton.setChecked(False)
+        self.testImg.setVisible(True)
+        self.ui.tableView.clicked.disconnect()
 
     def change_tag_range_options(self):
         all_tags = [tag for key, tag in self.msgr.get_all_tags()]
@@ -1428,6 +1443,8 @@ class MarkerClient(QWidget):
         self.ui.tableView.clicked.connect(self.annotateTest)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
+        # use the "Annotate & Mark" button to indicate edit/view mode
+        self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
 
@@ -1694,9 +1711,7 @@ class MarkerClient(QWidget):
         self.setEnabled(True)
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self._annotator = None
-        self.testImg.setVisible(True)
-        self.ui.tableView.clicked.disconnect()
+        self.exit_annotate_mode()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
