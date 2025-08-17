@@ -2,6 +2,8 @@
 # Copyright (C) 2025 Deep Shah
 # Copyright (C) 2025 Colin B. Macdonald
 
+from __future__ import annotations
+
 from typing import Any
 
 from PyQt6.QtCore import QPointF
