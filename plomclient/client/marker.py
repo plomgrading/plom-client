@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Brody Sanderson
 
 """The Plom Marker client."""
 
@@ -154,6 +155,9 @@ class MarkerClient(QWidget):
         # TODO: temporary workaround
         self.ui = self
 
+        self._annotator = None
+
+        # Save the local temp directory for image files and the class list.
         if not tmpdir:
             # TODO: in this case, *we* should be responsible for cleaning up
             tmpdir = tempfile.mkdtemp(prefix="plom_")
@@ -335,7 +339,10 @@ class MarkerClient(QWidget):
         self.prxM.setSourceModel(self.examModel)
         self.ui.tableView.setModel(self.prxM)
 
-        # Double-click or signal fires up the annotator window
+        # when to open annotator: for now, needs double-click first time
+        # TODO: could always open annotator but may want background
+        # downloader placeholder support first (?)
+        # self.ui.tableView.clicked.connect(self.annotateTest)
         self.ui.tableView.doubleClicked.connect(self.annotateTest)
         self.ui.tableView.annotateSignal.connect(self.annotateTest)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
@@ -344,6 +351,13 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignSignal.connect(self.reassign_task)
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
+
+        # A view window for the papers so user can zoom in as needed.
+        # Paste into appropriate location in gui.
+        self.ui.paperBoxLayout.addWidget(self.testImg, 10)
+        # table on right
+        self.ui.splitter.insertWidget(0, self.ui.paperBox)
+        self.ui.splitter.setCollapsible(1, True)
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
@@ -1341,6 +1355,8 @@ class MarkerClient(QWidget):
         ):
             InfoMsg(self, "Cannot defer a marked test.").exec()
             return
+        # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
+        # with choices [defer] [cancel]
         self.examModel.deferPaper(task)
         if advance_to_next:
             self.requestNext()
@@ -1380,7 +1396,7 @@ class MarkerClient(QWidget):
             self.requestNext()
 
     def startTheAnnotator(self, initialData) -> None:
-        """This fires up the annotation window for user annotation + marking.
+        """This fires up the annotation widget for user annotation + marking.
 
         Args:
             initialData (list): containing things documented elsewhere
@@ -1399,18 +1415,31 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
-        self.setEnabled(False)
-        annotator.show()
 
-        # TODO: the old one might still be closing when we get here, but dropping
-        # the ref now won't hurt (I think).
+        # Do a bunch of (temporary) hacking to embed Annotator
         self._annotator = annotator
+        self.ui.paperBoxLayout.addWidget(self._annotator, 24)
+        self.testImg.setVisible(False)
+        self.ui.tableView.clicked.connect(self.annotateTest)
+        # not sure why this needs a typing exception...
+        annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
+        # TODO: doesn't help, why not?  Not worth worrying about if we remove
+        # self.testImg.resetView()
 
     def annotateTest(self):
         """Grab current test from table, do checks, start annotator."""
         task = self.get_current_task_id_or_none()
         if not task:
             return
+
+        if self._annotator:
+            if self._annotator.is_dirty():
+                msg = SimpleQuestion(self, "Discard any annotations and switch papers?")
+                if not msg.exec() == QMessageBox.StandardButton.Yes:
+                    return
+            # TODO: document the "public interface!")
+            self._annotator.close_current_question()
+
         inidata = self.getDataForAnnotator(task)
         if inidata is None:
             return
@@ -1427,8 +1456,10 @@ class MarkerClient(QWidget):
             if self.examModel.countReadyToMark() <= 1:
                 self.requestNextInBackgroundStart()
 
-        self.startTheAnnotator(inidata)
-        # we started the annotator, we'll get a signal back when its done
+        if self._annotator:
+            self._annotator.load_new_question(*inidata)
+        else:
+            self.startTheAnnotator(inidata)
 
     def marker_has_reached_task_limit(self, *, use_cached: bool = True) -> bool:
         """Check whether a marker has reached their task limit if applicable.
@@ -1483,10 +1514,16 @@ class MarkerClient(QWidget):
         aname = paperdir / Gtask
         pdict = None
 
-        if status.casefold() in ("complete", "marked", "uploading...", "failed upload"):
-            msg = SimpleQuestion(self, "Continue marking paper?")
+        # TODO: prevent reannotating when its still uploading?
+        if status.casefold() in ("uploading...", "failed upload"):
+            msg = SimpleQuestion(
+                self,
+                "Uploading is in-progress or has failed.",
+                question="Do you want to try to continue marking paper?",
+            )
             if not msg.exec() == QMessageBox.StandardButton.Yes:
                 return None
+        if status.casefold() in ("complete", "marked", "uploading...", "failed upload"):
             oldpname = self.examModel.getPlomFileByTask(task)
             with open(oldpname, "r") as fh:
                 pdict = json.load(fh)
@@ -1652,6 +1689,9 @@ class MarkerClient(QWidget):
         self.setEnabled(True)
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
+        self._annotator = None
+        self.testImg.setVisible(True)
+        self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
@@ -1663,9 +1703,11 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
-        self.setEnabled(True)
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
+        self._annotator = None
+        self.testImg.setVisible(True)
+        self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str, list)
     def callbackAnnWantsUsToUpload(self, task, stuff) -> None:

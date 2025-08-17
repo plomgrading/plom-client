@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Brody Sanderson
 
 from __future__ import annotations
 
@@ -563,6 +564,7 @@ class Annotator(QWidget):
         self.question_label = question_label
         self.testName = testName
         s = "{} of {}: {}".format(self.question_label, testName, tgvID)
+        # TODO: might be the parent! is this signal/slot thing?
         self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
@@ -776,15 +778,19 @@ class Annotator(QWidget):
     def prev_tab(self):
         self.rubric_widget.prev_tab()
 
-    def next_minor_tool(self, dir=1, always_move=False):
+    def next_minor_tool(self, dir: int = 1, *, always_move: bool = False) -> None:
         """Switch to current minor tool or advance to next minor tool.
 
         Args:
-            dir (int): +1 for next (default), -1 for previous.
-            always_move (bool): the minor tools keep track of the
+            dir: +1 for next (default), -1 for previous.
+
+        Keyword Args:
+            always_move: the minor tools keep track of the
                 last-used tool.  Often, but not always, we want to
                 switch back to the last-used tool.  False by default.
         """
+        if not self.scene:
+            return
         L = self._list_of_minor_modes
         # if always-move then select the next/previous tool according to dir
         # elif in a tool-mode then select next/prev tool according to dir
@@ -1131,6 +1137,7 @@ class Annotator(QWidget):
             tmp_tgv = None
 
         # Workaround getting too far ahead of Marker's upload queue
+        # TODO: surely this can move to Marker... pop open the side panel if hidden
         queue_len = self.parentMarkerUI.get_upload_queue_length()
         if queue_len >= 3:
             WarnMsg(
@@ -1144,6 +1151,8 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
+        # TODO: close_current_question should emit(tmp_tgv)
+        # TODO: self.caller_give_us_more.emit(tmp_tgv)
         stuff = self.parentMarkerUI.getMorePapers(tmp_tgv)
         if not stuff:
             InfoMsg(self, "No more to grade?").exec()
