@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
 
@@ -1146,6 +1147,7 @@ class Annotator(QWidget):
 
         stuff = self.parentMarkerUI.getMorePapers(tmp_tgv)
         if not stuff:
+            self.update_attn_bar(tags=[], msg="", show=False)
             InfoMsg(self, "No more to grade?").exec()
             # Not really safe to give it back? (at least we did the view...)
             return
