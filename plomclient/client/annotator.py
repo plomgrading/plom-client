@@ -1150,7 +1150,6 @@ class Annotator(QWidget):
             self.update_attn_bar(tags=[], msg="", show=False)
             InfoMsg(self, "No more to grade?").exec()
             # Not really safe to give it back? (at least we did the view...)
-            self.close()
             return
 
         log.debug("saveAndGetNext: new stuff is {}".format(stuff))
