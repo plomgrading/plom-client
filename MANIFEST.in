@@ -12,7 +12,7 @@
 #   - Why do we need to list files accessed with importlib.resources, seems WET
 #   - If you change things here, you may need to add them to client.*.spec
 
-include CONTRIBUTORS CHANGELOG.md LICENSE.md
+include CHANGELOG.md LICENSE.md
 include requirements.txt
 
 include plomclient/demo_rubrics.toml
