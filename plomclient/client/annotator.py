@@ -1325,7 +1325,7 @@ class Annotator(QWidget):
         Returns:
             None
         """
-        fileName, _ = QFileDialog.getOpenFileName(
+        fileName, __ = QFileDialog.getOpenFileName(
             self,
             "Select Image",
             "",
