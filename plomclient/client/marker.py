@@ -884,7 +884,7 @@ class MarkerClient(QWidget):
             PlomTakenException
             PlomVersionMismatchException
         """
-        _, qidx = task_id_str_to_paper_question_index(task)
+        __, qidx = task_id_str_to_paper_question_index(task)
         assert qidx == self.question_idx, f"wrong question: question_idx={qidx}"
         src_img_data, tags, integrity_check = self.msgr.MclaimThisTask(
             task, version=self.version

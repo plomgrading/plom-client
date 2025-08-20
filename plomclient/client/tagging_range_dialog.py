@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2023 Colin B. Macdonald
+# Copyright (C) 2023, 2025 Colin B. Macdonald
 
 from typing import List, Tuple, Union
 
@@ -77,14 +77,14 @@ class TaggingAndRangeOptions(QDialog):
         lay.setContentsMargins(48, 0, 0, 0)
         t_min = QLineEdit()
         lay.addWidget(t_min, 3)
-        _ = QLabel("\N{LESS-THAN OR EQUAL TO} paper number \N{LESS-THAN OR EQUAL TO}")
-        lay.addWidget(_)
+        __ = QLabel("\N{LESS-THAN OR EQUAL TO} paper number \N{LESS-THAN OR EQUAL TO}")
+        lay.addWidget(__)
         # TODO: remove this sometime in 2024!
         c.setToolTip(
             "On legacy servers (commonly used in 2023) this is only"
             " a preference, not a requirement"
         )
-        _.setToolTip(c.toolTip())
+        __.setToolTip(c.toolTip())
         t_max = QLineEdit()
         lay.addWidget(t_max, 3)
         lay.addStretch(1)

@@ -480,9 +480,9 @@ class AddRubricDialog(QDialog):
         )
         lay.addWidget(self.reapable_CB)
         if self.use_experimental_features:
-            _ = QPushButton("Check Spelling")
-            _.clicked.connect(self.TE.highlight_text)
-            lay.addWidget(_)
+            __ = QPushButton("Check Spelling")
+            __.clicked.connect(self.TE.highlight_text)
+            lay.addWidget(__)
         flay.addRow("", lay)
 
         frame = QFrame()
@@ -518,24 +518,24 @@ class AddRubricDialog(QDialog):
         b.setToolTip(abs_tooltip)
         hlay.addWidget(b)
         self.typeRB_absolute = b
-        _ = QSpinBox()
-        _.setRange(0, maxMark)
-        _.setValue(0)
-        _.valueChanged.connect(b.click)
+        __ = QSpinBox()
+        __.setRange(0, maxMark)
+        __.setValue(0)
+        __.valueChanged.connect(b.click)
+        # __.clicked.connect(b.click)
+        hlay.addWidget(__)
+        self.abs_value_SB = __
+        __ = QLabel("out of")
+        __.setToolTip(abs_tooltip)
         # _.clicked.connect(b.click)
-        hlay.addWidget(_)
-        self.abs_value_SB = _
-        _ = QLabel("out of")
-        _.setToolTip(abs_tooltip)
+        hlay.addWidget(__)
+        __ = QSpinBox()
+        __.setRange(0, maxMark)
+        __.setValue(maxMark)
+        __.valueChanged.connect(b.click)
         # _.clicked.connect(b.click)
-        hlay.addWidget(_)
-        _ = QSpinBox()
-        _.setRange(0, maxMark)
-        _.setValue(maxMark)
-        _.valueChanged.connect(b.click)
-        # _.clicked.connect(b.click)
-        hlay.addWidget(_)
-        self.abs_out_of_SB = _
+        hlay.addWidget(__)
+        self.abs_out_of_SB = __
         hlay.addItem(
             QSpacerItem(
                 48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
@@ -891,7 +891,7 @@ class AddRubricDialog(QDialog):
                 # show the user we did this by opening the scope panel
                 self.scopeButton.animateClick()
         self.subsRemakeGridUI(params)
-        self.hiliter.setSubs([x for x, _ in params])
+        self.hiliter.setSubs([x for x, __ in params])
 
     def is_edit(self):
         """Answer true if we are editing a rubric (rather than making a new one)."""
@@ -942,7 +942,7 @@ class AddRubricDialog(QDialog):
 
     def subsAddRow(self):
         params = self.get_parameters()
-        current_param_names = [p for p, _ in params]
+        current_param_names = [p for p, __ in params]
         # find a new parameter name not yet used
         n = 1
         while True:
@@ -960,18 +960,18 @@ class AddRubricDialog(QDialog):
         # we insert the new parameter at the cursor/selection
         tc = self.TE.textCursor()
         # save the selection as the new parameter value for this version
-        values = ["" for _ in range(self.maxver)]
+        values = ["" for __ in range(self.maxver)]
         if tc.hasSelection():
             values[self.version - 1] = tc.selectedText()
         params.append([new_param, values])
-        self.hiliter.setSubs([x for x, _ in params])
+        self.hiliter.setSubs([x for x, __ in params])
         self.TE.textCursor().insertText(new_param)
         self.subsRemakeGridUI(params)
 
     def subsRemoveRow(self, i=0):
         params = self.get_parameters()
         params.pop(i)
-        self.hiliter.setSubs([x for x, _ in params])
+        self.hiliter.setSubs([x for x, __ in params])
         self.subsRemakeGridUI(params)
 
     def subsRemakeGridUI(self, params):
@@ -1064,8 +1064,8 @@ class AddRubricDialog(QDialog):
         # TODO: No no use signals slots or something, not like this
         annotr = self.parent()._parent
         rid = self.label_rubric_id.text()
-        _ = annotr.getOtherRubricUsagesFromServer(rid)
-        N = len(_)
+        __ = annotr.getOtherRubricUsagesFromServer(rid)
+        N = len(__)
         self.uses_label.setText(self._uses_label_template % str(N))
 
     def keyPressEvent(self, event):
