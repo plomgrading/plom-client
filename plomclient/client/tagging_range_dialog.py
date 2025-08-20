@@ -77,14 +77,9 @@ class TaggingAndRangeOptions(QDialog):
         lay.setContentsMargins(48, 0, 0, 0)
         t_min = QLineEdit()
         lay.addWidget(t_min, 3)
-        __ = QLabel("\N{LESS-THAN OR EQUAL TO} paper number \N{LESS-THAN OR EQUAL TO}")
-        lay.addWidget(__)
-        # TODO: remove this sometime in 2024!
-        c.setToolTip(
-            "On legacy servers (commonly used in 2023) this is only"
-            " a preference, not a requirement"
+        lay.addWidget(
+            QLabel("\N{LESS-THAN OR EQUAL TO} paper number \N{LESS-THAN OR EQUAL TO}")
         )
-        __.setToolTip(c.toolTip())
         t_max = QLineEdit()
         lay.addWidget(t_max, 3)
         lay.addStretch(1)
