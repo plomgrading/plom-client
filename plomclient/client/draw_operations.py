@@ -298,7 +298,7 @@ class BoxToolDrawer(MultiStageDrawer):
 
 
 class RubricToolDrawer(MultiStageDrawer):
-    """Handles the complex click-or-drag logic for the Rubric tool."""
+    """Handles the both the simple placement and complex click-or-drag logic for the Rubric tool."""
 
     def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
         """Initializes the RubricToolDrawer.
@@ -319,6 +319,7 @@ class RubricToolDrawer(MultiStageDrawer):
         self.scene.ghostItem.setPos(event.scenePos())
 
         if isinstance(event, QGraphicsSceneDragDropEvent):
+            # special handing of the drag-drop event from rubric list
             self._stamp_rubric()
             self.finish()
         else:
