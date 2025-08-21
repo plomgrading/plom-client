@@ -83,12 +83,18 @@ class MultiStageDrawer:
         """Abstract method to handle a mouse press event."""
         pass
 
+    def cleanup(self):
+        """Abstract method to do any cleanup."""
+        pass
+
     def cancel(self):
-        """Abstract method to cancel the operation and clean up temporary items."""
+        """Cancel the operation and clean up temporary items."""
+        self.cleanup()
         self.is_finished = True
 
     def finish(self):
-        """Abstract method to complete the operation and clean up temporary items."""
+        """Complete the operation and clean up temporary items."""
+        self.cleanup()
         self.is_finished = True
 
 
@@ -159,8 +165,7 @@ class LineToolDrawer(MultiStageDrawer):
         if command:
             self.scene.undoStack.push(command)
 
-        self.cancel()
-        self.is_finished = True
+        self.finish()
 
     def _create_tilted_box(self, height):
         """Helper function to perform the vector math for a tilted rectangle."""
@@ -198,7 +203,7 @@ class LineToolDrawer(MultiStageDrawer):
 
         return CommandTiltedBox(self.scene, path)
 
-    def cancel(self):
+    def cleanup(self):
         """Removes the temporary line item from the scene."""
         if self.line_item and self.line_item.scene():
             self.scene.removeItem(self.line_item)
@@ -283,10 +288,9 @@ class BoxToolDrawer(MultiStageDrawer):
         if command:
             self.scene.undoStack.push(command)
 
-        self.cancel()
-        self.is_finished = True
+        self.finish()
 
-    def cancel(self):
+    def cleanup(self):
         """Removes the temporary shape from the scene."""
         if self.temp_item and self.temp_item.scene():
             self.scene.removeItem(self.temp_item)
@@ -365,7 +369,8 @@ class RubricToolDrawer(MultiStageDrawer):
                 self.scene.undoStack.push(line_command)
 
             self.scene.undoStack.endMacro()
-            self._finish()
+            self.state = 3
+            self.finish()
 
     def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the rubric tool."""
@@ -400,7 +405,7 @@ class RubricToolDrawer(MultiStageDrawer):
                 or final_rect.height() < self.minimum_side_length
             ):
                 self._stamp_rubric()
-                self._finish()
+                self.finish()
             else:
                 # The box is large enough, so transition to the next state.
                 self.state = 2
@@ -415,8 +420,9 @@ class RubricToolDrawer(MultiStageDrawer):
                 self.scene.addItem(self.path_item)
                 self.mouse_move(event)
 
-    def cancel(self):
-        """Cancel the current drawing operation and clean up."""
+    def cleanup(self):
+        """Clean up and remaining temporary objects, possibly ending the macro and undoing."""
+        # if state 2 (elastic line) was in-progress, we need to undo the box draw
         if self.state == 2:
             self.scene.undoStack.endMacro()
             self.scene.undo()
@@ -425,12 +431,6 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.temp_box_item)
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
-        super().cancel()
-
-    def _finish(self):
-        """Finalize the operation successfully."""
-        self.scene._hideGhost()
-        self.is_finished = True
 
 
 class TickToolDrawer(MultiStageDrawer):
@@ -498,6 +498,7 @@ class TickToolDrawer(MultiStageDrawer):
 
             self._stamp(event)
             self.scene.undoStack.endMacro()
+            self.state = 3
             self.finish()
 
     def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -554,8 +555,8 @@ class TickToolDrawer(MultiStageDrawer):
                 self.scene.addItem(self.path_item)
                 self.mouse_move(event)
 
-    def cancel(self):
-        """Cancels the current drawing operation."""
+    def cleanup(self):
+        """Cleanup the tick/cross/question mark drawing."""
         if self.state == 2:
             self.scene.undoStack.endMacro()
             self.scene.undo()
@@ -607,7 +608,7 @@ class TextToolDrawer(MultiStageDrawer):
 
         under = self.scene.itemAt(event.scenePos() + QPointF(2, 0), QTransform())
         if self._handle_existing_text(under):
-            self._finish()
+            self.finish()
             return
 
         self.mouse_press(event)
@@ -657,7 +658,7 @@ class TextToolDrawer(MultiStageDrawer):
 
             self._stamp(event)
             self.scene.undoStack.endMacro()
-            self._finish()
+            self.finish()
 
     def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the text tool."""
@@ -788,17 +789,12 @@ class DeleteToolDrawer(MultiStageDrawer):
             if len(del_list) > 1:
                 self.scene.undoStack.endMacro()
 
-        self._finish()
+        self.finish()
 
-    def cancel(self):
+    def cleanup(self):
         """Cancels the current drawing operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
-
-    def _finish(self):
-        """Finalizes the operation."""
-        self.cancel()
-        self.is_finished = True
 
 
 class ZoomToolDrawer(MultiStageDrawer):
@@ -862,17 +858,12 @@ class ZoomToolDrawer(MultiStageDrawer):
         page_view = self.scene.views()[0]
         assert isinstance(page_view, PageView)
         page_view.setZoomSelector(True)
-        self._finish()
+        self.finish()
 
-    def cancel(self):
-        """Cancels the zoom operation."""
+    def cleanup(self):
+        """Clean up temp objects from the zoom operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
-
-    def _finish(self):
-        """Finalizes the operation."""
-        self.cancel()
-        self.is_finished = True
 
 
 class CropToolDrawer(MultiStageDrawer):
@@ -913,17 +904,12 @@ class CropToolDrawer(MultiStageDrawer):
         ):
             self.scene.trigger_crop(self.temp_box_item.rect())
 
-        self._finish()
+        self.finish()
 
-    def cancel(self):
-        """Cancels the crop operation."""
+    def cleanup(self):
+        """Cleanup temporary objects from the crop drawing operation."""
         if self.temp_box_item and self.temp_box_item.scene():
             self.scene.removeItem(self.temp_box_item)
-
-    def _finish(self):
-        """Finalizes the operation."""
-        self.cancel()
-        self.is_finished = True
 
 
 class PenToolDrawer(MultiStageDrawer):
@@ -993,14 +979,9 @@ class PenToolDrawer(MultiStageDrawer):
         if command:
             self.scene.undoStack.push(command)
 
-        self._finish()
+        self.finish()
 
-    def cancel(self):
-        """Cancels the pen drawing operation."""
+    def cleanup(self):
+        """Cleanup temporary objects from the pen drawing operation."""
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
-
-    def _finish(self):
-        """Finalizes the operation."""
-        self.cancel()
-        self.is_finished = True
