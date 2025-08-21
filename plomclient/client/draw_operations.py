@@ -316,15 +316,16 @@ class RubricToolDrawer(MultiStageDrawer):
         else:
             self.mouse_press(event)
 
-    def _stamp_rubric(self):
+    def _stamp_rubric(self) -> bool:
         """Helper to place a rubric annotation at the ghost item's position."""
         pt = self.scene.ghostItem.pos()
         if not self.scene.isLegalRubric(
             self.scene.current_rubric
         ) or self.scene.textUnderneathPoint(pt):
-            return
+            return False
         command = CommandRubric(self.scene, pt, self.scene.current_rubric)
         self.scene.undoStack.push(command)
+        return True
 
     def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse press events for the rubric tool."""
@@ -347,6 +348,9 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.addItem(self.temp_box_item)
 
         elif self.state == 2:
+            if not self._stamp_rubric():
+                return
+
             assert self.path_item is not None
             final_path = self.path_item.path()
             self.scene.removeItem(self.path_item)
@@ -355,8 +359,6 @@ class RubricToolDrawer(MultiStageDrawer):
             if not final_path.isEmpty():
                 line_command = CommandPen(self.scene, final_path)
                 self.scene.undoStack.push(line_command)
-
-            self._stamp_rubric()
 
             self.scene.undoStack.endMacro()
             self._finish()
