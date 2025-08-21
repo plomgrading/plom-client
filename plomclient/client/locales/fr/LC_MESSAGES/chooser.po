@@ -65,8 +65,8 @@ msgid "Do you want to disable SSL certificate verification? Not recommended."
 msgstr "Souhaitez-vous désactiver la vérification des certificats SSL? Non-recommandé."
 
 #: chooser.py:418 chooser.py:593 chooser.py:713
-msgid "Could not connect to server"
-msgstr "Échec de connexion au serveur"
+msgid "Could not connect to server &ldquo;{server_url}&rdquo;."
+msgstr "Échec de connexion au serveur « {server_url} »."
 
 #: chooser.py:420
 msgid "Check the server address and your internet connection?"

@@ -429,8 +429,10 @@ class Chooser(QDialog):
             WarnMsg(
                 self,
                 "<p>"
-                + _("Could not connect to server")
-                + f"&ldquo;{msgr.server}&rdquo;.<br/>"
+                + _("Could not connect to server &ldquo;{server_url}&rdquo;.").format(
+                    server_url=msgr.server
+                )
+                + "<br/>"
                 + _("Check the server address and your internet connection?")
                 + "</p>"
                 + "<p>"
