@@ -8,6 +8,7 @@
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2025 Philip D. Loewen
+# Copyright (C) 2025 Ambre G.
 
 """Plom's Chooser dialog."""
 
@@ -24,6 +25,9 @@ import sys
 import tempfile
 import time
 from typing import Any
+
+import gettext
+import locale
 
 import arrow
 import platformdirs
@@ -68,6 +72,19 @@ from .question_labels import get_question_label
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, WarningQuestion
 from .useful_classes import ClientSettingsDialog
 
+# localization parameters
+filename_stem = Path(__file__).stem
+localedir = "./locales"
+usr_locale = locale.getlocale()  # pair (lang, encoding)
+
+# setup gettext
+en_i18n = gettext.translation(
+    filename_stem,
+    localedir,
+    fallback=True,  # fallback to original text if no translation found
+    languages=[usr_locale[0]],
+)
+en_i18n.install()
 
 log = logging.getLogger("client")
 logdir = platformdirs.user_log_path("plom", "PlomGrading.org")
@@ -222,8 +239,11 @@ class Chooser(QDialog):
         if self.messenger.is_legacy_server() and self.messenger.username == "manager":
             InfoMsg(
                 self,
-                "<p>You are not allowed to mark or ID papers while "
-                "logged-in as &ldquo;manager&rdquo;.</p>",
+                "<p>"
+                + _("You are not allowed to mark or ID papers while logged-in as")
+                + "&ldquo;"
+                + _("Manager")
+                + "&rdquo;.</p>",
             ).exec()
             return
 
@@ -239,7 +259,7 @@ class Chooser(QDialog):
 
         if which_subapp == "Marker":
             if len(role) and role not in ["marker", "lead_marker"]:
-                WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
+                WarnMsg(self, _("Only Marker/Lead Marker can mark papers!")).exec()
                 return
             question = self.getQuestion()
             v = self.getv()
@@ -257,10 +277,14 @@ class Chooser(QDialog):
             if len(role) and role != "lead_marker":
                 InfoMsg(
                     self,
-                    "<p>Only lead marker should be identifying papers.</p>"
-                    "<p>You may want to ask your instructor/manager to"
-                    " promote your account.  (In the future this might be"
-                    " enforced, but isn't as of Oct 2024.)</p>",
+                    "<p>"
+                    + _("Only Lead Marker should be identifying papers.")
+                    + "</p>"
+                    + "<p>"
+                    + _(
+                        "You may want to ask your Instructor/Manager to promote your account. (In the future this might be enforced, but isn't as of Oct 2024.)"
+                    )
+                    + "</p>",
                 ).exec()
                 # TODO: maybe this should be enforced serverside?
                 # return
@@ -300,10 +324,13 @@ class Chooser(QDialog):
         except OSError as e:
             WarnMsg(
                 self,
-                "Cannot write config file:\n"
-                "    {}\n\n"
-                "Any settings will not be saved for future sessions.\n\n"
-                "Error msg: {}.".format(cfgfile, e),
+                _("Cannot write config file:")
+                + "\n"
+                + f"    {cfgfile}\n\n"
+                + _("Any settings will not be saved for future sessions.")
+                + "\n\n"
+                + _("Error msg:")
+                + f" {e}.",
             ).exec()
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
@@ -386,8 +413,10 @@ class Chooser(QDialog):
             except PlomSSLError as e:
                 msg = WarningQuestion(
                     self,
-                    "SSL error: cannot verify the identity of the server.",
-                    "Do you want to disable SSL certificate verification?  Not recommended.",
+                    _("SSL error: cannot verify the identity of the server."),
+                    _(
+                        "Do you want to disable SSL certificate verification? Not recommended."
+                    ),
                     details=f"{e}",
                 )
                 msg.setDefaultButton(QMessageBox.StandardButton.No)
@@ -399,9 +428,14 @@ class Chooser(QDialog):
         except PlomBenignException as e:
             WarnMsg(
                 self,
-                f"<p>Could not connect to server &ldquo;{msgr.server}&rdquo;.<br />"
-                "Check the server address and your internet connection?</p>"
-                " <p>The precise error message was:</p>",
+                "<p>"
+                + _("Could not connect to server")
+                + f"&ldquo;{msgr.server}&rdquo;.<br/>"
+                + _("Check the server address and your internet connection?")
+                + "</p>"
+                + "<p>"
+                + _("The precise error message was:")
+                + "</p>",
                 info=f"{e}",
                 info_pre=False,
             ).exec()
@@ -409,13 +443,13 @@ class Chooser(QDialog):
 
         self.ui.infoLabel.setText(server_ver_str)
         if _ssl_excused:
-            s = "\nCaution: SSL exception granted."
+            s = "\n" + _("Caution: SSL exception granted.")
             self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
         # old servers (<0.14.0) don't have this API and will fail
         info = msgr.get_server_info()
         if "Legacy" in info["product_string"]:
-            s = "\nUsing legacy messenger"
+            s = "\n" + _("Using legacy messenger")
             self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
         try:
@@ -423,8 +457,10 @@ class Chooser(QDialog):
         except PlomAPIException as e:
             WarnMsg(
                 self,
-                f"Your client version {__version__} cannot connect to "
-                f"unsupported server {info['version']}.",
+                _("Your client version")
+                + f" {__version__} "
+                + _("cannot connect to unsupported server")
+                + f" {info['version']}.",
                 info=f"{e}",
             ).exec()
             return False
@@ -471,14 +507,26 @@ class Chooser(QDialog):
             if rej.get("action", "block") == "warn":
                 msg_ = WarningQuestion(
                     self,
-                    f"<p>Your client version {__version__} is on the server's reject list:</p>\n"
-                    f"<blockquote>{reason}</blockquote>\n"
-                    "<p>It is strongly recommended that you stop and update"
-                    " your client.  Continue anyway?</p>",
+                    "<p>"
+                    + _("Your client version")
+                    + " {__version__} "
+                    + _("is on the server's reject list:")
+                    + "</p>\n"
+                    + f"<blockquote>{reason}</blockquote>\n"
+                    + "<p>"
+                    + _(
+                        "It is strongly recommended that you stop and update your client. Continue anyway?"
+                    )
+                    + "</p>",
                     details=(
-                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
-                        f"Server: {info['product_string']}\n"
-                        f"Server version: {info['version']}"
+                        _("You have Plom Client version")
+                        + f" {__version__} "
+                        + _("with API version")
+                        + f" {self.APIVersion}\n"
+                        + _("Server:")
+                        + f" {info['product_string']}\n"
+                        + _("Server version:")
+                        + f" {info['version']}"
                     ),
                 )
                 # TODO: re-enable hiding of this note?
@@ -489,13 +537,25 @@ class Chooser(QDialog):
             else:
                 WarnMsg(
                     self,
-                    f"<p>Your client version {__version__} is blocked by the server:</p>\n"
-                    f"<blockquote>{reason}</blockquote>\n"
-                    f"<p>You will need to update your client to connect to this server.</p>",
+                    "<p>" + _("Your client version") + f" {__version__} "
+                    # TRANSLATORS: the copula links the english phrase "Your client version"
+                    + _("is blocked by the server:")
+                    + "</p>\n"
+                    + f"<blockquote>{reason}</blockquote>\n"
+                    + "<p>"
+                    + _(
+                        "You will need to update your client to connect to this server."
+                    )
+                    + "</p>",
                     details=(
-                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
-                        f"Server: {info['product_string']}\n"
-                        f"Server version: {info['version']}"
+                        _("You have Plom Client version")
+                        + f" {__version__} "
+                        + _("with API version")
+                        + f" {self.APIVersion}\n"
+                        + _("Server:")
+                        + f" {info['product_string']}\n"
+                        + _("Server version:")
+                        + f"{info['version']}"
                     ),
                 ).exec()
                 return False
@@ -527,7 +587,7 @@ class Chooser(QDialog):
         """
         server = self.ui.serverLE.text().strip()
         if not server:
-            self.ui.infoLabel.setText("You must specify a server address")
+            self.ui.infoLabel.setText(_("You must specify a server address"))
             return
         # due to special handling of blank versus default, use .text() not .value()
         port = self.ui.mportSB.text()
@@ -547,7 +607,7 @@ class Chooser(QDialog):
             if not self._pre_login_connection(msgr):
                 return
         except PlomException as e:
-            WarnMsg(self, "Could not connect to server", info=str(e)).exec()
+            WarnMsg(self, _("Could not connect to server"), info=str(e)).exec()
             return
 
         # Once we're happy with the messenger keep it, b/c it knows if we
@@ -572,11 +632,11 @@ class Chooser(QDialog):
             # Note: we requested exclusive token access on start-up, so revoke on logout
             self.messenger.closeUser(revoke_token=True)
         except PlomAuthenticationException as e:
-            log.info(f"Authentication error during logout: {e}")
+            log.info(_("Authentication error during logout:") + f"{e}")
             pass
         self.messenger.stop()
         self.messenger = None
-        self.ui.loginInfoLabel.setText("logged out")
+        self.ui.loginInfoLabel.setText(_("logged out"))
         self._old_client_note_seen = False
         self.ui.manageButton.setVisible(False)
         self.ui.logoutButton.setVisible(False)
@@ -615,27 +675,35 @@ class Chooser(QDialog):
         except PlomAPIException as e:
             WarnMsg(
                 self,
-                "Could not authenticate due to API mismatch.",
-                info=f"Client version is {__version__}.  {e}",
+                _("Could not authenticate due to API mismatch."),
+                info=_("Client version is") + f"{__version__}.  {e}",
                 info_pre=False,
             ).exec()
             self.messenger = None
             return
         except PlomAuthenticationException as e:
-            InfoMsg(self, f"Could not authenticate: {e}").exec()
+            InfoMsg(self, _("Could not authenticate:") + f" {e}").exec()
             self.messenger = None
             return
         except PlomExistingLoginException:
             msg = WarningQuestion(
                 self,
-                "You appear to be already logged in!\n\n"
-                "  * Perhaps a previous session crashed?\n"
-                "  * Do you have another client running,\n"
-                "    e.g., on another computer?\n\n"
-                "We can terminate your other session. "
-                "This will crash the other client, "
-                "but the current session will continue.\n"
-                "Proceed?",
+                _("You appear to be already logged in!")
+                + "\n\n"
+                + "  * "
+                + _("Perhaps a previous session crashed?")
+                + "\n"
+                + "  * "
+                + _("Do you have another client running")
+                + ",\n"
+                + "    "
+                + _("e.g., on another computer?")
+                + "\n\n"
+                + _("We can terminate your other session.")
+                + _("This will crash the other client, ")
+                + _("but the current session will continue.")
+                + "\n"
+                + _("Proceed?"),
             )
             if msg.exec() == QMessageBox.StandardButton.Yes:
                 self.messenger.clearAuthorisation(user, pwd)
@@ -650,7 +718,10 @@ class Chooser(QDialog):
         except PlomSeriousException as e:
             ErrorMsg(
                 self,
-                f"Could not get authentication token.\n\nUnexpected error: {str(e)}",
+                _("Could not get authentication token.")
+                + "\n\n"
+                + _("Unexpected error:")
+                + f" {str(e)}",
             ).exec()
             self.messenger = None
             return
@@ -660,20 +731,21 @@ class Chooser(QDialog):
         except PlomServerNotReady as e:
             WarnMsg(
                 self,
-                "Server does not yet have a spec, nothing to mark. "
-                " Perhaps you need to login to the web-interface to"
-                " configure the server.",
+                _("Server does not yet have a spec, nothing to mark. ")
+                + _(
+                    " Perhaps you need to login to the web-interface to configure the server."
+                ),
                 info=str(e),
             ).exec()
             self.messenger = None
             return
         except PlomException as e:
-            WarnMsg(self, "Could not connect to server", info=str(e)).exec()
+            WarnMsg(self, _("Could not connect to server"), info=str(e)).exec()
             self.messenger = None
             return
         if spec:
             self._set_restrictions_from_spec(spec)
-        self.ui.loginInfoLabel.setText(f'logged in as "{user}"')
+        self.ui.loginInfoLabel.setText(_("logged in as") + f' "{user}"')
         self.ui.logoutButton.setVisible(True)
         self.ui.userLE.setEnabled(False)
         self.ui.passwordLE.setEnabled(False)
@@ -682,7 +754,7 @@ class Chooser(QDialog):
         self.ui.loginButton.setEnabled(False)
 
     def _set_restrictions_from_spec(self, spec: dict[str, Any]) -> None:
-        self.ui.markGBox.setTitle("Choose a task for “{}”".format(spec["name"]))
+        self.ui.markGBox.setTitle(_("Choose a task for") + " “{}”".format(spec["name"]))
         question = self.getQuestion()
         v = self.getv()
         self.ui.pgSB.setVisible(False)
