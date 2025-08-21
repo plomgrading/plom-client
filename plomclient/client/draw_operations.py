@@ -456,6 +456,18 @@ class TickToolDrawer(MultiStageDrawer):
 
         self.mouse_press(event)
 
+    @property
+    def _default_tool(self):
+        return CommandTick
+
+    @property
+    def _alt_tool(self):
+        return CommandCross
+
+    @property
+    def _ctrl_tool(self):
+        return CommandQMark
+
     def _stamp(self, event: QGraphicsSceneMouseEvent) -> None:
         """Places a Tick, Cross, or Question Mark based on the mouse/key event."""
         pt = event.scenePos()
@@ -464,14 +476,14 @@ class TickToolDrawer(MultiStageDrawer):
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ShiftModifier
         ):
-            command = CommandCross(self.scene, pt)
+            command = self._alt_tool(self.scene, pt)
         elif (event.button() == Qt.MouseButton.MiddleButton) or (
             QGuiApplication.queryKeyboardModifiers()
             == Qt.KeyboardModifier.ControlModifier
         ):
-            command = CommandQMark(self.scene, pt)
-        else:  # The default action is a Tick.
-            command = CommandTick(self.scene, pt)
+            command = self._ctrl_tool(self.scene, pt)
+        else:
+            command = self._default_tool(self.scene, pt)
         self.scene.undoStack.push(command)
 
     def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
@@ -569,24 +581,13 @@ class TickToolDrawer(MultiStageDrawer):
 class CrossToolDrawer(TickToolDrawer):
     """Handles the click-or-drag logic for the Cross tool."""
 
-    def _stamp(self, event: QGraphicsSceneMouseEvent) -> None:
-        """Places a Cross, Tick, or Question Mark based on the mouse/key event."""
-        pt = event.scenePos()
-        command: CommandTick | CommandQMark | CommandCross
-        # This logic is the same as the Tick tool's, but the default action is a Cross.
-        if (event.button() == Qt.MouseButton.RightButton) or (
-            QGuiApplication.queryKeyboardModifiers()
-            == Qt.KeyboardModifier.ShiftModifier
-        ):
-            command = CommandTick(self.scene, pt)
-        elif (event.button() == Qt.MouseButton.MiddleButton) or (
-            QGuiApplication.queryKeyboardModifiers()
-            == Qt.KeyboardModifier.ControlModifier
-        ):
-            command = CommandQMark(self.scene, pt)
-        else:  # Default action for the "Cross" tool is a cross
-            command = CommandCross(self.scene, pt)
-        self.scene.undoStack.push(command)
+    @property
+    def _default_tool(self):
+        return CommandCross
+
+    @property
+    def _alt_tool(self):
+        return CommandTick
 
 
 class TextToolDrawer(MultiStageDrawer):
