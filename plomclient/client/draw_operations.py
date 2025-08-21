@@ -329,6 +329,10 @@ class RubricToolDrawer(MultiStageDrawer):
     def mouse_press(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse press events for the rubric tool."""
         if self.state == 0:
+            if not self.scene.isLegalRubric(self.scene.current_rubric):
+                self.cancel()
+                return
+
             if self.scene.textUnderneathGhost():
                 self._finish()
                 return
