@@ -1397,10 +1397,6 @@ class PageScene(QGraphicsScene):
             # Simulate a rubric click.
             # TODO: cannot simulate a rubric, we have no ID: Issue #2417
             txt = e.mimeData().text()
-            # self.rubricText = txt
-            # self.rubricDelta = "0"
-            # self.rubricKind = "neutral"
-            # self.mousePressRubric(e)
             log.error(
                 f"Issue #2417: Drag-drop gave plain text but no way to add: {txt}"
             )
@@ -1408,7 +1404,7 @@ class PageScene(QGraphicsScene):
             "application/x-qabstractitemmodeldatalist"
         ) or e.mimeData().hasFormat("application/x-qstandarditemmodeldatalist"):
             # Simulate a rubric click.
-            self.mousePressRubric(e)
+            self.mousePressEvent(e)
             # User has dragged in a rubric from the rubric-list.
             pass
         else:
