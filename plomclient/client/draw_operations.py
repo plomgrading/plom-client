@@ -320,7 +320,7 @@ class RubricToolDrawer(MultiStageDrawer):
 
         if isinstance(event, QGraphicsSceneDragDropEvent):
             self._stamp_rubric()
-            self._finish()
+            self.finish()
         else:
             self.mouse_press(event)
 
@@ -699,7 +699,7 @@ class TextToolDrawer(MultiStageDrawer):
                 or final_rect.height() < self.minimum_side_length
             ):
                 self._stamp(event)
-                self._finish()
+                self.finish()
             else:
                 self.state = 2
                 self.scene.undoStack.beginMacro("Click-Drag Text")
