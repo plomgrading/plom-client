@@ -74,7 +74,7 @@ from .useful_classes import ClientSettingsDialog
 
 # localization parameters
 filename_stem = Path(__file__).stem
-localedir = "./locales"
+localedir = "./plomclient/client/locales"
 usr_locale = locale.getlocale()  # pair (lang, encoding)
 
 # setup gettext
