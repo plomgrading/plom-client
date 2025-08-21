@@ -334,7 +334,7 @@ class RubricToolDrawer(MultiStageDrawer):
                 return
 
             if self.scene.textUnderneathGhost():
-                self._finish()
+                self.cancel()
                 return
 
             self.state = 1
