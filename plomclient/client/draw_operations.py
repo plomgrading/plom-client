@@ -85,7 +85,11 @@ class MultiStageDrawer:
 
     def cancel(self):
         """Abstract method to cancel the operation and clean up temporary items."""
-        pass
+        self.is_finished = True
+
+    def finish(self):
+        """Abstract method to complete the operation and clean up temporary items."""
+        self.is_finished = True
 
 
 class LineToolDrawer(MultiStageDrawer):
@@ -421,6 +425,7 @@ class RubricToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.temp_box_item)
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
+        super().cancel()
 
     def _finish(self):
         """Finalize the operation successfully."""
@@ -493,7 +498,7 @@ class TickToolDrawer(MultiStageDrawer):
 
             self._stamp(event)
             self.scene.undoStack.endMacro()
-            self._finish()
+            self.finish()
 
     def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
         """Handles mouse move events for the tick tool."""
@@ -535,7 +540,7 @@ class TickToolDrawer(MultiStageDrawer):
                 or final_rect.height() < self.minimum_side_length
             ):
                 self._stamp(event)
-                self._finish()
+                self.finish()
             else:
                 self.state = 2
                 self.scene.undoStack.beginMacro("Click-Drag Stamp")
@@ -558,10 +563,6 @@ class TickToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.temp_box_item)
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
-
-    def _finish(self):
-        """Finalize and signal completion."""
-        self.is_finished = True
 
 
 class CrossToolDrawer(TickToolDrawer):
@@ -719,10 +720,7 @@ class TextToolDrawer(MultiStageDrawer):
             self.scene.removeItem(self.temp_box_item)
         if self.path_item and self.path_item.scene():
             self.scene.removeItem(self.path_item)
-
-    def _finish(self):
-        """Finalizes the operation."""
-        self.is_finished = True
+        super().cancel()
 
 
 class DeleteToolDrawer(MultiStageDrawer):
