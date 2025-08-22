@@ -997,7 +997,7 @@ class PageScene(QGraphicsScene):
         """
         if not self.current_rubric:
             return None
-        return self.current_rubric["id"]
+        return self.current_rubric["rid"]
 
     def reset_dirty(self):
         # TODO: what is the difference?
