@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2020-2023 Colin B. Macdonald
+# Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2021-2024 Andrew Rechnitzer
 # Copyright (C) 2023 Philip Loewen
 # Copyright (C) 2024 Aden Chan
@@ -32,7 +32,7 @@ def testValidUBCStudentID(n):
 
 def isValidUBCStudentID(n):
     """Is this a valid student number for UBC?"""
-    ok, _ = testValidUBCStudentID(n)
+    ok, __ = testValidUBCStudentID(n)
     return ok
 
 
@@ -59,7 +59,7 @@ def test_z_padded_integer(n):
 
 def is_z_padded_integer(n):
     """Is this string a z-padded integer?"""
-    ok, _ = test_z_padded_integer(n)
+    ok, __ = test_z_padded_integer(n)
     return ok
 
 

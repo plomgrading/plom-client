@@ -694,16 +694,16 @@ class PageScene(QGraphicsScene):
             m = QMenu(button)
             # TODO: nicer to parent by Annotr but unsupported (?) and unpredictable
             # m = QMenu(self.parent())
-            _ = m.addAction("Remove this page", page_delete_func_factory(n))
+            __ = m.addAction("Remove this page", page_delete_func_factory(n))
             if len(self.underImage.images) == 1:
-                _.setEnabled(False)
-                _.setToolTip("Cannot remove lone page")
-            _ = m.addAction("Shift left", page_shift_func_factory(n, -1))
+                __.setEnabled(False)
+                __.setToolTip("Cannot remove lone page")
+            __ = m.addAction("Shift left", page_shift_func_factory(n, -1))
             if n == 0:
-                _.setEnabled(False)
-            _ = m.addAction("Shift right", page_shift_func_factory(n, 1))
+                __.setEnabled(False)
+            __ = m.addAction("Shift right", page_shift_func_factory(n, 1))
             if n == len(self.underImage.images) - 1:
-                _.setEnabled(False)
+                __.setEnabled(False)
             m.addAction(
                 "\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Rotate CCW",
                 page_rotate_func_factory(n, 90),

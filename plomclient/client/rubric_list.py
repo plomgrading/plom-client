@@ -100,7 +100,7 @@ def isLegalRubric(rubric: dict[str, Any], *, scene, version: int, max_mark: int)
     rubrics.append(rubric)
 
     try:
-        _ = compute_score(rubrics, max_mark)
+        compute_score(rubrics, max_mark)
         return 2
     except ValueError:
         return 1
