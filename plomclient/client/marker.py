@@ -467,7 +467,7 @@ class MarkerClient(QWidget):
         if tag:
             tips.append(f'prefer tagged "{tag}"')
 
-        button_text = "&Get"
+        button_text = "&Get next"
         if exclaim:
             button_text += " (!)"
         self.getNextButton.setText(button_text)
