@@ -387,7 +387,7 @@ class MarkerClient(QWidget):
         m.addAction("Which papers...", self.change_tag_range_options)
         self.ui.getNextButton.setMenu(m)
         self.ui.getNextButton.clicked.connect(self.requestNext)
-        self.ui.annButton.clicked.connect(self.annButton_clicked)
+        self.ui.annButton.clicked.connect(self.annotate_button_clicked)
         m = QMenu(self)
         m.addAction("Reset task", self.reset_task)
         m.addAction("Reassign task to me", self.reassign_task_to_me)
@@ -408,8 +408,9 @@ class MarkerClient(QWidget):
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
 
-    def annButton_clicked(self):
-        # TODO: this is the state after *just* toggling, we are reacting
+    def annotate_button_clicked(self):
+        """Handle the click event of the annotate button/toggle."""
+        # Note: this is the state after *just* toggling, we are reacting
         if not self.annButton.isChecked():
             # assert self._annotator, "illegal: checked annButton but no Annotator"
             if self._annotator:

@@ -422,7 +422,7 @@
              <enum>Qt::FocusPolicy::NoFocus</enum>
             </property>
             <property name="text">
-             <string>&amp;Close</string>
+             <string>&amp;Quit</string>
             </property>
            </widget>
           </item>
