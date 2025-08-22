@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2024 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -139,8 +139,8 @@ class MarkerExamModel(QStandardItemModel):
         """
         try:
             # raise a KeyError if we already have this task.
-            _ = self._findTask(task_id_str)
-            raise KeyError(f"We already have task {task_id_str} in the table at r={_}.")
+            r = self._findTask(task_id_str)
+            raise KeyError(f"We already have task {task_id_str} in the table at r={r}.")
         except ValueError as e:
             assert "not found" in str(e), f"Oh my, unexpected stuff: {e}"
             pass

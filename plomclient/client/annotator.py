@@ -7,6 +7,7 @@
 # Copyright (C) 2022 Natalia Accomazzo Scotti
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2025 Brody Sanderson
+# Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
 
@@ -461,7 +462,7 @@ class Annotator(QWidget):
         return m
 
     def close_current_scene(self) -> None:
-        """Removes the current cene, saving some info in case we want to open a new one.
+        """Removes the current scene, saving some info in case we want to open a new one.
 
         Returns:
             None: Modifies self.
@@ -1155,6 +1156,7 @@ class Annotator(QWidget):
         # TODO: self.caller_give_us_more.emit(tmp_tgv)
         stuff = self.parentMarkerUI.getMorePapers(tmp_tgv)
         if not stuff:
+            self.update_attn_bar(tags=[], msg="", show=False)
             InfoMsg(self, "No more to grade?").exec()
             # Not really safe to give it back? (at least we did the view...)
             return
@@ -1332,7 +1334,7 @@ class Annotator(QWidget):
         Returns:
             None
         """
-        fileName, _ = QFileDialog.getOpenFileName(
+        fileName, __ = QFileDialog.getOpenFileName(
             self,
             "Select Image",
             "",

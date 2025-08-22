@@ -26,9 +26,10 @@ authors = [
     {name = 'Andrew Rechnitzer'},
     {name = 'Colin B. Macdonald'},
 ]
+# TODO: maybe Python 3.8 is blocking the new format?
+# license = "AGPL-3.0-or-later"
 license = {text = 'AGPLv3+'}
 classifiers=[
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Topic :: Education :: Testing",
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
@@ -38,6 +39,7 @@ classifiers=[
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dynamic = ['version']
 requires-python = '>=3.8'
