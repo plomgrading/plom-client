@@ -1014,7 +1014,7 @@ class MarkerClient(QWidget):
     def show_hide_technical(self):
         """Toggle the technical panel in response to checking a button."""
         if self.ui.technicalButton.isChecked():
-            self.ui.technicalButton.setText("Hide technical info")
+            self.ui.technicalButton.setText("Tech info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
             ptsz = self.ui.technicalButton.fontInfo().pointSizeF()
@@ -1031,7 +1031,7 @@ class MarkerClient(QWidget):
 
                 self.ui.tableView.setColumnWidth(i, 128)
         else:
-            self.ui.technicalButton.setText("Show technical info")
+            self.ui.technicalButton.setText("Tech info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.RightArrow)
             self.ui.frameTechnical.setVisible(False)
             for i in self.ui.examModel.columns_to_hide:

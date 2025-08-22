@@ -99,12 +99,12 @@
               <widget class="QComboBox" name="tasksComboBox">
                <item>
                 <property name="text">
-                 <string>Show only my tasks</string>
+                 <string>My tasks</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>Show all tasks</string>
+                 <string>All tasks</string>
                 </property>
                </item>
               </widget>
@@ -195,12 +195,6 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>250</width>
-              <height>0</height>
-             </size>
             </property>
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
