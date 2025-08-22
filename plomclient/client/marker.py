@@ -357,8 +357,6 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
-        # table on right
-        self.ui.splitter.insertWidget(0, self.ui.paperBox)
         self.ui.splitter.setCollapsible(1, True)
 
         if Version(__version__).is_devrelease:
