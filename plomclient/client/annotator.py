@@ -461,7 +461,7 @@ class Annotator(QWidget):
         return m
 
     def close_current_scene(self) -> None:
-        """Removes the current cene, saving some info in case we want to open a new one.
+        """Removes the current scene, saving some info in case we want to open a new one.
 
         Returns:
             None: Modifies self.
