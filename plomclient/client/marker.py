@@ -410,6 +410,7 @@ class MarkerClient(QWidget):
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
 
     def annotate_button_clicked(self):
+        """Handle the click event of the annotate button/toggle."""
         # Note: this is the state after *just* toggling, we are reacting
         if not self.annButton.isChecked():
             # assert self._annotator, "illegal: checked annButton but no Annotator"
