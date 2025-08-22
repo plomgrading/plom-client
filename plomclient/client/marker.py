@@ -773,7 +773,7 @@ class MarkerClient(QWidget):
                 ReachedQuotaLimitDialog(self, limit=info["user_quota_limit"]).exec()
             return
 
-        self.ui.labelProgress.setText("Progress:")
+        self.ui.labelProgress.setText("")
         self.ui.mProgressBar.setMaximum(info["total_tasks"])
         self.ui.mProgressBar.setValue(info["total_tasks_marked"])
 
@@ -1017,8 +1017,11 @@ class MarkerClient(QWidget):
             self.ui.technicalButton.setText("Tech info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
-            ptsz = self.ui.technicalButton.fontInfo().pointSizeF()
+            ptsz = self.ui.closeButton.fontInfo().pointSizeF()
             self.ui.frameTechnical.setStyleSheet(
+                f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
+            )
+            self.ui.technicalButton.setStyleSheet(
                 f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
             )
             # future use
