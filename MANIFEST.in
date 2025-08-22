@@ -22,6 +22,7 @@ include plomclient/client/ijkl_keys.toml
 include plomclient/client/esdf_french_keys.toml
 
 include plomclient/client/ui_files/*.ui
+include plomclient/client/ui_files/*.png
 include plomclient/client/cursors/*.png
 include plomclient/client/icons/*.svg
 include plomclient/client/icons/*.png
