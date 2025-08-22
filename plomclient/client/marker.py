@@ -342,9 +342,10 @@ class MarkerClient(QWidget):
         # when to open annotator: for now, needs double-click first time
         # TODO: could always open annotator but may want background
         # downloader placeholder support first (?)
-        # self.ui.tableView.clicked.connect(self.annotateTest)
-        self.ui.tableView.doubleClicked.connect(self.annotateTest)
-        self.ui.tableView.annotateSignal.connect(self.annotateTest)
+        # Note: clicked events occur AFTER the selection has already changed
+        # self.ui.tableView.clicked.connect(self.annotate_selected_task)
+        self.ui.tableView.doubleClicked.connect(self.annotate_selected_task)
+        self.ui.tableView.annotateSignal.connect(self.annotate_selected_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
         self.ui.tableView.deferSignal.connect(self.defer_task)
@@ -415,7 +416,7 @@ class MarkerClient(QWidget):
             self._annotator.close()
             # self.exit_annotate_mode()
         else:
-            self.annotateTest()
+            self.annotate_selected_task()
 
     def exit_annotate_mode(self):
         self._annotator = None
@@ -945,8 +946,18 @@ class MarkerClient(QWidget):
                 username=self.msgr.username,
             )
 
-    def moveSelectionToTask(self, task):
-        """Update the selection in the list of papers."""
+    def moveSelectionToTask(self, task: str) -> None:
+        """Update the selection in the list of papers.
+
+        Args:
+            task: a string that sadly currently begins with
+                "q".  But happily we will slap a "q" on the
+                front for in hopes that that will someday
+                be unnecessary.
+        """
+        if not task.startswith("q"):
+            # TODO: g/q argh burn it down
+            task = "q" + task
         pr = self.prxM.rowFromTask(task)
         if pr is None:
             return
@@ -960,7 +971,7 @@ class MarkerClient(QWidget):
         if self._annotator:
             # if the annotator is open, we update it
             # TODO: seems like signals and slots problem
-            self.annotateTest()
+            self.annotate_selected_task()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1440,7 +1451,7 @@ class MarkerClient(QWidget):
         self._annotator = annotator
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
-        self.ui.tableView.clicked.connect(self.annotateTest)
+        self.ui.tableView.clicked.connect(self.annotate_selected_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
         # use the "Annotate & Mark" button to indicate edit/view mode
@@ -1448,16 +1459,26 @@ class MarkerClient(QWidget):
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
 
-    def annotateTest(self):
+    def annotate_selected_task(self):
         """Grab current test from table, do checks, start annotator."""
         task = self.get_current_task_id_or_none()
         if not task:
             return
 
         if self._annotator:
+            task_wo_q = task[1:] if task.startswith("q") else task
+            if self._annotator.tgvID == task_wo_q:
+                log.debug("Annotator already on %s; no change required", task_wo_q)
+                return
+
             if self._annotator.is_dirty():
                 msg = SimpleQuestion(self, "Discard any annotations and switch papers?")
                 if not msg.exec() == QMessageBox.StandardButton.Yes:
+                    # TODO: hacking to change the selection *back* to what is was in the
+                    # task list.  A lot to dislike here; lots of signals are going to happen
+                    # for example.  And its yet another piece of spaghetti...
+                    old_task = self._annotator.tgvID
+                    self.moveSelectionToTask(old_task)
                     return
             # TODO: document the "public interface!")
             self._annotator.close_current_question()
@@ -2186,7 +2207,12 @@ class MarkerClient(QWidget):
         return fragFile
 
     def get_current_task_id_or_none(self) -> str | None:
-        """Give back the task id string of the currently highlighted row or None."""
+        """Give back the task id string of the currently highlighted row or None.
+
+        Returns:
+            The task code, sadly probably with a useless leading "q" that we
+            should really try to get rid of.
+        """
         prIndex = self.ui.tableView.selectedIndexes()
         if len(prIndex) == 0:
             return None
