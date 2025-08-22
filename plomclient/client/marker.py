@@ -411,8 +411,9 @@ class MarkerClient(QWidget):
     def annButton_clicked(self):
         # TODO: this is the state after *just* toggling, we are reacting
         if not self.annButton.isChecked():
-            assert self._annotator, "illegal: checked annButton but no Annotator"
-            self._annotator.close()
+            # assert self._annotator, "illegal: checked annButton but no Annotator"
+            if self._annotator:
+                self._annotator.close()
             # self.exit_annotate_mode()
         else:
             self.annotate_selected_task()
