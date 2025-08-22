@@ -335,6 +335,7 @@ class MarkerClient(QWidget):
                 question_label, self.version, self.exam_spec["name"]
             )
         )
+        self.ui.labelTasks.setWordWrap(True)
 
         self.prxM.setSourceModel(self.examModel)
         self.ui.tableView.setModel(self.prxM)
@@ -995,18 +996,20 @@ class MarkerClient(QWidget):
     def update_technical_stats(self, d):
         self.ui.labelTech1.setText(
             "<p>"
-            f"downloads: {d['queued']} queued, {d['cache_size']} cached,"
+            f"d/l: {d['queued']} queued, {d['cache_size']} cached,"
             f" {d['retries']} retried, {d['fails']} failed"
             "</p>"
         )
+        self.ui.labelTech1.setWordWrap(True)
 
     def update_technical_stats_upload(self, n, m, numup, failed):
         if n == 0 and m == 0:
-            txt = "upload: idle"
+            txt = "u/l: idle"
         else:
-            txt = f"upload: {n} queued, {m} inprogress"
+            txt = f"u/l: {n} queued, {m} inprogress"
         txt += f", {numup} done, {failed} failed"
         self.ui.labelTech3.setText(txt)
+        self.ui.labelTech1.setWordWrap(True)
 
     def show_hide_technical(self):
         """Toggle the technical panel in response to checking a button."""
