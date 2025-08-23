@@ -364,7 +364,6 @@ class Annotator(QWidget):
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Save && next paper\t{key}", self.saveAndGetNext)
         # TODO: remove self.saveAndClose later?
-        # m.addAction("Done (save and close)", self.saveAndClose)
         m.addAction("Revert changes", self.revert_changes)
         (key,) = keydata["cancel"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
@@ -1388,15 +1387,6 @@ class Annotator(QWidget):
         # handle rubric function.
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
         self.ui.rearrangePagesButton.clicked.connect(self.rearrangePages)
-        # Connect up the finishing functions - using a dropdown menu
-        m = QMenu()
-        m.addAction("Done", self.saveAndClose)
-        m.addSeparator()
-        m.addAction("Cancel", self.close)
-        self.ui.finishedButton.setMenu(m)
-        self.ui.finishedButton.setPopupMode(
-            QToolButton.ToolButtonPopupMode.MenuButtonPopup
-        )
         self.ui.finishedButton.clicked.connect(self.saveAndGetNext)
 
         # connect the "wide" button in the narrow-view
