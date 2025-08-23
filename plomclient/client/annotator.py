@@ -125,7 +125,7 @@ class Annotator(QWidget):
 
         self.username = username
         self.parentMarkerUI = parentMarkerUI
-        self.tgvID = None
+        self.task = None
 
         # a key-value store for local config, including "don't ask me again"
         self._config: Dict[str, Any] = {}
@@ -502,7 +502,7 @@ class Annotator(QWidget):
             None: Modifies self.
         """
         self.close_current_scene()
-        self.tgvID = None
+        self.task = None
         self.testName = None
         self.setWindowTitle("Annotator")
         self.paperDir = None
@@ -512,8 +512,8 @@ class Annotator(QWidget):
 
     def load_new_question(
         self,
-        tgvID,
-        question_label,
+        task: str,
+        question_label: str,
         version,
         max_version,
         testName,
@@ -528,10 +528,9 @@ class Annotator(QWidget):
         """Loads new data into the window for marking.
 
         Args:
-            tgvID (str): Test-Group-Version ID code.  For example, for
-                Test #0027, group #13, version #2, we have `t0027g13v2`.
-                TODO: currently only `t0027g13`, no version, despite name.
-            question_label (str): The name of the question we are
+            task: A string like "0027g13" indicating paper 0027 and
+                question index 13.
+            question_label: The name of the question we are
                 marking.  This is generally used for display only as
                 there is an integer for precise usage.
             version (int): which version are we working on?
@@ -557,13 +556,13 @@ class Annotator(QWidget):
         Returns:
             None: Modifies many instance vars.
         """
-        self.tgvID = tgvID
-        self.question_num = int(re.split(r"\D+", tgvID)[-1])
+        self.task = task
+        self.question_num = int(re.split(r"\D+", task)[-1])
         self.version = version
         self.max_version = max_version
         self.question_label = question_label
         self.testName = testName
-        s = "{} of {}: {}".format(self.question_label, testName, tgvID)
+        s = "{} of {}: {}".format(self.question_label, testName, task)
         self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
@@ -807,9 +806,9 @@ class Annotator(QWidget):
 
         TODO: this has significant duplication with RearrangePages.
         """
-        if not self.tgvID:
+        if not self.task:
             return
-        testnum = self.tgvID[:4]
+        testnum = self.task[:4]
         log.debug("wholePage: downloading files for testnum %s", testnum)
         dl = self.parentMarkerUI.Qapp.downloader
         pagedata = dl.msgr.get_pagedata_context_question(testnum, self.question_num)
@@ -823,13 +822,13 @@ class Annotator(QWidget):
 
     def rearrangePages(self) -> None:
         """Rearranges pages in UI."""
-        if not self.tgvID or not self.scene:
+        if not self.task or not self.scene:
             return
         self.parentMarkerUI.Qapp.setOverrideCursor(Qt.CursorShape.WaitCursor)
         # disable ui before calling process events
         self.setEnabled(False)
         self.pause_to_process_events()
-        testNumber = self.tgvID[:4]
+        testNumber = self.task[:4]
         src_img_data = self.scene.get_src_img_data()
         image_md5_list = [x["md5"] for x in src_img_data]
         # Look for duplicates by first inverting the dict
@@ -1125,11 +1124,11 @@ class Annotator(QWidget):
         if self.scene:
             if not self.saveAnnotations():
                 return
-            log.debug("We have surrendered {}".format(self.tgvID))
-            tmp_tgv = self.tgvID
+            log.debug("We have surrendered task %s", self.task)
+            tmp_task = self.task
             self.close_current_question()
         else:
-            tmp_tgv = None
+            tmp_task = None
 
         # Workaround getting too far ahead of Marker's upload queue
         queue_len = self.parentMarkerUI.get_upload_queue_length()
@@ -1145,7 +1144,7 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
-        stuff = self.parentMarkerUI.getMorePapers(tmp_tgv)
+        stuff = self.parentMarkerUI.getMorePapers(tmp_task)
         if not stuff:
             self.update_attn_bar(tags=[], msg="", show=False)
             InfoMsg(self, "No more to grade?").exec()
@@ -1606,7 +1605,7 @@ class Annotator(QWidget):
             rubric_ids,
             self.integrity_check,
         ]
-        self.annotator_upload.emit(self.tgvID, stuff)
+        self.annotator_upload.emit(self.task, stuff)
         return True
 
     @property
@@ -1810,7 +1809,7 @@ class Annotator(QWidget):
         force = getattr(self, "_priv_force_close", False)
         if force:
             log.debug("emitting the closing signal")
-            self.annotator_done_closing.emit(self.tgvID)
+            self.annotator_done_closing.emit(self.task)
             if event:
                 event.accept()
             return
@@ -1828,7 +1827,7 @@ class Annotator(QWidget):
                 return
 
         log.debug("emitting reject/cancel signal, discarding, and closing")
-        self.annotator_done_reject.emit(self.tgvID)
+        self.annotator_done_reject.emit(self.task)
         if event:
             event.accept()
 
@@ -2009,8 +2008,8 @@ class Annotator(QWidget):
             List of paper numbers using the rubric, excluding the paper
             the annotator currently at.
         """
-        assert self.tgvID
-        curr_paper_number = int(self.tgvID[:4])
+        assert self.task
+        curr_paper_number = int(self.task[:4])
         result = self.parentMarkerUI.getOtherRubricUsagesFromServer(rid)
         if curr_paper_number in result:
             result.remove(curr_paper_number)
@@ -2077,7 +2076,7 @@ class Annotator(QWidget):
 
     def tags_changed(self, task: str, tags: list[str]) -> None:
         """React to possible tag change signals."""
-        if task == self.tgvID:
+        if task == self.task:
             self.update_attn_bar(tags=tags)
 
     def tag_paper(
@@ -2087,10 +2086,9 @@ class Annotator(QWidget):
         if not self.scene:
             return
         if not task:
-            if not self.tgvID:
+            if not self.task:
                 return
-            # the ongoing battle against leading q's
-            task = f"q{self.tgvID}"
+            task = self.task
         if not dialog_parent:
             dialog_parent = self
         self.parentMarkerUI.manage_task_tags(task, parent=dialog_parent)
