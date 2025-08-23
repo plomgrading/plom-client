@@ -270,7 +270,8 @@ class MarkerClient(QWidget):
             self.ensureAllDownloaded
         )
 
-        self.requestNext()  # Get a question to mark from the server
+        # Get a question to mark from the server
+        self.requestNext(enter_annotate_mode_if_possible=True)
         # reset the view so whole exam shown.
         self.testImg.resetView()
         # resize the table too.
@@ -797,7 +798,12 @@ class MarkerClient(QWidget):
         task = paper_question_index_to_task_id_str(n, self.question_idx)
         self._claim_task(task)
 
-    def requestNext(self, *, update_select=True):
+    def requestNext(
+        self,
+        *,
+        update_select: bool = True,
+        enter_annotate_mode_if_possible: bool = False,
+    ) -> None:
         """Ask server for an unmarked paper, get file, add to list, update view.
 
         Retry a few times in case two clients are asking for same.
@@ -805,9 +811,11 @@ class MarkerClient(QWidget):
         Keyword Args:
             update_select (bool): default True, send False if you don't
                 want to adjust the visual selection.
-
-        Returns:
-            None
+            enter_annotate_mode_if_possible: if true, then if there is a
+                task to be me marked, try to enter annotate mode to mark
+                it.  False by default, b/c if user is in view mode they
+                may not want to aggressively enter annotate mode, except
+                on marker init.
         """
         attempts = 0
         tag = self.annotatorSettings["nextTaskPreferTagged"]
@@ -859,6 +867,8 @@ class MarkerClient(QWidget):
                 continue
         if update_select:
             self.moveSelectionToTask(task)
+        if enter_annotate_mode_if_possible:
+            self.annotate_selected_task()
 
     def get_downloads_for_src_img_data(
         self, src_img_data: list[dict[str, Any]], trigger: bool = True
