@@ -2110,7 +2110,7 @@ class Annotator(QWidget):
             WarnMsg(
                 self,
                 "The client cannot determine the previous paper. "
-                "Please cancel this annotation and select from the list.",
+                "Please select from the task list instead.",
             ).exec()
             return
         keydata = self.get_key_bindings()
