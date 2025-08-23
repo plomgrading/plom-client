@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2022 Andrew Rechnitzer
-# Copyright (C) 2020-2024 Colin B. Macdonald
+# Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Vala Vakilian
 
@@ -128,7 +128,7 @@ class QuestionViewDialog(GroupView):
     def tags(self):
         """If we have a marker parent then use it to manage tags."""
         if self.marker:
-            task = f"q{self.papernum:04}g{self.question_index}"
+            task = f"{self.papernum:04}g{self.question_index}"
             self.marker.manage_task_tags(task, parent=self)
 
 

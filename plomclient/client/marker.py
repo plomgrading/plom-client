@@ -102,17 +102,16 @@ log = logging.getLogger("marker")
 
 def task_id_str_to_paper_question_index(task: str) -> tuple[int, int]:
     """Helper function to convert between task string and paper/question."""
-    # TODO: I dislike this packed-string: overdue for refactor
-    assert task[0] == "q", f"invalid task code {task}: no leading 'q'"
-    assert task[5] == "g", f"invalid task code {task}: no middle 'g'"
-    papernum = int(task[1:5])
-    question_idx = int(task[6:])
+    assert task[0] != "q", f"invalid task code {task}: get rid of leading 'q'"
+    assert task[4] == "g", f"invalid task code {task}: no middle 'g'"
+    papernum = int(task[1:4])
+    question_idx = int(task[5:])
     return papernum, question_idx
 
 
 def paper_question_index_to_task_id_str(papernum: int, question_idx: int) -> str:
     """Helper function to convert between paper/question and task string."""
-    return f"q{papernum:04}g{question_idx}"
+    return f"{papernum:04}g{question_idx}"
 
 
 class MarkerClient(QWidget):
@@ -591,7 +590,7 @@ class MarkerClient(QWidget):
 
         self.examModel.set_source_image_data(task, src_img_data)
 
-        assert task.startswith("q")
+        assert not task.startswith("q")
         paperdir = Path(
             tempfile.mkdtemp(prefix=task[1:] + "_", dir=self.workingDirectory)
         )
@@ -858,7 +857,6 @@ class MarkerClient(QWidget):
                     info=str(err),
                 ).exec()
                 raise
-
             try:
                 self.claim_task_and_trigger_downloads(task)
                 break
@@ -964,14 +962,9 @@ class MarkerClient(QWidget):
         """Update the selection in the list of papers.
 
         Args:
-            task: a string that sadly currently begins with
-                "q".  But happily we will slap a "q" on the
-                front for in hopes that that will someday
-                be unnecessary.
+            task: a string such as "0123g13".
         """
-        if not task.startswith("q"):
-            # TODO: g/q argh burn it down
-            task = "q" + task
+        assert not task.startswith("q")
         pr = self.prxM.rowFromTask(task)
         if pr is None:
             return
@@ -1486,9 +1479,9 @@ class MarkerClient(QWidget):
             return
 
         if self._annotator:
-            task_wo_q = task[1:] if task.startswith("q") else task
-            if self._annotator.tgvID == task_wo_q:
-                log.debug("Annotator already on %s; no change required", task_wo_q)
+            assert not task.startswith("q")
+            if self._annotator.task == task:
+                log.debug("Annotator already on %s; no change required", task)
                 return
 
             if self._annotator.is_dirty():
@@ -1497,7 +1490,7 @@ class MarkerClient(QWidget):
                     # TODO: hacking to change the selection *back* to what is was in the
                     # task list.  A lot to dislike here; lots of signals are going to happen
                     # for example.  And its yet another piece of spaghetti...
-                    old_task = self._annotator.tgvID
+                    old_task = self._annotator.task
                     self.moveSelectionToTask(old_task)
                     return
             # TODO: document the "public interface!")
@@ -1543,8 +1536,8 @@ class MarkerClient(QWidget):
         """Get the data the Annotator will need for a particular task.
 
         Args:
-            task: the task id.  If original qXXXXgYY, then annotated
-                version is GXXXXgYY (G=graded).
+            task: the task id.  If original XXXXgYY, then annotated
+                filenames are GXXXXgYY (G=graded).
 
         Returns:
             A tuple of data or None.  In the case of None, the user has already
@@ -1567,12 +1560,12 @@ class MarkerClient(QWidget):
         status = self.examModel.getStatusByTask(task)
 
         # Create annotated filename.
-        assert task.startswith("q")
+        assert not task.startswith("q")
         paperdir = Path(
             tempfile.mkdtemp(prefix=task[1:] + "_", dir=self.workingDirectory)
         )
         log.debug("create paperdir %s for annotating", paperdir)
-        Gtask = "G" + task[1:]
+        Gtask = "G" + task
         # note no extension yet
         aname = paperdir / Gtask
         pdict = None
@@ -1634,11 +1627,10 @@ class MarkerClient(QWidget):
         exam_name = self.exam_spec["name"]
 
         papernum, question_idx = task_id_str_to_paper_question_index(task)
-        taskid = task[1:]
         question_label = get_question_label(self.exam_spec, question_idx)
         integrity_check = self.examModel.getIntegrityCheck(task)
         return (
-            taskid,
+            task,
             question_label,
             self.version,
             self.exam_spec["numberOfVersions"],
@@ -1771,11 +1763,11 @@ class MarkerClient(QWidget):
         self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str, list)
-    def callbackAnnWantsUsToUpload(self, task, stuff) -> None:
+    def callbackAnnWantsUsToUpload(self, task: str, stuff: list) -> None:
         """Called when annotator wants to upload.
 
         Args:
-            task (str): the task ID of the current test.
+            task: the task ID of the current test, "0123g13".
             stuff (list): a list containing
                 grade(int): grade given by marker.
                 markingTime(int): total time spent marking.
@@ -1803,8 +1795,7 @@ class MarkerClient(QWidget):
             raise RuntimeError(
                 f"Mark {grade} outside allowed range [0, {self.maxMark}]. Please file a bug!"
             )
-        # TODO: sort this out whether task is "q00..." or "00..."?!
-        task = "q" + task
+        assert not task.startswith("q")
 
         # TODO: this was unused?  comment out for now...
         # stat = self.examModel.getStatusByTask(task)
@@ -1843,11 +1834,11 @@ class MarkerClient(QWidget):
         # now update the marking history with the task.
         self.marking_history.append(task)
 
-    def getMorePapers(self, oldtgvID: str) -> tuple | None:
+    def getMorePapers(self, old_task: str) -> tuple | None:
         """Loads more tests.
 
         Args:
-            oldtgvID: the task code with no leading "q" for the previous
+            old_task: the task code with no leading "q" for the previous
                 thing marked.
 
         Returns:
@@ -1857,7 +1848,7 @@ class MarkerClient(QWidget):
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
             self.requestNext(update_select=False)
-        if not self.moveToNextUnmarkedTest("q" + oldtgvID if oldtgvID else None):
+        if not self.moveToNextUnmarkedTest(old_task if old_task else None):
             return None
         task_id_str = self.get_current_task_id_or_none()
         if not task_id_str:
@@ -1866,7 +1857,7 @@ class MarkerClient(QWidget):
         if data is None:
             return None
 
-        assert task_id_str[1:] == data[0]
+        assert task_id_str == data[0]
         pdict = data[8]  # eww, hardcoded numbers
         assert pdict is None, "Annotator should not pull a regrade"
 
@@ -2230,8 +2221,7 @@ class MarkerClient(QWidget):
         """Give back the task id string of the currently highlighted row or None.
 
         Returns:
-            The task code, sadly probably with a useless leading "q" that we
-            should really try to get rid of.
+            The task code, such as "0123g13".
         """
         prIndex = self.ui.tableView.selectedIndexes()
         if len(prIndex) == 0:
@@ -2307,15 +2297,14 @@ class MarkerClient(QWidget):
                 WarnMsg(parent, f"Could not get tags from {task}", info=str(e)).exec()
                 return
 
+            # TODO: should not happen?  Delete it later
             if task.casefold().startswith("q"):
                 # long-term goal to get rid of the q in q1234g2
                 task = task[1:]
             self.tags_changed_signal.emit(task, current_tags)
 
     def _update_tags_in_examModel(self, task: str, tags: list[str]):
-        if not task.startswith("q"):
-            # long-term goal to get rid of the q in q1234g2
-            task = "q" + task
+        assert not task.startswith("q")
         try:
             self.examModel.setTagsByTask(task, tags)
         except ValueError:
