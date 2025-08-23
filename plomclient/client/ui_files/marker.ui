@@ -35,7 +35,7 @@
      <widget class="QFrame" name="paperBox">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>10</horstretch>
+        <horstretch>20</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
@@ -55,12 +55,6 @@
       </layout>
      </widget>
      <widget class="QFrame" name="taskFrame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
       <property name="frameShape">
        <enum>QFrame::Shape::NoFrame</enum>
       </property>
@@ -224,12 +218,6 @@
           </item>
           <item>
            <widget class="TaskTableView" name="tableView">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
             </property>

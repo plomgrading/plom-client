@@ -991,6 +991,7 @@ class MarkerClient(QWidget):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
         self.ui.labelTech2.setText(f"last msg: downloaded img id={img_id}")
         self.ui.labelTech2.setToolTip(f"{filename}")
+        self.ui.labelTech2.setWordWrap(True)
         # TODO: not all downloads require redrawing the current row...
         # if any("placeholder" in x for x in testImg.imagenames):
         # force a redraw
@@ -1027,7 +1028,7 @@ class MarkerClient(QWidget):
     def show_hide_technical(self):
         """Toggle the technical panel in response to checking a button."""
         if self.ui.technicalButton.isChecked():
-            self.ui.technicalButton.setText("Tech info")
+            self.ui.technicalButton.setText("info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
             ptsz = self.ui.closeButton.fontInfo().pointSizeF()
@@ -1047,7 +1048,7 @@ class MarkerClient(QWidget):
 
                 self.ui.tableView.setColumnWidth(i, 128)
         else:
-            self.ui.technicalButton.setText("Tech info")
+            self.ui.technicalButton.setText("info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.RightArrow)
             self.ui.frameTechnical.setVisible(False)
             for i in self.ui.examModel.columns_to_hide:
