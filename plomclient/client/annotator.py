@@ -362,12 +362,13 @@ class Annotator(QWidget):
         m = QMenu()
         key = keydata["next-paper"]["keys"][0]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Next paper\t{key}", self.saveAndGetNext)
-        m.addAction("Done (save and close)", self.saveAndClose)
-        m.addAction("Defer and go to next", lambda: None).setEnabled(False)
+        m.addAction(f"Save && next paper\t{key}", self.saveAndGetNext)
+        # TODO: remove self.saveAndClose later?
+        # m.addAction("Done (save and close)", self.saveAndClose)
+        m.addAction("Revert changes", self.revert_changes)
         (key,) = keydata["cancel"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Close without saving\t{key}", self.close)
+        m.addAction(f"Exit annotate mode\t{key}", self.close)
         m.addSeparator()
         (key,) = keydata["quick-show-prev-paper"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
@@ -1163,6 +1164,11 @@ class Annotator(QWidget):
 
         log.debug("saveAndGetNext: new stuff is {}".format(stuff))
         self.load_new_question(*stuff)
+
+    # TODO: @pyqtSlot()?
+    def revert_changes(self) -> None:
+        InfoMsg(self, "Not implemented yet").exec()
+        print("TODO")
 
     @pyqtSlot()
     def saveAndClose(self) -> None:
