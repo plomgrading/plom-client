@@ -335,6 +335,7 @@ class MarkerClient(QWidget):
                 question_label, self.version, self.exam_spec["name"]
             )
         )
+        self.ui.labelTasks.setWordWrap(True)
 
         self.prxM.setSourceModel(self.examModel)
         self.ui.tableView.setModel(self.prxM)
@@ -356,9 +357,10 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
-        # table on right
-        self.ui.splitter.insertWidget(0, self.ui.paperBox)
         self.ui.splitter.setCollapsible(1, True)
+        self.ui.splitter.setStyleSheet(
+            "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
+        )
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
@@ -774,7 +776,7 @@ class MarkerClient(QWidget):
                 ReachedQuotaLimitDialog(self, limit=info["user_quota_limit"]).exec()
             return
 
-        self.ui.labelProgress.setText("Progress:")
+        self.ui.labelProgress.setText("")
         self.ui.mProgressBar.setMaximum(info["total_tasks"])
         self.ui.mProgressBar.setValue(info["total_tasks_marked"])
 
@@ -997,27 +999,32 @@ class MarkerClient(QWidget):
     def update_technical_stats(self, d):
         self.ui.labelTech1.setText(
             "<p>"
-            f"downloads: {d['queued']} queued, {d['cache_size']} cached,"
+            f"d/l: {d['queued']} queued, {d['cache_size']} cached,"
             f" {d['retries']} retried, {d['fails']} failed"
             "</p>"
         )
+        self.ui.labelTech1.setWordWrap(True)
 
     def update_technical_stats_upload(self, n, m, numup, failed):
         if n == 0 and m == 0:
-            txt = "upload: idle"
+            txt = "u/l: idle"
         else:
-            txt = f"upload: {n} queued, {m} inprogress"
+            txt = f"u/l: {n} queued, {m} inprogress"
         txt += f", {numup} done, {failed} failed"
         self.ui.labelTech3.setText(txt)
+        self.ui.labelTech1.setWordWrap(True)
 
     def show_hide_technical(self):
         """Toggle the technical panel in response to checking a button."""
         if self.ui.technicalButton.isChecked():
-            self.ui.technicalButton.setText("Hide technical info")
+            self.ui.technicalButton.setText("Tech info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
-            ptsz = self.ui.technicalButton.fontInfo().pointSizeF()
+            ptsz = self.ui.closeButton.fontInfo().pointSizeF()
             self.ui.frameTechnical.setStyleSheet(
+                f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
+            )
+            self.ui.technicalButton.setStyleSheet(
                 f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
             )
             # future use
@@ -1030,7 +1037,7 @@ class MarkerClient(QWidget):
 
                 self.ui.tableView.setColumnWidth(i, 128)
         else:
-            self.ui.technicalButton.setText("Show technical info")
+            self.ui.technicalButton.setText("Tech info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.RightArrow)
             self.ui.frameTechnical.setVisible(False)
             for i in self.ui.examModel.columns_to_hide:

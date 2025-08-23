@@ -32,7 +32,35 @@
      <property name="childrenCollapsible">
       <bool>false</bool>
      </property>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="paperBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>10</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QVBoxLayout" name="paperBoxLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+      </layout>
+     </widget>
+     <widget class="QFrame" name="taskFrame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="frameShape">
        <enum>QFrame::Shape::NoFrame</enum>
       </property>
@@ -99,12 +127,12 @@
               <widget class="QComboBox" name="tasksComboBox">
                <item>
                 <property name="text">
-                 <string>Show only my tasks</string>
+                 <string>My tasks</string>
                 </property>
                </item>
                <item>
                 <property name="text">
-                 <string>Show all tasks</string>
+                 <string>All tasks</string>
                 </property>
                </item>
               </widget>
@@ -129,7 +157,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>16</width>
+                 <width>8</width>
                  <height>8</height>
                 </size>
                </property>
@@ -160,6 +188,12 @@
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>64</width>
+                 <height>0</height>
+                </size>
                </property>
                <property name="focusPolicy">
                 <enum>Qt::FocusPolicy::StrongFocus</enum>
@@ -195,12 +229,6 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>250</width>
-              <height>0</height>
-             </size>
             </property>
             <property name="editTriggers">
              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -248,23 +276,6 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QPushButton" name="tagButton">
-               <property name="focusPolicy">
-                <enum>Qt::FocusPolicy::NoFocus</enum>
-               </property>
-               <property name="text">
-                <string>&amp;Tags</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
-              <widget class="QPushButton" name="viewButton">
-               <property name="text">
-                <string>&amp;View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
               <widget class="QToolButton" name="getNextButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -293,6 +304,23 @@
                </property>
                <property name="text">
                 <string>&amp;Defer</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="tagButton">
+               <property name="focusPolicy">
+                <enum>Qt::FocusPolicy::NoFocus</enum>
+               </property>
+               <property name="text">
+                <string>&amp;Tags</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QPushButton" name="viewButton">
+               <property name="text">
+                <string>&amp;View</string>
                </property>
               </widget>
              </item>
@@ -382,7 +410,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>40</width>
+              <width>0</width>
               <height>20</height>
              </size>
             </property>
@@ -457,28 +485,6 @@
          </layout>
         </widget>
        </item>
-      </layout>
-     </widget>
-     <widget class="QFrame" name="paperBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <layout class="QVBoxLayout" name="paperBoxLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
       </layout>
      </widget>
     </widget>
