@@ -358,6 +358,9 @@ class MarkerClient(QWidget):
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
         self.ui.splitter.setCollapsible(1, True)
+        self.ui.splitter.setStyleSheet(
+            "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
+        )
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
