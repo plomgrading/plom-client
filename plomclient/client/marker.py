@@ -855,7 +855,7 @@ class MarkerClient(QWidget):
                 ErrorMsg(
                     None,
                     "Unexpected error getting next task. Client will now crash!",
-                    info=err,
+                    info=str(err),
                 ).exec()
                 raise
 
