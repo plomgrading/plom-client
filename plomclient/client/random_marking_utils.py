@@ -251,7 +251,7 @@ def do_random_marking_backend(
             break
         # print("Trying to claim next ask = ", task)
         try:
-            src_img_data, tags, integrity_check = messenger.MclaimThisTask(
+            src_img_data, tags, integrity_check = messenger.claim_task(
                 task, version=version
             )
         except PlomTakenException:
