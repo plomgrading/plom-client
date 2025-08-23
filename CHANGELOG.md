@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* The UI has been changed, combining the Annotator and Marker into one window.
 
 ### Fixed
 * Fixed Pyinstaller-based binary built on Ubuntu 22.04.
