@@ -363,8 +363,14 @@ class Annotator(QWidget):
         key = keydata["next-paper"]["keys"][0]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Save && next paper\t{key}", self.saveAndGetNext)
-        # TODO: remove self.saveAndClose later?
-        m.addAction("Revert changes", self.revert_changes)
+
+        # TRANSLATOR: this option discards every back to the latest save
+        # m.addAction("Revert changes", self.revert_changes)
+
+        # TODO: possible this should be in the RHS task list not here?
+        # TRANSLATOR: this option resets a task completely
+        # m.addAction("Remove all annotations", self.todo_somemethod)
+
         (key,) = keydata["cancel"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Exit annotate mode\t{key}", self.close)
@@ -1165,9 +1171,9 @@ class Annotator(QWidget):
         self.load_new_question(*stuff)
 
     # TODO: @pyqtSlot()?
-    def revert_changes(self) -> None:
-        InfoMsg(self, "Not implemented yet").exec()
-        print("TODO")
+    # def revert_changes(self) -> None:
+    #     InfoMsg(self, "Not implemented yet").exec()
+    #     print("TODO")
 
     @pyqtSlot()
     def saveAndClose(self) -> None:
