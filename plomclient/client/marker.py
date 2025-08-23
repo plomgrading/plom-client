@@ -928,7 +928,7 @@ class MarkerClient(QWidget):
         """
         __, qidx = task_id_str_to_paper_question_index(task)
         assert qidx == self.question_idx, f"wrong question: question_idx={qidx}"
-        src_img_data, tags, integrity_check = self.msgr.MclaimThisTask(
+        src_img_data, tags, integrity_check = self.msgr.claim_task(
             task, version=self.version
         )
 
@@ -1679,7 +1679,7 @@ class MarkerClient(QWidget):
         Returns:
             List of paper numbers using the rubric.
         """
-        return self.msgr.MgetOtherRubricUsages(key)
+        return self.msgr.get_other_rubric_usages(key)
 
     def sendNewRubricToServer(self, new_rubric) -> dict[str, Any]:
         return self.msgr.McreateRubric(new_rubric)
