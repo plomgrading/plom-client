@@ -2297,10 +2297,7 @@ class MarkerClient(QWidget):
                 WarnMsg(parent, f"Could not get tags from {task}", info=str(e)).exec()
                 return
 
-            # TODO: should not happen?  Delete it later
-            if task.casefold().startswith("q"):
-                # long-term goal to get rid of the q in q1234g2
-                task = task[1:]
+            assert not task.casefold().startswith("q")
             self.tags_changed_signal.emit(task, current_tags)
 
     def _update_tags_in_examModel(self, task: str, tags: list[str]):
