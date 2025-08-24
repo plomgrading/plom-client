@@ -125,7 +125,7 @@ class Annotator(QWidget):
 
         self.username = username
         self.parentMarkerUI = parentMarkerUI
-        self.task = None
+        self.task: str | None = None
 
         # a key-value store for local config, including "don't ask me again"
         self._config: Dict[str, Any] = {}
