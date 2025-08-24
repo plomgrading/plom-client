@@ -85,6 +85,7 @@ packages = [
     "plomclient.client.icons",
     "plomclient.client.cursors",
     "plomclient.client.help_img",
+    "plomclient.messenger",
 ]
 
 # somewhat deprecated?  not supposed to package things into share?
