@@ -1478,7 +1478,17 @@ class MarkerClient(QWidget):
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
 
-    def switch_task(self, task):
+    def switch_task(self, task: str) -> None:
+        """Try to switch to marking/viewing a particular task, possibly checking with user.
+
+        Args:
+            task: a string like `0123g7`.
+
+        This code might fail to the switch the task, for example, if the
+        user has unsaved work and doesn't watch to discard it.
+        If it does succeed in switching, it will also update the task
+        table selection indicator.
+        """
         print(f"We should switch to task {task}")
         if self._annotator:
             if self._annotator.task == task:
