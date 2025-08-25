@@ -1498,6 +1498,29 @@ class MarkerClient(QWidget):
                 msg = SimpleQuestion(self, "Discard any annotations and switch papers?")
                 if msg.exec() != QMessageBox.StandardButton.Yes:
                     return
+            if self.examModel.getStatusByTask(task) == "To Do":
+                InfoMsg(
+                    self,
+                    f"Task {task} may not be assigned to you. "
+                    "If you want to look at it, close the annotator "
+                    'and change to read-only "view-mode".  '
+                    "If you want to mark this paper, you can try to claim it.",
+                ).exec()
+                # TODO: QoL says put a "claim" button in the dialog
+                # TODO: or easier yes/no: "Do you want to claim it?"
+                return
+            if self.examModel.getStatusByTask(task) == "Complete":
+                if not self.examModel.is_our_task(task, self.msgr.username):
+                    InfoMsg(
+                        self,
+                        # TODO: useful to say what username here
+                        f"Task {task} is not our task. "
+                        "If you want to look at it, close the annotator "
+                        'and change to read-only "view-mode".  '
+                        "(If you want to edit this task, you'll need to "
+                        "reassign the task to yourself).",
+                    ).exec()
+                    return
             # TODO: document the "public interface!")
             self._annotator.close_current_question()
         self.moveSelectionToTask(task)
