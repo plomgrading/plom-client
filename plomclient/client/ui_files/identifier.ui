@@ -88,12 +88,16 @@
          <property name="title">
           <string>Search classlist by student ID or name</string>
          </property>
-         <layout class="QFormLayout" name="formLayout">
-          <property name="sizeConstraint">
-           <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
-          </property>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLineEdit" name="idEdit"/>
+	 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+          <item>
+            <widget class="QLineEdit" name="idEdit"/>
+           </item>
+          <item>
+           <widget class="QPushButton" name="saveButton">
+            <property name="text">
+             <string>save</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
