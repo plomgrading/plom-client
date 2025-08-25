@@ -3,6 +3,7 @@
 # Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2022-2023 Natalie Balashov
 # Copyright (C) 2024 Aden Chan
+# Copyright (C) 2025 Aidan Murphy
 
 """The Plom Identifier client."""
 
@@ -266,6 +267,7 @@ class IDClient(QWidget):
 
         # Connect buttons and key-presses to functions.
         self.ui.idEdit.returnPressed.connect(self.enterID)
+        self.ui.saveButton.clicked.connect(self.enterID)
         self.ui.nextButton.clicked.connect(self.skipOnClick)
         self.ui.predButton0.clicked.connect(self.acceptPrediction0)
         self.ui.predButton1.clicked.connect(self.acceptPrediction1)
