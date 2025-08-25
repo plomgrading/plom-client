@@ -115,7 +115,7 @@ class MarkerExamModel(QStandardItemModel):
 
         Args:
             task_id_str: the Task ID for the page being uploaded. Takes the form
-                "q1234g9" for paper 1234 question 9.
+                "1234g9" for paper 1234 question 9.
 
         Keyword Args:
             status: test status string.
@@ -188,7 +188,7 @@ class MarkerExamModel(QStandardItemModel):
 
         Args:
             task_id_str: the Task ID for the page being uploaded. Takes the form
-                "q1234g9" for paper 1234 question 9.
+                "1234g9" for paper 1234 question 9.
 
         Keywords Args:
             integrity: mandatory input, used to determine if we can keep things.
@@ -349,7 +349,7 @@ class MarkerExamModel(QStandardItemModel):
 
         Args:
             task (str): the task for the image files to be loaded from.
-                Takes the form "q1234g9" = test 1234 question index 9.
+                Takes the form "1234g9" = test 1234 question index 9.
 
         Returns:
             The row index of the task.
