@@ -353,6 +353,7 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignSignal.connect(self.reassign_task)
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
+        self.ui.tableView.want_to_change_task.connect(self.switch_task)
 
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
@@ -1335,9 +1336,16 @@ class MarkerClient(QWidget):
         # The simplest thing is simply to refresh/rebuild the task list
         self.refresh_server_data()
 
-    def claim_task(self) -> None:
-        """Try to claim the currently selected task for this user."""
-        task = self.get_current_task_id_or_none()
+    def claim_task(self, task: str | None = None) -> None:
+        """Try to claim a certain task for this user.
+
+        Args:
+            task: a task string like `0123g13`.  If None then query
+                the selection for the currently selected task.
+                TODO: consider removing the "None" behaviour.
+        """
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         # TODO: if its "To Do" we can just claim it
@@ -1367,8 +1375,6 @@ class MarkerClient(QWidget):
         ) as err:
             WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
             return
-        # maybe it was there already: should be harmless
-        self.moveSelectionToTask(task)
 
     def defer_task(self, *, advance_to_next: bool = True) -> None:
         """Mark task as "defer" - to be skipped until later.
@@ -1471,6 +1477,20 @@ class MarkerClient(QWidget):
         self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
+
+    def switch_task(self, task):
+        print(f"We should switch to task {task}")
+        if self._annotator:
+            if self._annotator.task == task:
+                log.debug("Annotator already on %s; no change required", task)
+                return
+            if self._annotator.is_dirty():
+                msg = SimpleQuestion(self, "Discard any annotations and switch papers?")
+                if msg.exec() != QMessageBox.StandardButton.Yes:
+                    return
+            # TODO: document the "public interface!")
+            self._annotator.close_current_question()
+        self.moveSelectionToTask(task)
 
     def annotate_selected_task(self):
         """Grab current test from table, do checks, start annotator."""

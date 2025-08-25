@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QAction, QContextMenuEvent, QCursor
+from PyQt6.QtGui import QAction, QContextMenuEvent, QCursor, QMouseEvent
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QMenu,
@@ -26,11 +26,12 @@ class TaskTableView(QTableView):
     # Marker will need to connect to these
     annotateSignal = pyqtSignal()
     tagSignal = pyqtSignal()
-    claimSignal = pyqtSignal()
+    claimSignal = pyqtSignal(str)
     deferSignal = pyqtSignal()
     reassignSignal = pyqtSignal()
     reassignToMeSignal = pyqtSignal()
     resetSignal = pyqtSignal()
+    want_to_change_task = pyqtSignal(str)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -50,10 +51,74 @@ class TaskTableView(QTableView):
         else:
             super().keyPressEvent(event)
 
+    def mousePressEvent(self, event: QMouseEvent) -> None:  # or bool?
+        """Custom mouse event handler.
+
+        By default, the selection of a row happens *before* we get an event.
+        This makes it hard to undo the selection change, if the user rejects
+        the change (due to unsaved work for example).
+
+        So instead we have our own `want_to_change_task` signal that emit
+        from here.  Note that we then *do not* move the selection.
+        The application will have to call us back, if they would like to
+        change tasks.
+
+        TODO: up and down keys also move the selection, needs hacks there too.
+        """
+        print(event)
+        clicked_idx = self.indexAt(event.pos())
+        print(clicked_idx)
+        print(clicked_idx.isValid())
+        if clicked_idx.isValid():
+            r = clicked_idx.row()
+            print(f"DEBUG: we have a click on a value index, row {r}")
+            task = self.model().getPrefix(r)
+            print(f"DEBUG: this is task {task}")
+            if event.button() == Qt.MouseButton.LeftButton:
+                print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
+                self.want_to_change_task.emit(task)
+                print("delaying 1 seconds")
+                for __ in range(10):
+                    import time
+
+                    time.sleep(0.1)
+                    print("  wait")
+
+                # return without passing the event onwards (which might
+                # change the selection in an undesirable way)
+                return
+            else:
+                # Ignore events from all other buttons (?)
+                # TODO: strangely the right-click nonetheless opens
+                return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:  # or bool?
+        # TODO: we need to filter out drag events too: many clicks are actually short drags
+        print("Debug: we have a mouseMoveEvent on task_table, discarding")
+        return
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:  # or bool?
+        # TODO: we need to filter out drag events too: many clicks are actually short drags
+        print("Debug: we have a mouseReleaseEvent on task_table, discarding")
+        return
+
     def contextMenuEvent(self, event: QContextMenuEvent | None) -> None:
         """Open a context menu with options for the currently highlighted task."""
         if not event:
             return
+        clicked_idx = self.indexAt(event.pos())
+        print(clicked_idx)
+        print(clicked_idx.isValid())
+        if not clicked_idx.isValid():
+            # TODO: what to do if invalid?  early return?
+            return
+
+        r = clicked_idx.row()
+        print(f"DEBUG: contextmenu: we have a click on a value index, row {r}")
+        task = self.model().getPrefix(r)
+        print(f"DEBUG: this is task {task}")
+
         menu = QMenu(self)
         a = QAction("Annotate\tEnter", self)
         a.triggered.connect(self.annotateSignal.emit)
@@ -66,8 +131,8 @@ class TaskTableView(QTableView):
         menu.addAction(a)
         # TODO: this menu could be "context aware", not showing
         # claim if we already own it or defer if we don't
-        a = QAction("Claim this task", self)
-        a.triggered.connect(self.claimSignal.emit)
+        a = QAction(f"Claim task {task}", self)
+        a.triggered.connect(lambda: self.claimSignal.emit(task))
         menu.addAction(a)
         a = QAction("Defer this task", self)
         a.triggered.connect(self.deferSignal.emit)
