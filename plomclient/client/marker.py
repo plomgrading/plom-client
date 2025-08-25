@@ -354,6 +354,7 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
         self.ui.tableView.want_to_change_task.connect(self.switch_task)
+        self.ui.tableView.refresh_task_list.connect(self.refresh_server_data)
 
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.

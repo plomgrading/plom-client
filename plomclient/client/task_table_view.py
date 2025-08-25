@@ -32,6 +32,7 @@ class TaskTableView(QTableView):
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
     want_to_change_task = pyqtSignal(str)
+    refresh_task_list = pyqtSignal()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -110,42 +111,46 @@ class TaskTableView(QTableView):
         """Open a context menu with options for the currently highlighted task."""
         if not event:
             return
-        clicked_idx = self.indexAt(event.pos())
-        print(clicked_idx)
-        print(clicked_idx.isValid())
-        if not clicked_idx.isValid():
-            # TODO: what to do if invalid?  early return?
-            return
-
-        r = clicked_idx.row()
-        print(f"DEBUG: contextmenu: we have a click on a value index, row {r}")
-        # TODO: here we muck around in the model, which we're probably not supposed to
-        task = self.model().getPrefix(r)  # type: ignore[union-attr]
-        print(f"DEBUG: this is task {task}")
 
         menu = QMenu(self)
-        a = QAction("Annotate\tEnter", self)
-        a.triggered.connect(self.annotateSignal.emit)
-        menu.addAction(a)
-        a = QAction(f"Tag task {task}", self)
-        a.triggered.connect(lambda: self.tagSignal.emit(task))
-        menu.addAction(a)
-        a = QAction(f"Reset task {task}", self)
-        a.triggered.connect(lambda: self.resetSignal.emit(task))
-        menu.addAction(a)
-        # TODO: this menu could be "context aware", not showing
-        # claim if we already own it or defer if we don't
-        a = QAction(f"Claim task {task}", self)
-        a.triggered.connect(lambda: self.claimSignal.emit(task))
-        menu.addAction(a)
+
+        clicked_idx = self.indexAt(event.pos())
+        if clicked_idx.isValid():
+            # TODO: what to do if invalid?  early return?
+            r = clicked_idx.row()
+            print(f"DEBUG: contextmenu: we have a click on a value index, row {r}")
+            # TODO: here we muck around in the model, which we're probably not supposed to
+            task = self.model().getPrefix(r)  # type: ignore[union-attr]
+            print(f"DEBUG: this is task {task}")
+
+            a = QAction("Annotate\tEnter", self)
+            a.triggered.connect(self.annotateSignal.emit)
+            menu.addAction(a)
+            a = QAction(f"Tag task {task}", self)
+            a.triggered.connect(lambda: self.tagSignal.emit(task))
+            menu.addAction(a)
+            a = QAction(f"Reset task {task}", self)
+            a.triggered.connect(lambda: self.resetSignal.emit(task))
+            menu.addAction(a)
+            # TODO: this menu could be "context aware", not showing
+            # claim if we already own it or defer if we don't
+            a = QAction(f"Claim task {task}", self)
+            a.triggered.connect(lambda: self.claimSignal.emit(task))
+            menu.addAction(a)
+            a = QAction(f"Reassign task {task}...", self)
+            a.triggered.connect(lambda: self.reassignSignal.emit(task))
+            menu.addAction(a)
+            a = QAction(f"Reassign task {task} to me", self)
+            a.triggered.connect(lambda: self.reassignToMeSignal.emit(task))
+            menu.addAction(a)
+            menu.addSeparator()
+
         a = QAction("Defer current task", self)
         a.triggered.connect(self.deferSignal.emit)
         menu.addAction(a)
-        a = QAction(f"Reassign task {task}...", self)
-        a.triggered.connect(lambda: self.reassignSignal.emit(task))
-        menu.addAction(a)
-        a = QAction(f"Reassign task {task} to me", self)
-        a.triggered.connect(lambda: self.reassignToMeSignal.emit(task))
+        menu.addSeparator()
+        a = QAction("Refresh task list", self)
+        a.triggered.connect(self.refresh_task_list.emit)
         menu.addAction(a)
         menu.popup(QCursor.pos())
         event.accept()
