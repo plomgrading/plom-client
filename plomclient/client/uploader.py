@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2025 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -92,7 +92,7 @@ class BackgroundUploader(QThread):
             *args: all input arguments are cached and will eventually be
                 passed untouched to the `upload` function.  There is one
                 exception: `args[0]` is assumed to contain the task str
-                of the form `"q1234g9"` for printing debugging messages.
+                of the form `"1234g9"` for printing debugging messages.
 
         Returns:
             None
@@ -198,7 +198,7 @@ def synchronous_upload(
     Args:
         _msgr: the messenger object, hopefully connected and ready to upload.
         task: the Task ID for the page being uploaded. Takes the form
-            "q1234g9" = test 1234 question 9.
+            "1234g9" = test 1234 question 9.
         grade: grade given to question.
         aname: the annotated file.
         pname: the `.plom` file.
@@ -218,11 +218,7 @@ def synchronous_upload(
             the same exam, which would indicate a programming error and
             should not happen.
     """
-    if not (
-        task.startswith("q")
-        and aname.stem == f"G{task[1:]}"
-        and pname.name == f"G{task[1:]}.plom"
-    ):
+    if not (aname.stem == f"G{task}" and pname.name == f"G{task}.plom"):
         raise PlomSeriousException(
             "Upload file names mismatch [{}, {}] - this should not happen".format(
                 aname, pname
