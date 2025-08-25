@@ -1297,17 +1297,25 @@ class MarkerClient(QWidget):
         self._updateCurrentlySelectedRow()
         return True
 
-    def reassign_task_to_me(self) -> None:
-        self.reassign_task(assign_to=self.msgr.username)
+    def reassign_task_to_me(self, task: str | None = None) -> None:
+        """Reassign a task to the current user."""
+        self.reassign_task(task, assign_to=self.msgr.username)
 
-    def reassign_task(self, *, assign_to: str | None = None) -> None:
-        """Reassign the currently-selected task to ourselves or another user.
+    def reassign_task(
+        self, task: str | None = None, *, assign_to: str | None = None
+    ) -> None:
+        """Reassign a task (by default the currently-selected task) to ourselves or another user.
+
+        Args:
+            task: a task code like `"0123g5"`, or None to use the
+                currently-selected task.
 
         Keyword Args:
             assign_to: if present, try to reassign to this user directly.
                 If omitted, we'll ask using a popup dialog.
         """
-        task = self.get_current_task_id_or_none()
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         papernum, qidx = task_id_str_to_paper_question_index(task)
@@ -1342,7 +1350,6 @@ class MarkerClient(QWidget):
         Args:
             task: a task string like `0123g13`.  If None then query
                 the selection for the currently selected task.
-                TODO: consider removing the "None" behaviour.
         """
         if not task:
             task = self.get_current_task_id_or_none()
@@ -1411,14 +1418,21 @@ class MarkerClient(QWidget):
         if advance_to_next:
             self.requestNext()
 
-    def reset_task(self, *, advance_to_next: bool = True) -> None:
+    def reset_task(
+        self, task: str | None = None, *, advance_to_next: bool = True
+    ) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
+
+        Args:
+            task: a string such as `"0123g5"` or if None / omitted, then
+                try to get from the current selection.
 
         Keyword Args:
             advance_to_next: whether to also advance to the next task
                 (default).
         """
-        task = self.get_current_task_id_or_none()
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         papernum, qidx = task_id_str_to_paper_question_index(task)
@@ -2284,9 +2298,15 @@ class MarkerClient(QWidget):
         task_id_str = self.prxM.getPrefix(pr)
         return task_id_str
 
-    def manage_tags(self):
-        """Manage the tags of the current task."""
-        task = self.get_current_task_id_or_none()
+    def manage_tags(self, task: str | None = None):
+        """Manage the tags of the a task, or the currently selected task.
+
+        Args:
+            task: a string like `"0123g5"` or try to use the current
+                selection if None or omitted.
+        """
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         self.manage_task_tags(task)
