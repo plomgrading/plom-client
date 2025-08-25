@@ -121,7 +121,7 @@
               <string/>
              </property>
              <property name="text">
-              <string>Next</string>
+              <string>Save &amp;&amp; Next</string>
              </property>
             </widget>
            </item>

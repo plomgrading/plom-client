@@ -362,12 +362,18 @@ class Annotator(QWidget):
         m = QMenu()
         key = keydata["next-paper"]["keys"][0]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Next paper\t{key}", self.saveAndGetNext)
-        m.addAction("Done (save and close)", self.saveAndClose)
-        m.addAction("Defer and go to next", lambda: None).setEnabled(False)
+        m.addAction(f"Save && next paper\t{key}", self.saveAndGetNext)
+
+        # TRANSLATOR: this option discards every back to the latest save
+        # m.addAction("Revert changes", self.revert_changes)
+
+        # TODO: possible this should be in the RHS task list not here?
+        # TRANSLATOR: this option resets a task completely
+        # m.addAction("Remove all annotations", self.todo_somemethod)
+
         (key,) = keydata["cancel"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Close without saving\t{key}", self.close)
+        m.addAction(f"Exit annotate mode\t{key}", self.close)
         m.addSeparator()
         (key,) = keydata["quick-show-prev-paper"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
@@ -1164,6 +1170,11 @@ class Annotator(QWidget):
         log.debug("saveAndGetNext: new stuff is {}".format(stuff))
         self.load_new_question(*stuff)
 
+    # TODO: @pyqtSlot()?
+    # def revert_changes(self) -> None:
+    #     InfoMsg(self, "Not implemented yet").exec()
+    #     print("TODO")
+
     @pyqtSlot()
     def saveAndClose(self) -> None:
         """Save the current annotations, and then close.
@@ -1382,15 +1393,6 @@ class Annotator(QWidget):
         # handle rubric function.
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
         self.ui.rearrangePagesButton.clicked.connect(self.rearrangePages)
-        # Connect up the finishing functions - using a dropdown menu
-        m = QMenu()
-        m.addAction("Done", self.saveAndClose)
-        m.addSeparator()
-        m.addAction("Cancel", self.close)
-        self.ui.finishedButton.setMenu(m)
-        self.ui.finishedButton.setPopupMode(
-            QToolButton.ToolButtonPopupMode.MenuButtonPopup
-        )
         self.ui.finishedButton.clicked.connect(self.saveAndGetNext)
 
         # connect the "wide" button in the narrow-view
@@ -2110,7 +2112,7 @@ class Annotator(QWidget):
             WarnMsg(
                 self,
                 "The client cannot determine the previous paper. "
-                "Please cancel this annotation and select from the list.",
+                "Please select from the task list instead.",
             ).exec()
             return
         keydata = self.get_key_bindings()
