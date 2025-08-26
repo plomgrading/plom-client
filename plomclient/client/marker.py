@@ -334,7 +334,7 @@ class MarkerClient(QWidget):
         except (ValueError, KeyError):
             question_label = "???"
         self.ui.labelTasks.setText(
-            "{} (ver. {})\n“{}”".format(
+            "{} (ver. {})\n{}".format(
                 question_label, self.version, self.exam_spec["name"]
             )
         )
