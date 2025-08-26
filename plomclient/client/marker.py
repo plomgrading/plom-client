@@ -424,6 +424,11 @@ class MarkerClient(QWidget):
         # keydata = self.get_key_bindings()
 
         m = QMenu()
+
+        m.addAction("Refresh task list", self.refresh_server_data)
+
+        m.addSeparator()
+
         m.addAction("About Plom", lambda: show_about_dialog(self))
 
         m.addSeparator()
