@@ -327,7 +327,7 @@
              <item row="0" column="3">
               <widget class="QToolButton" name="task_overflow_button">
                <property name="text">
-                <string>...</string>
+                <string>menu</string>
                </property>
               </widget>
              </item>

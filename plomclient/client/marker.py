@@ -388,19 +388,18 @@ class MarkerClient(QWidget):
         Returns:
             None but modifies self.ui
         """
-        m = QMenu(self)
-        s = "Get \N{MATHEMATICAL ITALIC SMALL N}th..."
-        m.addAction(s, self.claim_task_interactive)
-        m.addAction("Which papers...", self.change_tag_range_options)
-        self.ui.getNextButton.setMenu(m)
         self.ui.getNextButton.clicked.connect(self.requestNext)
         self.ui.annButton.clicked.connect(self.annotate_button_clicked)
         m = QMenu(self)
         m.addAction("&Defer selected task", self.defer_task)
+        m.addSeparator()
         m.addAction("Reset selected task", self.reset_task)
         m.addAction("Reassign selected task to me", self.reassign_task_to_me)
         m.addAction("Reassign selected task...", self.reassign_task)
         m.addAction("Claim selected task for me", self.claim_task)
+        m.addSeparator()
+        m.addAction("Get paper number...", self.claim_task_interactive)
+        m.addAction("Choose papers to mark...", self.change_tag_range_options)
         self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
         self.ui.task_overflow_button.setMenu(m)
         self.ui.task_overflow_button.setPopupMode(
