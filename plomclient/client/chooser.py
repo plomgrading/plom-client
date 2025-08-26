@@ -44,6 +44,7 @@ import urllib3
 from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from plomclient.common import Default_Port
 from plomclient.messenger import Plom_API_Version, Messenger
@@ -170,6 +171,14 @@ class Chooser(QDialog):
         self.ui.pgSB.setValue(int(self.lastTime["question"]))
         self.ui.vSB.setValue(int(self.lastTime["v"]))
         self.ui.fontSB.setValue(int(self.lastTime["fontSize"]))
+
+        # perhaps temporarily, same shortcut key as Marker
+        self._store_QShortcuts = []
+        key = "ctrl+q"
+        command = self.close
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
 
     # TODO: see Issue #3423, this below workaround doesn't work for me
     # def keyPressEvent(self, event):
