@@ -204,6 +204,8 @@ class MarkerClient(QWidget):
         # history contains all the tgv in order of being marked except the current one.
         self.marking_history = []
 
+        self._hack_prevent_shutdown = False
+
     def setup(
         self,
         messenger: Messenger,
@@ -442,14 +444,29 @@ class MarkerClient(QWidget):
         m.addSeparator()
 
         self._store_QShortcuts = []
+
+        key = "ctrl+w"
+        command = self._close_but_dont_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Disconnect\t{key}", command)
+
         key = "ctrl+q"
         command = self.close
         sc = QShortcut(QKeySequence(key), self)
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Quit\t{key}", self.close)
+        m.addAction(f"Quit\t{key}", command)
+
         return m
+
+    def _close_but_dont_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = True
+        self.close()
 
     def annotate_button_clicked(self):
         """Handle the click event of the annotate button/toggle."""
@@ -2181,8 +2198,9 @@ class MarkerClient(QWidget):
             log.warning("User tried to logout but was already logged out.")
             pass
         log.debug("Emitting Marker shutdown signal")
+        retval = 2 if self._hack_prevent_shutdown else 1
         self.my_shutdown_signal.emit(
-            2,
+            retval,
             [
                 self.annotatorSettings["keybinding_name"],
                 self.annotatorSettings["keybinding_custom_overlay"],
