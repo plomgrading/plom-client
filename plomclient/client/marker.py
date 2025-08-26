@@ -396,12 +396,18 @@ class MarkerClient(QWidget):
         self.ui.getNextButton.clicked.connect(self.requestNext)
         self.ui.annButton.clicked.connect(self.annotate_button_clicked)
         m = QMenu(self)
-        m.addAction("Reset task", self.reset_task)
-        m.addAction("Reassign task to me", self.reassign_task_to_me)
-        m.addAction("Reassign task...", self.reassign_task)
-        m.addAction("Claim task for me", self.claim_task)
-        self.ui.deferButton.setMenu(m)
+        m.addAction("&Defer selected task", self.defer_task)
+        m.addAction("Reset selected task", self.reset_task)
+        m.addAction("Reassign selected task to me", self.reassign_task_to_me)
+        m.addAction("Reassign selected task...", self.reassign_task)
+        m.addAction("Claim selected task for me", self.claim_task)
+        self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
+        self.ui.task_overflow_button.setMenu(m)
+        self.ui.task_overflow_button.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
         self.ui.deferButton.clicked.connect(self.defer_task)
+        self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
         self.ui.refreshTaskListButton.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
@@ -411,6 +417,7 @@ class MarkerClient(QWidget):
         self.ui.filterLE.textEdited.connect(self.setFilter)
         self.ui.filterInvCB.stateChanged.connect(self.setFilter)
         self.ui.viewButton.clicked.connect(self.choose_and_view_other)
+        self.ui.viewButton.setVisible(False)
         self.ui.technicalButton.clicked.connect(self.show_hide_technical)
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
@@ -426,6 +433,7 @@ class MarkerClient(QWidget):
         m = QMenu()
 
         m.addAction("Refresh task list", self.refresh_server_data)
+        m.addAction("View another paper...", self.choose_and_view_other)
 
         m.addSeparator()
 
