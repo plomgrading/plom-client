@@ -411,7 +411,7 @@ class MarkerClient(QWidget):
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
         self.ui.refreshTaskListButton.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
-        self.ui.refreshTaskListButton.setToolTip("Refresh server data")
+        self.ui.refreshTaskListButton.setToolTip("Refresh task list")
         self.ui.tagButton.clicked.connect(self.manage_tags)
         self.ui.filterLE.returnPressed.connect(self.setFilter)
         self.ui.filterLE.textEdited.connect(self.setFilter)
@@ -432,6 +432,7 @@ class MarkerClient(QWidget):
 
         m = QMenu()
 
+        # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
         m.addAction("Refresh task list", self.refresh_server_data)
         m.addAction("View another paper...", self.choose_and_view_other)
 
