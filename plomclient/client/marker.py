@@ -49,8 +49,10 @@ from PyQt6.QtWidgets import (
     QMenu,
     QMessageBox,
     QProgressDialog,
+    QToolButton,
     QWidget,
 )
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from . import __version__
 from plomclient.plom_exceptions import (
@@ -78,6 +80,7 @@ from .question_labels import (
     get_question_label,
     verbose_question_label,
 )
+from .about_dialog import show_about_dialog
 from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
 from .viewers import QuestionViewDialog, SelectPaperQuestion
@@ -385,7 +388,6 @@ class MarkerClient(QWidget):
         Returns:
             None but modifies self.ui
         """
-        self.ui.closeButton.clicked.connect(self.close)
         m = QMenu(self)
         s = "Get \N{MATHEMATICAL ITALIC SMALL N}th..."
         m.addAction(s, self.claim_task_interactive)
@@ -412,6 +414,29 @@ class MarkerClient(QWidget):
         self.ui.technicalButton.clicked.connect(self.show_hide_technical)
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
+
+        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        # self.ui.hamMenuButton.setToolTip("Menu (F10)")
+        self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+    def buildHamburger(self):
+        # keydata = self.get_key_bindings()
+
+        m = QMenu()
+        m.addAction("About Plom", lambda: show_about_dialog(self))
+
+        m.addSeparator()
+
+        self._store_QShortcuts = []
+        key = "ctrl+q"
+        command = self.close
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Quit\t{key}", self.close)
+        return m
 
     def annotate_button_clicked(self):
         """Handle the click event of the annotate button/toggle."""
@@ -1026,7 +1051,7 @@ class MarkerClient(QWidget):
             self.ui.technicalButton.setText("info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
-            ptsz = self.ui.closeButton.fontInfo().pointSizeF()
+            ptsz = self.ui.hamMenuButton.fontInfo().pointSizeF()
             self.ui.frameTechnical.setStyleSheet(
                 f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
             )

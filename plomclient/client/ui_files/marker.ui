@@ -75,6 +75,44 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QFrame" name="frame_2">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="hamMenuButton">
+            <property name="text">
+             <string>menu</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="labelTasks">
          <property name="text">
           <string notr="true">&lt;Tasks&gt;</string>
@@ -404,16 +442,6 @@
             </property>
            </spacer>
           </item>
-          <item>
-           <widget class="QPushButton" name="closeButton">
-            <property name="focusPolicy">
-             <enum>Qt::FocusPolicy::NoFocus</enum>
-            </property>
-            <property name="text">
-             <string>&amp;Quit</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -488,7 +516,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>tableView</tabstop>
-  <tabstop>closeButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

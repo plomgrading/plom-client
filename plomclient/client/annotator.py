@@ -76,7 +76,6 @@ from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
 from .useful_classes import SimpleQuestion, SimpleQuestionCheckBox
 from .useful_classes import _json_path_to_str
-from .about_dialog import show_about_dialog
 
 
 log = logging.getLogger("annotr")
@@ -464,7 +463,6 @@ class Annotator(QWidget):
         (key,) = keydata["help"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Show shortcut keys...\t{key}", self.keyPopUp)
-        m.addAction("About Plom", lambda: show_about_dialog(self))
         return m
 
     def close_current_scene(self) -> None:
