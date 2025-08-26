@@ -90,6 +90,13 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QLabel" name="labelTasks">
+            <property name="text">
+             <string notr="true">&lt;Tasks&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
@@ -110,13 +117,6 @@
            </widget>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="labelTasks">
-         <property name="text">
-          <string notr="true">&lt;Tasks&gt;</string>
-         </property>
         </widget>
        </item>
        <item>
