@@ -81,12 +81,12 @@ class TaskTableView(QTableView):
             if event.button() == Qt.MouseButton.LeftButton:
                 print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
                 self.want_to_change_task.emit(task)
-                print("delaying 1 seconds")
-                for __ in range(10):
-                    import time
+                # print("delaying 1 seconds")
+                # for __ in range(10):
+                #     import time
 
-                    time.sleep(0.1)
-                    print("  wait")
+                #     time.sleep(0.1)
+                #     print("  wait")
 
                 # return without passing the event onwards (which might
                 # change the selection in an undesirable way)
