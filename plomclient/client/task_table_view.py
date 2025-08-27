@@ -81,10 +81,7 @@ class TaskTableView(QTableView):
         """
         if not event:
             return
-        print(event)
         clicked_idx = self.indexAt(event.pos())
-        print(clicked_idx)
-        print(clicked_idx.isValid())
         if clicked_idx.isValid():
             r = clicked_idx.row()
             print(f"DEBUG: we have a click on a value index, row {r}")
@@ -110,12 +107,12 @@ class TaskTableView(QTableView):
                 return
         super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
         print("Debug: we have a mouseMoveEvent on task_table, discarding")
         return
 
-    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
         print("Debug: we have a mouseReleaseEvent on task_table, discarding")
         return
