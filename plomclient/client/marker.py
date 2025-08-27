@@ -393,7 +393,7 @@ class MarkerClient(QWidget):
             None but modifies self.ui
         """
         self.ui.getNextButton.clicked.connect(self.requestNext)
-        self.ui.annButton.clicked.connect(self.annotate_button_clicked)
+        self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
         m.addAction("&Defer selected task", self.defer_task)
         m.addSeparator()
@@ -524,16 +524,18 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    def annotate_button_clicked(self):
-        """Handle the click event of the annotate button/toggle."""
-        # Note: this is the state after *just* toggling, we are reacting
-        if not self.annButton.isChecked():
-            # assert self._annotator, "illegal: checked annButton but no Annotator"
-            if self._annotator:
-                self._annotator.close()
-            # self.exit_annotate_mode()
-        else:
-            self.annotate_task()
+    # We experimented with the "Mark" button being checkable, could revisit.
+    # Note: consider that users may accidentally get to "view mode" by double-clicking
+    # def annotate_button_clicked(self):
+    #     """Handle the click event of the annotate button."""
+    #     # Note: this is the state after *just* toggling, we are reacting
+    #     if not self.annButton.isChecked():
+    #         # assert self._annotator, "illegal: checked annButton but no Annotator"
+    #         if self._annotator:
+    #             self._annotator.close()
+    #         # self.exit_annotate_mode()
+    #     else:
+    #         self.annotate_task()
 
     def exit_annotate_mode(self):
         self._annotator = None
