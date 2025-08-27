@@ -133,8 +133,8 @@ class TaskTableView(QTableView):
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
             print(f"DEBUG: this is task {task}")
 
-            a = QAction("Annotate\tEnter", self)
-            a.triggered.connect(self.annotateSignal.emit)
+            a = QAction(f"Annotate task {task}", self)
+            a.triggered.connect(lambda: self.want_to_annotate_task.emit(task))
             menu.addAction(a)
             a = QAction(f"Tag task {task}", self)
             a.triggered.connect(lambda: self.tagSignal.emit(task))
