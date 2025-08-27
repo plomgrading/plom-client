@@ -353,6 +353,8 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignSignal.connect(self.reassign_task)
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
+        self.ui.tableView.want_to_change_task.connect(self.switch_task)
+        self.ui.tableView.refresh_task_list.connect(self.refresh_server_data)
 
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
@@ -1296,17 +1298,25 @@ class MarkerClient(QWidget):
         self._updateCurrentlySelectedRow()
         return True
 
-    def reassign_task_to_me(self) -> None:
-        self.reassign_task(assign_to=self.msgr.username)
+    def reassign_task_to_me(self, task: str | None = None) -> None:
+        """Reassign a task to the current user."""
+        self.reassign_task(task, assign_to=self.msgr.username)
 
-    def reassign_task(self, *, assign_to: str | None = None) -> None:
-        """Reassign the currently-selected task to ourselves or another user.
+    def reassign_task(
+        self, task: str | None = None, *, assign_to: str | None = None
+    ) -> None:
+        """Reassign a task (by default the currently-selected task) to ourselves or another user.
+
+        Args:
+            task: a task code like `"0123g5"`, or None to use the
+                currently-selected task.
 
         Keyword Args:
             assign_to: if present, try to reassign to this user directly.
                 If omitted, we'll ask using a popup dialog.
         """
-        task = self.get_current_task_id_or_none()
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         papernum, qidx = task_id_str_to_paper_question_index(task)
@@ -1335,9 +1345,15 @@ class MarkerClient(QWidget):
         # The simplest thing is simply to refresh/rebuild the task list
         self.refresh_server_data()
 
-    def claim_task(self) -> None:
-        """Try to claim the currently selected task for this user."""
-        task = self.get_current_task_id_or_none()
+    def claim_task(self, task: str | None = None) -> None:
+        """Try to claim a certain task for this user.
+
+        Args:
+            task: a task string like `0123g13`.  If None then query
+                the selection for the currently selected task.
+        """
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         # TODO: if its "To Do" we can just claim it
@@ -1367,8 +1383,6 @@ class MarkerClient(QWidget):
         ) as err:
             WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
             return
-        # maybe it was there already: should be harmless
-        self.moveSelectionToTask(task)
 
     def defer_task(self, *, advance_to_next: bool = True) -> None:
         """Mark task as "defer" - to be skipped until later.
@@ -1405,14 +1419,21 @@ class MarkerClient(QWidget):
         if advance_to_next:
             self.requestNext()
 
-    def reset_task(self, *, advance_to_next: bool = True) -> None:
+    def reset_task(
+        self, task: str | None = None, *, advance_to_next: bool = True
+    ) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
+
+        Args:
+            task: a string such as `"0123g5"` or if None / omitted, then
+                try to get from the current selection.
 
         Keyword Args:
             advance_to_next: whether to also advance to the next task
                 (default).
         """
-        task = self.get_current_task_id_or_none()
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         papernum, qidx = task_id_str_to_paper_question_index(task)
@@ -1471,6 +1492,53 @@ class MarkerClient(QWidget):
         self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
+
+    def switch_task(self, task: str) -> None:
+        """Try to switch to marking/viewing a particular task, possibly checking with user.
+
+        Args:
+            task: a string like `0123g7`.
+
+        This code might fail to the switch the task, for example, if the
+        user has unsaved work and doesn't watch to discard it.
+        If it does succeed in switching, it will also update the task
+        table selection indicator.
+        """
+        print(f"We should switch to task {task}")
+        if self._annotator:
+            if self._annotator.task == task:
+                log.debug("Annotator already on %s; no change required", task)
+                return
+            if self._annotator.is_dirty():
+                msg = SimpleQuestion(self, "Discard any annotations and switch papers?")
+                if msg.exec() != QMessageBox.StandardButton.Yes:
+                    return
+            if self.examModel.getStatusByTask(task) == "To Do":
+                InfoMsg(
+                    self,
+                    f"Task {task} may not be assigned to you. "
+                    "If you want to look at it, close the annotator "
+                    'and change to read-only "view-mode".  '
+                    "If you want to mark this paper, you can try to claim it.",
+                ).exec()
+                # TODO: QoL says put a "claim" button in the dialog
+                # TODO: or easier yes/no: "Do you want to claim it?"
+                return
+            if self.examModel.getStatusByTask(task) == "Complete":
+                if not self.examModel.is_our_task(task, self.msgr.username):
+                    InfoMsg(
+                        self,
+                        # TODO: useful to say what username here
+                        f"Task {task} is not our task. "
+                        "If you want to look at it, close the annotator "
+                        'and change to read-only "view-mode".  '
+                        "(If you want to edit this task, you'll need to "
+                        "reassign the task to yourself).",
+                    ).exec()
+                    return
+            # TODO: document the "public interface!")
+            self._annotator.close_current_question()
+        self.moveSelectionToTask(task)
 
     def annotate_selected_task(self):
         """Grab current test from table, do checks, start annotator."""
@@ -2231,9 +2299,15 @@ class MarkerClient(QWidget):
         task_id_str = self.prxM.getPrefix(pr)
         return task_id_str
 
-    def manage_tags(self):
-        """Manage the tags of the current task."""
-        task = self.get_current_task_id_or_none()
+    def manage_tags(self, task: str | None = None):
+        """Manage the tags of the a task, or the currently selected task.
+
+        Args:
+            task: a string like `"0123g5"` or try to use the current
+                selection if None or omitted.
+        """
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
         self.manage_task_tags(task)
