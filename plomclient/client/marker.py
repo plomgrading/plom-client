@@ -349,9 +349,10 @@ class MarkerClient(QWidget):
         # TODO: could always open annotator but may want background
         # downloader placeholder support first (?)
         # Note: clicked events occur AFTER the selection has already changed
-        # self.ui.tableView.clicked.connect(self.annotate_selected_task)
-        self.ui.tableView.doubleClicked.connect(self.annotate_selected_task)
-        self.ui.tableView.annotateSignal.connect(self.annotate_selected_task)
+        # self.ui.tableView.clicked.connect(self.annotate_task)
+        # TODO: currently not firing?  Proabbly b/c of mouseEvent hackery
+        self.ui.tableView.doubleClicked.connect(self.annotate_task)
+        self.ui.tableView.annotateSignal.connect(self.annotate_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
         self.ui.tableView.deferSignal.connect(self.defer_task)
@@ -359,6 +360,7 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
         self.ui.tableView.want_to_change_task.connect(self.switch_task)
+        self.ui.tableView.want_to_annotate_task.connect(self.annotate_task)
         self.ui.tableView.refresh_task_list.connect(self.refresh_server_data)
 
         # A view window for the papers so user can zoom in as needed.
@@ -499,7 +501,7 @@ class MarkerClient(QWidget):
                 self._annotator.close()
             # self.exit_annotate_mode()
         else:
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def exit_annotate_mode(self):
         self._annotator = None
@@ -946,7 +948,7 @@ class MarkerClient(QWidget):
         if update_select:
             self.moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def get_downloads_for_src_img_data(
         self, src_img_data: list[dict[str, Any]], trigger: bool = True
@@ -1058,7 +1060,7 @@ class MarkerClient(QWidget):
         if self._annotator:
             # if the annotator is open, we update it
             # TODO: seems like signals and slots problem
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1564,7 +1566,7 @@ class MarkerClient(QWidget):
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
         self.ui.viewModeFrame.setVisible(False)
-        self.ui.tableView.clicked.connect(self.annotate_selected_task)
+        self.ui.tableView.clicked.connect(self.annotate_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
         # use the "Annotate & Mark" button to indicate edit/view mode
@@ -1619,9 +1621,10 @@ class MarkerClient(QWidget):
             self._annotator.close_current_question()
         self.moveSelectionToTask(task)
 
-    def annotate_selected_task(self):
-        """Grab current test from table, do checks, start annotator."""
-        task = self.get_current_task_id_or_none()
+    def annotate_task(self, task: str | None = None) -> None:
+        """Annotate a particular task, or currently-selected task, starting Annotator if necessary."""
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
 

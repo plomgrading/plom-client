@@ -32,6 +32,7 @@ class TaskTableView(QTableView):
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
     want_to_change_task = pyqtSignal(str)
+    want_to_annotate_task = pyqtSignal(str)
     refresh_task_list = pyqtSignal()
 
     def __init__(self, parent):
@@ -52,7 +53,19 @@ class TaskTableView(QTableView):
         else:
             super().keyPressEvent(event)
 
-    def mousePressEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:
+        if not event:
+            return
+        clicked_idx = self.indexAt(event.pos())
+        if clicked_idx.isValid():
+            r = clicked_idx.row()
+            # TODO: here we muck around in the model, which we're probably not supposed to
+            task = self.model().getPrefix(r)  # type: ignore[union-attr]
+            print(f"DEBUG: have dblclick on row {r}, task {task}, emitting annotate...")
+            self.want_to_annotate_task.emit(task)
+        super().mouseDoubleClickEvent(event)
+
+    def mousePressEvent(self, event: QMouseEvent | None) -> None:
         """Custom mouse event handler.
 
         By default, the selection of a row happens *before* we get an event.
