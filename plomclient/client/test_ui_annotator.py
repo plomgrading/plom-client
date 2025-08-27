@@ -76,6 +76,7 @@ class MockQApp:
 
 def test_marker_open(qtbot) -> None:
     w = MarkerClient(MockQApp())
+    qtbot.mouseClick(w.ui.hamMenuButton, Qt.MouseButton.LeftButton)
     # path = qtbot.screenshot(w)
     # assert False, path
-    qtbot.mouseClick(w.ui.closeButton, Qt.MouseButton.LeftButton)
+    qtbot.keyClick(w, Qt.Key.Key_Q, modifier=Qt.KeyboardModifier.ControlModifier)
