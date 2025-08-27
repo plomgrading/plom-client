@@ -722,6 +722,19 @@ class Annotator(QWidget):
 
         self.cursor = cursor
 
+    def set_tool_icon_size(self, s: int) -> None:
+        from PyQt6.QtCore import QSize
+
+        for b in (
+            self.ui.tickButton,
+            self.ui.crossButton,
+            self.ui.textButton,
+            self.ui.lineButton,
+            self.ui.boxButton,
+            self.ui.penButton,
+        ):
+            b.setIconSize(QSize(s, s))
+
     def toggleTools(self) -> None:
         """Shows/Hides tools making more space to view the group-image.
 
@@ -729,7 +742,7 @@ class Annotator(QWidget):
             None but modifies self.ui.hideableBox
         """
         # All tools in gui inside 'hideablebox' - so easily shown/hidden
-        if self.ui.hideableBox.isHidden():
+        if self.ui.revealBox0.isVisible():
             self.wideLayout()
         else:
             self.narrowLayout()
@@ -741,7 +754,15 @@ class Annotator(QWidget):
             None but modifies self.ui
         """
         self.ui.revealBox0.show()
-        self.ui.hideableBox.hide()
+        # self.ui.hideableBox.hide()
+        self.set_tool_icon_size(16)
+        if hasattr(self, "rubric_widget"):
+            self.rubric_widget.hideB.setVisible(False)
+            # self.rubric_widget.syncB.setVisible(False)
+        # self.ui.frameTools.setVisible(False)
+        from PyQt6.QtCore import QSize
+
+        self.ui.hideableBox.setMinimumWidth(80)
 
     def wideLayout(self) -> None:
         """Changes view to Wide Layout style.
@@ -751,6 +772,14 @@ class Annotator(QWidget):
         """
         self.ui.hideableBox.show()
         self.ui.revealBox0.hide()
+        self.set_tool_icon_size(40)
+        if hasattr(self, "rubric_widget"):
+            self.rubric_widget.hideB.setVisible(True)
+            self.rubric_widget.syncB.setVisible(True)
+        # self.ui.frameTools.setVisible(True)
+        from PyQt6.QtCore import QSize
+
+        self.ui.hideableBox.setMinimumWidth(0)
 
     def next_rubric_or_reselect_rubric_tool(self):
         """Changes the tool to rubric or pick the next rubric.
