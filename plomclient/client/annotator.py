@@ -136,9 +136,7 @@ class Annotator(QWidget):
         self.maxMark = 0
 
         # help mypy understand stuff coming from uic
-        self.revealBox0: QFrame
         self.hideableBox: QFrame
-        self.wideButton: QPushButton
         self.hamMenuButton: QToolButton
         self.zoomCB: QComboBox
         self.boxButton: QToolButton
@@ -173,8 +171,6 @@ class Annotator(QWidget):
         # current or last used tool, tracked so we can switch back
         self._which_tool = self._list_of_minor_modes[0]
 
-        # hide the "revealbox" which is revealed when the hideBox is hidden.
-        self.ui.revealBox0.setHidden(True)
         self.wideLayout()
 
         self.update_attn_bar()
@@ -673,7 +669,6 @@ class Annotator(QWidget):
             None
         """
         self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
-        self.ui.narrowMarkLabel.setStyleSheet("color: #ff0000; font: bold;")
         # TODO: some duplication of code b/w here and pagescene.ScoreBox
         s = ""
         if self.question_label:
@@ -683,7 +678,6 @@ class Annotator(QWidget):
         else:
             s += f"{pprint_score(score)} out of {self.maxMark}"
         self.ui.markLabel.setText(s)
-        self.ui.narrowMarkLabel.setText(s)
 
     def loadCursors(self):
         """Load custom cursors and set their hotspots.
@@ -734,49 +728,56 @@ class Annotator(QWidget):
             self.ui.penButton,
         ):
             b.setIconSize(QSize(s, s))
+        if s <= 24:
+            self.ui.toolsLayout.setSpacing(0)
+        else:
+            self.ui.toolsLayout.setSpacing(6)
+
+    def is_compact_toolbar(self) -> bool:
+        """Are the UI toolbars currently in compact mode?"""
+        # TODO: fragile hack, e.g., translation
+        return not self.ui.saveNextButton.text().startswith("Save")
 
     def toggleTools(self) -> None:
-        """Shows/Hides tools making more space to view the group-image.
-
-        Returns:
-            None but modifies self.ui.hideableBox
-        """
-        # All tools in gui inside 'hideablebox' - so easily shown/hidden
-        if self.ui.revealBox0.isVisible():
+        """Shows/Hides tools making more space to view the group-image."""
+        if self.is_compact_toolbar():
             self.wideLayout()
         else:
             self.narrowLayout()
 
     def narrowLayout(self) -> None:
-        """Changes view to narrow Layout style.
-
-        Returns:
-            None but modifies self.ui
-        """
-        self.ui.revealBox0.show()
-        # self.ui.hideableBox.hide()
-        self.set_tool_icon_size(16)
+        """Changes view to narrow Layout style."""
+        self.ui.markLabel.setStyleSheet("color: #ff0000")
+        # TODO: condensed font
+        # QFont.setStretch(50)
+        self.set_tool_icon_size(24)
         if hasattr(self, "rubric_widget"):
             self.rubric_widget.hideB.setVisible(False)
             # self.rubric_widget.syncB.setVisible(False)
         # self.ui.frameTools.setVisible(False)
+        self.ui.helpButton.setText("?")
+        self.ui.saveNextButton.setText("Next")
+        # self.ui.rearrangePagesButton.setText("\N{PAGES}")
+        self.ui.rearrangePagesButton.setText("")
+        self.setIcon(self.ui.rearrangePagesButton, "Rearrange pages", "extra_page.svg")
+
         from PyQt6.QtCore import QSize
 
-        self.ui.hideableBox.setMinimumWidth(80)
+        # magic value :(
+        self.ui.hideableBox.setMinimumWidth(120)
 
     def wideLayout(self) -> None:
-        """Changes view to Wide Layout style.
-
-        Returns:
-            None but modifies self.ui
-        """
-        self.ui.hideableBox.show()
-        self.ui.revealBox0.hide()
+        """Changes view to Wide Layout style."""
+        self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
         self.set_tool_icon_size(40)
         if hasattr(self, "rubric_widget"):
             self.rubric_widget.hideB.setVisible(True)
             self.rubric_widget.syncB.setVisible(True)
         # self.ui.frameTools.setVisible(True)
+        self.ui.helpButton.setText("Key help")
+        self.ui.saveNextButton.setText("Save && Next")
+        self.ui.rearrangePagesButton.setText("Adjust pages")
+        self.ui.rearrangePagesButton.setIcon(QIcon())
         from PyQt6.QtCore import QSize
 
         self.ui.hideableBox.setMinimumWidth(0)
@@ -1106,14 +1107,10 @@ class Annotator(QWidget):
 
     def _setModeLabels(self, mode):
         if mode == "rubric":
-            self.ui.narrowModeLabel.setText(
-                " rubric \n {} ".format(self.rubric_widget.getCurrentTabName())
-            )
             self.ui.wideModeLabel.setText(
                 " rubric {} ".format(self.rubric_widget.getCurrentTabName())
             )
         else:
-            self.ui.narrowModeLabel.setText(" {} ".format(mode))
             self.ui.wideModeLabel.setText(" {} ".format(mode))
 
     def setIcon(self, toolButton, name, iconfile: str) -> None:
@@ -1416,10 +1413,7 @@ class Annotator(QWidget):
         # handle rubric function.
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
         self.ui.rearrangePagesButton.clicked.connect(self.rearrangePages)
-        self.ui.finishedButton.clicked.connect(self.saveAndGetNext)
-
-        # connect the "wide" button in the narrow-view
-        self.ui.wideButton.clicked.connect(self.wideLayout)
+        self.ui.saveNextButton.clicked.connect(self.saveAndGetNext)
 
     def _uncheck_exclusive_group(self):
         # Stupid hackery to uncheck an autoexclusive button.
@@ -1504,10 +1498,10 @@ class Annotator(QWidget):
         self.parentMarkerUI.annotatorSettings["zoomState"] = (
             self.ui.zoomCB.currentIndex()
         )
-        if self.ui.hideableBox.isVisible():
-            self.parentMarkerUI.annotatorSettings["compact"] = False
-        else:
+        if self.is_compact_toolbar():
             self.parentMarkerUI.annotatorSettings["compact"] = True
+        else:
+            self.parentMarkerUI.annotatorSettings["compact"] = False
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
