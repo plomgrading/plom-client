@@ -449,6 +449,7 @@ class MarkerClient(QWidget):
 
         m.addSeparator()
 
+        m.addAction("Help", self.show_help)
         m.addAction("About Plom", lambda: show_about_dialog(self))
 
         m.addSeparator()
@@ -477,6 +478,37 @@ class MarkerClient(QWidget):
         # unpleasant hackery but gets job done
         self._hack_prevent_shutdown = True
         self.close()
+
+    def show_help(self):
+        # TODO: it should know if its in view or edit mode and say so.
+        # TODO: may need adjusted as the mechanisms for moving between the
+        # two modes mature.
+        s = """
+            <h2>Welcome to Plom \N{EM DASH} brief help</h2>
+            <p>
+              This software is Plom Client: it talks to a server to coordinate
+              marking.
+            </p>
+            <p>
+              Plom Client has two modes.  You'll spend most of your time in the
+              default &ldquo;edit mode&rdquo; where you mark papers using the
+              annotation tools on the left.
+            </p>
+            <p>
+              In &ldquo;view mode&rdquo; you can
+              look at tasks, including annotated tasks, but you cannot edit
+              them. To return to &ldquo;edit mode&rdquo;, click on the
+              &ldquo;Mark&rdquo; button, or double-click on a task from the
+              list on the right.
+           </p>
+           <p>
+              General information about Plom can be found at
+              <a href="https://plomgrading.org">plomgrading.org</a>
+              and documentation can be found at
+              <a href="https://plom.readthedocs.io">plom.readthedocs.io</a>.
+           </p>
+        """
+        InfoMsg(self, s).exec()
 
     def pop_up_explain_view_edit(self):
         s = """
