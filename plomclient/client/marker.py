@@ -49,8 +49,10 @@ from PyQt6.QtWidgets import (
     QMenu,
     QMessageBox,
     QProgressDialog,
+    QToolButton,
     QWidget,
 )
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from . import __version__
 from plomclient.plom_exceptions import (
@@ -78,6 +80,7 @@ from .question_labels import (
     get_question_label,
     verbose_question_label,
 )
+from .about_dialog import show_about_dialog
 from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
 from .viewers import QuestionViewDialog, SelectPaperQuestion
@@ -200,6 +203,8 @@ class MarkerClient(QWidget):
         self.msgr = None
         # history contains all the tgv in order of being marked except the current one.
         self.marking_history = []
+
+        self._hack_prevent_shutdown = False
 
     def setup(
         self,
@@ -331,7 +336,7 @@ class MarkerClient(QWidget):
         except (ValueError, KeyError):
             question_label = "???"
         self.ui.labelTasks.setText(
-            "Marking {} (ver. {}) of “{}”".format(
+            "{} (ver. {})\n{}".format(
                 question_label, self.version, self.exam_spec["name"]
             )
         )
@@ -344,9 +349,10 @@ class MarkerClient(QWidget):
         # TODO: could always open annotator but may want background
         # downloader placeholder support first (?)
         # Note: clicked events occur AFTER the selection has already changed
-        # self.ui.tableView.clicked.connect(self.annotate_selected_task)
-        self.ui.tableView.doubleClicked.connect(self.annotate_selected_task)
-        self.ui.tableView.annotateSignal.connect(self.annotate_selected_task)
+        # self.ui.tableView.clicked.connect(self.annotate_task)
+        # TODO: currently not firing?  Proabbly b/c of mouseEvent hackery
+        self.ui.tableView.doubleClicked.connect(self.annotate_task)
+        self.ui.tableView.annotateSignal.connect(self.annotate_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
         self.ui.tableView.deferSignal.connect(self.defer_task)
@@ -354,6 +360,7 @@ class MarkerClient(QWidget):
         self.ui.tableView.reassignToMeSignal.connect(self.reassign_task_to_me)
         self.ui.tableView.resetSignal.connect(self.reset_task)
         self.ui.tableView.want_to_change_task.connect(self.switch_task)
+        self.ui.tableView.want_to_annotate_task.connect(self.annotate_task)
         self.ui.tableView.refresh_task_list.connect(self.refresh_server_data)
 
         # A view window for the papers so user can zoom in as needed.
@@ -385,33 +392,137 @@ class MarkerClient(QWidget):
         Returns:
             None but modifies self.ui
         """
-        self.ui.closeButton.clicked.connect(self.close)
-        m = QMenu(self)
-        s = "Get \N{MATHEMATICAL ITALIC SMALL N}th..."
-        m.addAction(s, self.claim_task_interactive)
-        m.addAction("Which papers...", self.change_tag_range_options)
-        self.ui.getNextButton.setMenu(m)
         self.ui.getNextButton.clicked.connect(self.requestNext)
         self.ui.annButton.clicked.connect(self.annotate_button_clicked)
         m = QMenu(self)
-        m.addAction("Reset task", self.reset_task)
-        m.addAction("Reassign task to me", self.reassign_task_to_me)
-        m.addAction("Reassign task...", self.reassign_task)
-        m.addAction("Claim task for me", self.claim_task)
-        self.ui.deferButton.setMenu(m)
+        m.addAction("&Defer selected task", self.defer_task)
+        m.addSeparator()
+        m.addAction("Reset selected task", self.reset_task)
+        m.addAction("Reassign selected task to me", self.reassign_task_to_me)
+        m.addAction("Reassign selected task...", self.reassign_task)
+        m.addAction("Claim selected task for me", self.claim_task)
+        m.addSeparator()
+        m.addAction("Get paper number...", self.claim_task_interactive)
+        m.addAction("Choose papers to mark...", self.change_tag_range_options)
+        self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
+        self.ui.task_overflow_button.setMenu(m)
+        self.ui.task_overflow_button.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
         self.ui.deferButton.clicked.connect(self.defer_task)
+        self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
         self.ui.refreshTaskListButton.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
-        self.ui.refreshTaskListButton.setToolTip("Refresh server data")
+        self.ui.refreshTaskListButton.setToolTip("Refresh task list")
         self.ui.tagButton.clicked.connect(self.manage_tags)
         self.ui.filterLE.returnPressed.connect(self.setFilter)
         self.ui.filterLE.textEdited.connect(self.setFilter)
         self.ui.filterInvCB.stateChanged.connect(self.setFilter)
         self.ui.viewButton.clicked.connect(self.choose_and_view_other)
+        self.ui.viewButton.setVisible(False)
         self.ui.technicalButton.clicked.connect(self.show_hide_technical)
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
+
+        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        # self.ui.hamMenuButton.setToolTip("Menu (F10)")
+        self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+        m = QMenu()
+        m.addAction("Where did the marking tools go?", self.pop_up_explain_view_edit)
+        self.ui.viewModeMenuButton.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        self.ui.viewModeMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        self.ui.viewModeMenuButton.setMenu(m)
+
+    def buildHamburger(self):
+        # keydata = self.get_key_bindings()
+
+        m = QMenu()
+
+        # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
+        m.addAction("Refresh task list", self.refresh_server_data)
+        m.addAction("View another paper...", self.choose_and_view_other)
+
+        m.addSeparator()
+
+        m.addAction("Help", self.show_help)
+        m.addAction("About Plom", lambda: show_about_dialog(self))
+
+        m.addSeparator()
+
+        self._store_QShortcuts = []
+
+        key = "ctrl+w"
+        command = self._close_but_dont_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Disconnect\t{key}", command)
+
+        key = "ctrl+q"
+        command = self.close
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Quit\t{key}", command)
+
+        return m
+
+    def _close_but_dont_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = True
+        self.close()
+
+    def show_help(self):
+        # TODO: it should know if its in view or edit mode and say so.
+        # TODO: may need adjusted as the mechanisms for moving between the
+        # two modes mature.
+        s = """
+            <h2>Welcome to Plom \N{EM DASH} brief help</h2>
+            <p>
+              This software is Plom Client: it talks to a server to coordinate
+              marking.
+            </p>
+            <p>
+              Plom Client has two modes.  You'll spend most of your time in the
+              default &ldquo;edit mode&rdquo; where you mark papers using the
+              annotation tools on the left.
+            </p>
+            <p>
+              In &ldquo;view mode&rdquo; you can
+              look at tasks, including annotated tasks, but you cannot edit
+              them. To return to &ldquo;edit mode&rdquo;, click on the
+              &ldquo;Mark&rdquo; button, or double-click on a task from the
+              list on the right.
+           </p>
+           <p>
+              General information about Plom can be found at
+              <a href="https://plomgrading.org">plomgrading.org</a>
+              and documentation can be found at
+              <a href="https://plom.readthedocs.io">plom.readthedocs.io</a>.
+           </p>
+        """
+        InfoMsg(self, s).exec()
+
+    def pop_up_explain_view_edit(self):
+        s = """
+            <p>
+              You are currently in &ldquo;view mode&rdquo; where you can
+              look at tasks, including annotated tasks, but you cannot edit
+              them.
+            </p>
+            <p>
+              To return to &ldquo;edit mode&rdquo;, click on the
+              &ldquo;Mark&rdquo; button, or double-click on a task.
+           </p>
+        """
+        InfoMsg(self, s).exec()
 
     def annotate_button_clicked(self):
         """Handle the click event of the annotate button/toggle."""
@@ -422,12 +533,13 @@ class MarkerClient(QWidget):
                 self._annotator.close()
             # self.exit_annotate_mode()
         else:
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def exit_annotate_mode(self):
         self._annotator = None
         self.ui.annButton.setChecked(False)
         self.testImg.setVisible(True)
+        self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     def change_tag_range_options(self):
@@ -868,7 +980,7 @@ class MarkerClient(QWidget):
         if update_select:
             self.moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def get_downloads_for_src_img_data(
         self, src_img_data: list[dict[str, Any]], trigger: bool = True
@@ -980,7 +1092,7 @@ class MarkerClient(QWidget):
         if self._annotator:
             # if the annotator is open, we update it
             # TODO: seems like signals and slots problem
-            self.annotate_selected_task()
+            self.annotate_task()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1026,7 +1138,7 @@ class MarkerClient(QWidget):
             self.ui.technicalButton.setText("info")
             self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
             self.ui.frameTechnical.setVisible(True)
-            ptsz = self.ui.closeButton.fontInfo().pointSizeF()
+            ptsz = self.ui.hamMenuButton.fontInfo().pointSizeF()
             self.ui.frameTechnical.setStyleSheet(
                 f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
             )
@@ -1485,7 +1597,8 @@ class MarkerClient(QWidget):
         self._annotator = annotator
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
-        self.ui.tableView.clicked.connect(self.annotate_selected_task)
+        self.ui.viewModeFrame.setVisible(False)
+        self.ui.tableView.clicked.connect(self.annotate_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
         # use the "Annotate & Mark" button to indicate edit/view mode
@@ -1540,9 +1653,10 @@ class MarkerClient(QWidget):
             self._annotator.close_current_question()
         self.moveSelectionToTask(task)
 
-    def annotate_selected_task(self):
-        """Grab current test from table, do checks, start annotator."""
-        task = self.get_current_task_id_or_none()
+    def annotate_task(self, task: str | None = None) -> None:
+        """Annotate a particular task, or currently-selected task, starting Annotator if necessary."""
+        if not task:
+            task = self.get_current_task_id_or_none()
         if not task:
             return
 
@@ -1828,6 +1942,7 @@ class MarkerClient(QWidget):
         self._updateCurrentlySelectedRow()
         self._annotator = None
         self.testImg.setVisible(True)
+        self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str, list)
@@ -2143,8 +2258,9 @@ class MarkerClient(QWidget):
             log.warning("User tried to logout but was already logged out.")
             pass
         log.debug("Emitting Marker shutdown signal")
+        retval = 2 if self._hack_prevent_shutdown else 1
         self.my_shutdown_signal.emit(
-            2,
+            retval,
             [
                 self.annotatorSettings["keybinding_name"],
                 self.annotatorSettings["keybinding_custom_overlay"],

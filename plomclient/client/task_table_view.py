@@ -32,6 +32,7 @@ class TaskTableView(QTableView):
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
     want_to_change_task = pyqtSignal(str)
+    want_to_annotate_task = pyqtSignal(str)
     refresh_task_list = pyqtSignal()
 
     def __init__(self, parent):
@@ -52,7 +53,19 @@ class TaskTableView(QTableView):
         else:
             super().keyPressEvent(event)
 
-    def mousePressEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mouseDoubleClickEvent(self, event: QMouseEvent | None) -> None:
+        if not event:
+            return
+        clicked_idx = self.indexAt(event.pos())
+        if clicked_idx.isValid():
+            r = clicked_idx.row()
+            # TODO: here we muck around in the model, which we're probably not supposed to
+            task = self.model().getPrefix(r)  # type: ignore[union-attr]
+            print(f"DEBUG: have dblclick on row {r}, task {task}, emitting annotate...")
+            self.want_to_annotate_task.emit(task)
+        super().mouseDoubleClickEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
         """Custom mouse event handler.
 
         By default, the selection of a row happens *before* we get an event.
@@ -68,10 +81,7 @@ class TaskTableView(QTableView):
         """
         if not event:
             return
-        print(event)
         clicked_idx = self.indexAt(event.pos())
-        print(clicked_idx)
-        print(clicked_idx.isValid())
         if clicked_idx.isValid():
             r = clicked_idx.row()
             print(f"DEBUG: we have a click on a value index, row {r}")
@@ -81,12 +91,12 @@ class TaskTableView(QTableView):
             if event.button() == Qt.MouseButton.LeftButton:
                 print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
                 self.want_to_change_task.emit(task)
-                print("delaying 1 seconds")
-                for __ in range(10):
-                    import time
+                # print("delaying 1 seconds")
+                # for __ in range(10):
+                #     import time
 
-                    time.sleep(0.1)
-                    print("  wait")
+                #     time.sleep(0.1)
+                #     print("  wait")
 
                 # return without passing the event onwards (which might
                 # change the selection in an undesirable way)
@@ -95,16 +105,16 @@ class TaskTableView(QTableView):
                 # Ignore events from all other buttons (?)
                 # TODO: strangely the right-click nonetheless opens
                 return
-        super().mousePressEvent(event)
+        super().mouseReleaseEvent(event)
 
-    def mouseMoveEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
         print("Debug: we have a mouseMoveEvent on task_table, discarding")
         return
 
-    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:  # or bool?
+    def mousePressEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
-        print("Debug: we have a mouseReleaseEvent on task_table, discarding")
+        print("Debug: we have a mousePressEvent on task_table, discarding")
         return
 
     def contextMenuEvent(self, event: QContextMenuEvent | None) -> None:
@@ -123,8 +133,8 @@ class TaskTableView(QTableView):
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
             print(f"DEBUG: this is task {task}")
 
-            a = QAction("Annotate\tEnter", self)
-            a.triggered.connect(self.annotateSignal.emit)
+            a = QAction(f"Annotate task {task}", self)
+            a.triggered.connect(lambda: self.want_to_annotate_task.emit(task))
             menu.addAction(a)
             a = QAction(f"Tag task {task}", self)
             a.triggered.connect(lambda: self.tagSignal.emit(task))
