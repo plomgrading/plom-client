@@ -505,7 +505,7 @@ class MarkerClient(QWidget):
         self._annotator = None
         self.ui.annButton.setChecked(False)
         self.testImg.setVisible(True)
-        self.viewModeFrame.setVisible(True)
+        self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     def change_tag_range_options(self):
@@ -1563,7 +1563,7 @@ class MarkerClient(QWidget):
         self._annotator = annotator
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
-        self.viewModeFrame.setVisible(False)
+        self.ui.viewModeFrame.setVisible(False)
         self.ui.tableView.clicked.connect(self.annotate_selected_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
@@ -1907,7 +1907,7 @@ class MarkerClient(QWidget):
         self._updateCurrentlySelectedRow()
         self._annotator = None
         self.testImg.setVisible(True)
-        self.viewModeFrame.setVisible(True)
+        self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str, list)
