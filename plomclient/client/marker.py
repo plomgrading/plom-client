@@ -428,6 +428,14 @@ class MarkerClient(QWidget):
         # self.ui.hamMenuButton.setToolTip("Menu (F10)")
         self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
+        m = QMenu()
+        m.addAction("Where did the marking tools go?", self.pop_up_explain_view_edit)
+        self.ui.viewModeMenuButton.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        self.ui.viewModeMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        self.ui.viewModeMenuButton.setMenu(m)
+
     def buildHamburger(self):
         # keydata = self.get_key_bindings()
 
@@ -468,6 +476,20 @@ class MarkerClient(QWidget):
         self._hack_prevent_shutdown = True
         self.close()
 
+    def pop_up_explain_view_edit(self):
+        s = """
+            <p>
+              You are currently in &ldquo;view mode&rdquo; where you can
+              look at tasks, including annotated tasks, but you cannot edit
+              them.
+            </p>
+            <p>
+              To return to &ldquo;edit mode&rdquo;, click on the
+              &ldquo;Mark&rdquo; button, or double-click on a task.
+           </p>
+        """
+        InfoMsg(self, s).exec()
+
     def annotate_button_clicked(self):
         """Handle the click event of the annotate button/toggle."""
         # Note: this is the state after *just* toggling, we are reacting
@@ -483,6 +505,7 @@ class MarkerClient(QWidget):
         self._annotator = None
         self.ui.annButton.setChecked(False)
         self.testImg.setVisible(True)
+        self.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     def change_tag_range_options(self):
@@ -1540,6 +1563,7 @@ class MarkerClient(QWidget):
         self._annotator = annotator
         self.ui.paperBoxLayout.addWidget(self._annotator, 24)
         self.testImg.setVisible(False)
+        self.viewModeFrame.setVisible(False)
         self.ui.tableView.clicked.connect(self.annotate_selected_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
@@ -1883,6 +1907,7 @@ class MarkerClient(QWidget):
         self._updateCurrentlySelectedRow()
         self._annotator = None
         self.testImg.setVisible(True)
+        self.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
 
     @pyqtSlot(str, list)
