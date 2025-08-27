@@ -324,23 +324,42 @@ class MarkerClient(QWidget):
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
 
+    def update_window_title(self) -> None:
+        try:
+            question_label = get_question_label(self.exam_spec, self.question_idx)
+        except (ValueError, KeyError):
+            question_label = "???"
+        task = self.get_current_task_id_or_none()
+        if not task:
+            window_title = "Plom"
+        else:
+            # TODO: could also list version? assesssment name?
+            window_title = "{papernumber} {question_label} \N{EM DASH} Plom".format(
+                papernumber=task,
+                question_label=question_label,
+            )
+        # TRANSLATOR: note this [*] servers a technical purpose, do not edit
+        self.setWindowTitle("[*]" + window_title)
+
     def UIInitialization(self) -> None:
         """Startup procedure for the user interface.
 
         Returns:
             None: Modifies self.ui
         """
-        self.setWindowTitle('Plom Marker: "{}"'.format(self.exam_spec["name"]))
         try:
             question_label = get_question_label(self.exam_spec, self.question_idx)
         except (ValueError, KeyError):
             question_label = "???"
         self.ui.labelTasks.setText(
-            "{} (ver. {})\n{}".format(
-                question_label, self.version, self.exam_spec["name"]
+            "{question_label} (ver. {question_version})\n{assessment_name}".format(
+                question_label=question_label,
+                question_version=self.version,
+                assessment_name=self.exam_spec["name"],
             )
         )
         self.ui.labelTasks.setWordWrap(True)
+        self.update_window_title()
 
         self.prxM.setSourceModel(self.examModel)
         self.ui.tableView.setModel(self.prxM)
