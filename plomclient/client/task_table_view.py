@@ -65,7 +65,7 @@ class TaskTableView(QTableView):
             self.want_to_annotate_task.emit(task)
         super().mouseDoubleClickEvent(event)
 
-    def mousePressEvent(self, event: QMouseEvent | None) -> None:
+    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
         """Custom mouse event handler.
 
         By default, the selection of a row happens *before* we get an event.
@@ -105,16 +105,16 @@ class TaskTableView(QTableView):
                 # Ignore events from all other buttons (?)
                 # TODO: strangely the right-click nonetheless opens
                 return
-        super().mousePressEvent(event)
+        super().mouseReleaseEvent(event)
 
     def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
         print("Debug: we have a mouseMoveEvent on task_table, discarding")
         return
 
-    def mouseReleaseEvent(self, event: QMouseEvent | None) -> None:
+    def mousePressEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
-        print("Debug: we have a mouseReleaseEvent on task_table, discarding")
+        print("Debug: we have a mousePressEvent on task_table, discarding")
         return
 
     def contextMenuEvent(self, event: QContextMenuEvent | None) -> None:
