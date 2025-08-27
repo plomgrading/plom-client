@@ -102,17 +102,14 @@ tipText = {
 
 
 class Annotator(QWidget):
-    """The main annotation window for annotating group-images.
-
-    A subclass of QWidget
-    """
+    """The main annotation widget for annotating groups of images."""
 
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
-        """Initializes a new annotator window.
+        """Initializes a new annotator widget.
 
         Args:
             username (str): username of Marker
