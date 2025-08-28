@@ -51,6 +51,13 @@ from PyQt6.QtWidgets import (
     QProgressDialog,
     QToolButton,
     QWidget,
+    #
+    QFrame,
+    QLabel,
+    QSpacerItem,
+    QSizePolicy,
+    QHBoxLayout,
+    QVBoxLayout,
 )
 from PyQt6.QtGui import QKeySequence, QShortcut
 
@@ -394,13 +401,37 @@ class MarkerClient(QWidget):
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
         self.ui.splitter.setCollapsible(0, False)
-        self.ui.splitter.setCollapsible(1, False)
+        self.ui.splitter.setCollapsible(1, True)
         # TODO: for some reason, Andrew's stylesheet applies to OTHER splitters as well
         # which makes things a bit ugly (e.g., my dummy splitter on the left and the
         # Page Arranger dialog.  For now, turn it off.
         # self.ui.splitter.setStyleSheet(
         #     "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
         # )
+        self.ui.splitter.setHandleWidth(24)
+        self.ui.handy = self.ui.splitter.handle(1)
+        vb = QVBoxLayout()
+        si = QSpacerItem(
+            1,
+            64,
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,
+        )
+
+        for n in range(3):
+            hb = QHBoxLayout()
+            hb.setSpacing(1)
+            for i in range(3):
+                f = QFrame()
+                f.setFrameShape(QFrame.Shape.VLine)
+                f.setFrameShadow(QFrame.Shadow.Raised)
+                hb.addWidget(f)
+            vb.addItem(si)
+            vb.addLayout(hb)
+            if n != 2:
+                vb.addWidget(QLabel("<"))
+        vb.addItem(si)
+        self.ui.handy.setLayout(vb)
 
         # Note: for some reason the RHS panel isn't as small as it could be
         # This call should make it smaller
@@ -916,7 +947,7 @@ class MarkerClient(QWidget):
 
         self.ui.explainQuotaButton.setVisible(False)
         if info["user_quota_limit"] is not None:
-            s = f'Marking limit: {info["user_quota_limit"]} papers'
+            s = f"Marking limit: {info['user_quota_limit']} papers"
             self.ui.labelProgress.setText(s)
             self.ui.explainQuotaButton.setVisible(True)
             self.ui.mProgressBar.setMaximum(info["user_quota_limit"])
