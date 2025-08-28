@@ -339,19 +339,11 @@ class MarkerClient(QWidget):
             assessment_name = ""
 
         task = self.get_current_task_id_or_none()
-        if not task:
-            if not question_label:
-                window_title = "Plom"
-            else:
-                window_title = (
-                    "{question_label} of {assessment_name} \N{EM DASH} Plom".format(
-                        question_label=question_label,
-                        assessment_name=assessment_name,
-                    )
-                )
+        if not ((task or question_label) and assessment_name):
+            window_title = "Plom"
         else:
-            window_title = "{task_code} of {assessment_name} \N{EM DASH} Plom".format(
-                task_code=task,
+            window_title = "{what} of {assessment_name} \N{EM DASH} Plom".format(
+                what=(task if task else question_label),
                 assessment_name=assessment_name,
             )
         # note this [*] is used by Qt to know here to put an * to indicate unsaved results
