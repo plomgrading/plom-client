@@ -598,6 +598,10 @@ class Annotator(QWidget):
 
         self.update_attn_bar(tags=tags)
 
+        # Emit signal that we are now in a clean state.  Note sure *we* should
+        # *have* to do this, but somehow the undostack isn't doing it.
+        self.cleanChanged.emit(True)
+
     def load_new_scene(self, src_img_data, *, plomDict=None):
         # Set up the graphicsview and graphicsscene of the group-image
         # loads in the image etc
