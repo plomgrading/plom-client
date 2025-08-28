@@ -1598,6 +1598,7 @@ class MarkerClient(QWidget):
         # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
         # with choices [defer] [cancel]
         self.examModel.deferPaper(task)
+        # TODO: if task was None, we should do this!
         if advance_to_next:
             self._requestNext()
 
@@ -1643,6 +1644,7 @@ class MarkerClient(QWidget):
             self._requestNext()
         else:
             # TODO: if not, we need to repaint the task list
+            # TODO: but if we were on this one, annotator needs reset!
             self.refresh_server_data()
 
     def startTheAnnotator(self, initialData) -> None:
