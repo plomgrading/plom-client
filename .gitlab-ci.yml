@@ -102,7 +102,7 @@ copyright_year:
     - TARGET_BRANCH=${TARGET_REPO_NAME}/${TARGET_BRANCH_NAME}
     - echo "We think the target branch is '$TARGET_BRANCH'"
     - echo "Next ensure we have that target branch for comparing"
-    - git fetch ${TARGET_REPO_NAME} ${TARGET_BRANCH_NAME}
+    - git fetch --depth=1000 ${TARGET_REPO_NAME} ${TARGET_BRANCH_NAME}
     - git checkout ${TARGET_BRANCH}
     - git checkout $CI_COMMIT_BRANCH --
     - git branch -avv
