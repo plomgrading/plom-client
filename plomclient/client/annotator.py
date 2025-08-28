@@ -778,7 +778,9 @@ class Annotator(QWidget):
 
     def wideLayout(self) -> None:
         """Changes view to Wide Layout style."""
-        self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
+        # self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
+        # Note: I think it looks better non-bold
+        self.ui.markLabel.setStyleSheet("color: #ff0000;")
         self.set_tool_icon_size(40)
         if hasattr(self, "rubric_widget"):
             self.rubric_widget.hideB.setVisible(True)
