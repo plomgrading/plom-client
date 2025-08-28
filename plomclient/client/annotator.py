@@ -232,6 +232,16 @@ class Annotator(QWidget):
         else:
             log.info("loaded custom overlay: %s", self.keybinding_custom_overlay)
 
+        # Note: this isn't a real user-interactive splitter right now, so
+        # why have it at all?  It helps me resize dynamically with setSizes()
+        self.ui.splitter.setChildrenCollapsible(False)
+        # self.ui.splitter.setCollapsible(0, False)
+        # self.ui.splitter.setCollapsible(1, False)
+        print(self.ui.splitter.handle)
+        print(self.ui.splitter.handle(0))
+        print(self.ui.splitter.handle(1))
+        self.ui.splitter.handle(1).setEnabled(False)
+
         self.ui.hamMenuButton.setMenu(self.buildHamburger())
         # heaven == hamburger? works for me!
         self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
