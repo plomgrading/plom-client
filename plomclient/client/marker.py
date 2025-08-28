@@ -285,7 +285,7 @@ class MarkerClient(QWidget):
         )
 
         # Get a question to mark from the server
-        self.requestNext(enter_annotate_mode_if_possible=True)
+        self._requestNext(enter_annotate_mode_if_possible=True)
         # reset the view so whole exam shown.
         self.testImg.resetView()
         # resize the table too.
@@ -478,18 +478,19 @@ class MarkerClient(QWidget):
         Returns:
             None but modifies self.ui
         """
-        self.ui.getNextButton.clicked.connect(self.requestNext)
+        self.ui.getMoreButton.clicked.connect(self.request_one_more)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
         m.addAction("&Defer selected task", self.defer_task)
         m.addSeparator()
+        m.addAction("Claim selected task for me", self.claim_task)
+        m.addAction("Claim more tasks for me", self.request_one_more)
+        m.addAction("Claim by paper number...", self.claim_task_interactive)
+        m.addAction("Preferences for claiming tasks...", self.change_tag_range_options)
+        m.addSeparator()
         m.addAction("Reset selected task", self.reset_task)
         m.addAction("Reassign selected task to me", self.reassign_task_to_me)
         m.addAction("Reassign selected task...", self.reassign_task)
-        m.addAction("Claim selected task for me", self.claim_task)
-        m.addSeparator()
-        m.addAction("Get paper number...", self.claim_task_interactive)
-        m.addAction("Choose papers to mark...", self.change_tag_range_options)
         self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
         self.ui.task_overflow_button.setMenu(m)
         self.ui.task_overflow_button.setPopupMode(
@@ -658,11 +659,11 @@ class MarkerClient(QWidget):
         if tag:
             tips.append(f'prefer tagged "{tag}"')
 
-        button_text = "&Get next"
+        button_text = "&Get more"
         if exclaim:
             button_text += " (!)"
-        self.getNextButton.setText(button_text)
-        self.getNextButton.setToolTip("\n".join(tips))
+        self.getMoreButton.setText(button_text)
+        self.getMoreButton.setToolTip("\n".join(tips))
 
     def loadMarkedList(self):
         """Loads the list of previously marked papers into self.examModel.
@@ -985,7 +986,11 @@ class MarkerClient(QWidget):
         task = paper_question_index_to_task_id_str(n, self.question_idx)
         self._claim_task(task)
 
-    def requestNext(
+    def request_one_more(self) -> None:
+        """Ask server for an unmarked paper, get file, add to list, update view, but don't automatically select."""
+        self._requestNext(update_select=False)
+
+    def _requestNext(
         self,
         *,
         update_select: bool = True,
@@ -1253,14 +1258,6 @@ class MarkerClient(QWidget):
             self.Qapp.downloader.disable_fail_mode()
             if self.allowBackgroundOps:
                 self.backgroundUploader.disable_fail_mode()
-
-    def requestNextInBackgroundStart(self) -> None:
-        """Requests the next TGV in the background.
-
-        Returns:
-            None
-        """
-        self.requestNext(update_select=False)
 
     def moveToNextUnmarkedTest(self, task: str | None = None) -> bool:
         """Move the list to the next unmarked test, if possible.
@@ -1603,7 +1600,7 @@ class MarkerClient(QWidget):
         # with choices [defer] [cancel]
         self.examModel.deferPaper(task)
         if advance_to_next:
-            self.requestNext()
+            self._requestNext()
 
     def reset_task(
         self, task: str | None = None, *, advance_to_next: bool = True
@@ -1644,7 +1641,7 @@ class MarkerClient(QWidget):
             return
 
         if advance_to_next:
-            self.requestNext()
+            self._requestNext()
 
     def startTheAnnotator(self, initialData) -> None:
         """This fires up the annotation widget for user annotation + marking.
@@ -1771,7 +1768,7 @@ class MarkerClient(QWidget):
         if self.allowBackgroundOps:
             # If just one in the queue (which we are grading) then ask for more
             if self.examModel.countReadyToMark() <= 1:
-                self.requestNextInBackgroundStart()
+                self.request_one_more()
 
         if self._annotator:
             self._annotator.load_new_question(*inidata)
@@ -2108,7 +2105,7 @@ class MarkerClient(QWidget):
         """
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
-            self.requestNext(update_select=False)
+            self.request_one_more()
         if not self.moveToNextUnmarkedTest(old_task if old_task else None):
             return None
         task_id_str = self.get_current_task_id_or_none()
@@ -2125,7 +2122,7 @@ class MarkerClient(QWidget):
         if self.allowBackgroundOps:
             # If just one in the queue (which we are grading) then ask for more
             if self.examModel.countReadyToMark() <= 1:
-                self.requestNextInBackgroundStart()
+                self.request_one_more()
 
         return data
 
