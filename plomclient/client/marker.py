@@ -273,6 +273,9 @@ class MarkerClient(QWidget):
         self.ui.tableView.selectionModel().selectionChanged.connect(
             self.ensureAllDownloaded
         )
+        self.ui.tableView.selectionModel().selectionChanged.connect(
+            self.update_window_title
+        )
 
         # Get a question to mark from the server
         self.requestNext(enter_annotate_mode_if_possible=True)
