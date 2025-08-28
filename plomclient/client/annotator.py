@@ -598,7 +598,7 @@ class Annotator(QWidget):
 
         self.update_attn_bar(tags=tags)
 
-        # Emit signal that we are now in a clean state.  Note sure *we* should
+        # Emit signal that we are now in a clean state.  Not sure *we* should
         # *have* to do this, but somehow the undostack isn't doing it.
         self.cleanChanged.emit(True)
 
