@@ -465,9 +465,12 @@ class Annotator(QWidget):
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Compact UI\t{key}", self.compact_layout)
-        # TODO: this should be an indicator but for now compact doesn't have the hamburg menu
-        # m.addAction("&Wide UI\thome", self.wideLayout)
+        x = m.addAction(f"Compact UI\t{key}")
+        x.setCheckable(True)
+        if self.is_ui_compact():
+            x.setChecked(True)
+        x.triggered.connect(self._toggle_compact)
+        self._compact_ui_toggle_action = x
         m.addSeparator()
         m.addAction("Help", lambda: self.keyPopUp(tab_idx=0))
         (key,) = keydata["help"]["keys"]
@@ -754,6 +757,9 @@ class Annotator(QWidget):
 
     def toggle_compact(self) -> None:
         """Shows/Hides tools making more space to view the group-image."""
+        self._compact_ui_toggle_action.trigger()
+
+    def _toggle_compact(self) -> None:
         if self.is_ui_compact():
             self.wideLayout()
         else:
