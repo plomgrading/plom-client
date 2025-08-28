@@ -22,11 +22,14 @@ from PyQt6.QtWidgets import (
     QDialog,
     QInputDialog,
     QGridLayout,
+    QHBoxLayout,
     QMenu,
     QMessageBox,
     QPushButton,
     QToolButton,
+    QSizePolicy,
     QStackedWidget,
+    QSpacerItem,
     QTabBar,
     QTabWidget,
     QTableWidget,
@@ -37,7 +40,6 @@ from PyQt6.QtWidgets import (
 from plomclient.misc_utils import next_in_longest_subsequence
 from .useful_classes import SimpleQuestion, ErrorMsg, InfoMsg, WarnMsg
 from .useful_classes import BigMessageDialog
-from .rubric_wrangler import RubricWrangler
 from plomclient.rubric_utils import compute_score, diff_rubric, render_rubric_as_html
 from .rubric_add_dialog import AddRubricDialog
 from .rubric_other_usage_dialog import RubricOtherUsageDialog
@@ -944,21 +946,25 @@ class RubricWidget(QWidget):
         self.showHideW.addWidget(self.groupHide)
         grid.addWidget(self.showHideW, 1, 1, 2, 4)
         self.addB = QPushButton("&Add")  # faster debugging, could remove?
-        self.filtB = QPushButton("Arrange/Filter")
         self.hideB = QPushButton("Shown/Hidden")
         self.syncB = QPushButton()
         # self.syncB.setText("\N{Rightwards Harpoon Over Leftwards Harpoon}")
         self.syncB.setText("Sync")
         self.syncB.setToolTip("Synchronise rubrics")
-        grid.addWidget(self.addB, 3, 1)
-        grid.addWidget(self.filtB, 3, 2)
-        grid.addWidget(self.hideB, 3, 3)
-        grid.addWidget(self.syncB, 3, 4)
+        a = QHBoxLayout()
+        grid.addLayout(a, 3, 1, 1, 4)
+        a.addWidget(self.addB)
+        a.addWidget(self.hideB)
+        a.addWidget(self.syncB)
+        a.addItem(
+            QSpacerItem(
+                0, 10, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum
+            )
+        )
         grid.setSpacing(0)
         self.setLayout(grid)
         # connect the buttons to functions.
         self.addB.clicked.connect(self.add_new_rubric)
-        self.filtB.clicked.connect(self.wrangleRubricsInteractively)
         self.syncB.clicked.connect(self.refreshRubrics)
         self.hideB.clicked.connect(self.toggleShowHide)
         self.update_tab_names()
@@ -969,7 +975,6 @@ class RubricWidget(QWidget):
             self.showHideW.setCurrentIndex(1)
             # disable a few buttons
             self.addB.setEnabled(False)
-            self.filtB.setEnabled(False)
             self.syncB.setEnabled(False)
             # reselect the current rubric
             self.tabHide.handleClick()
@@ -978,7 +983,6 @@ class RubricWidget(QWidget):
             self.showHideW.setCurrentIndex(0)
             # enable buttons
             self.addB.setEnabled(True)
-            self.filtB.setEnabled(True)
             self.syncB.setEnabled(True)
             # reselect the current rubric
             self.handleClick()
@@ -1250,19 +1254,6 @@ class RubricWidget(QWidget):
             BigMessageDialog(self, msg, details_html=d, show=False).exec()
         # diff_rubric is not precise, won't hurt to update display even if no changes
         self.updateLegalityOfRubrics()
-
-    def wrangleRubricsInteractively(self) -> None:
-        wr = RubricWrangler(
-            self,
-            self.rubrics,
-            self.get_tab_rubric_lists(),
-            self.username,
-            annotator_size=self._parent.size(),
-        )
-        if wr.exec() != QDialog.DialogCode.Accepted:
-            return
-        else:
-            self.setRubricTabsFromState(wr.wranglerState)
 
     def setInitialRubrics(self, *, user_tab_state: dict | None = None) -> None:
         """Grab rubrics from server and set sensible initial values.

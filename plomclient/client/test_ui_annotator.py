@@ -13,7 +13,6 @@ class MockMarker(QWidget):
 
     annotatorSettings = {
         "keybinding_name": None,
-        "geometry": None,
         "zoomState": None,
         "compact": None,
         "keybinding_custom_overlay": None,
@@ -61,13 +60,14 @@ def test_annotr_open(qtbot) -> None:
 
     # narrow mode, then reopen with UI button
     qtbot.keyClick(a, Qt.Key.Key_Home)
-    qtbot.mouseClick(a.ui.wideButton, Qt.MouseButton.LeftButton)
+    # TODO: no more direct button to do this, try to replace with menu clicking?
+    # qtbot.mouseClick(a.ui.wideButton, Qt.MouseButton.LeftButton)
     qtbot.wait(10)
     # path = qtbot.screenshot(a)
     # assert False, path
 
     # clicking would do "next-paper": not prepared to test that yet
-    # qtbot.mouseClick(a.finishedButton, Qt.MouseButton.LeftButton)
+    # qtbot.mouseClick(a.saveNextButton, Qt.MouseButton.LeftButton)
     qtbot.keyClick(a, Qt.Key.Key_C, modifier=Qt.KeyboardModifier.ControlModifier)
 
 
@@ -77,6 +77,7 @@ class MockQApp:
 
 def test_marker_open(qtbot) -> None:
     w = MarkerClient(MockQApp())
+    qtbot.mouseClick(w.ui.hamMenuButton, Qt.MouseButton.LeftButton)
     # path = qtbot.screenshot(w)
     # assert False, path
-    qtbot.mouseClick(w.ui.closeButton, Qt.MouseButton.LeftButton)
+    qtbot.keyClick(w, Qt.Key.Key_Q, modifier=Qt.KeyboardModifier.ControlModifier)

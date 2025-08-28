@@ -714,7 +714,7 @@ class PageScene(QGraphicsScene):
             )
             m.addAction("Flip", page_rotate_func_factory(n, 180))
             m.addSeparator()
-            m.addAction("Find other pages...", self.parent().rearrangePages)
+            m.addAction("Find other pages...", self.parent().arrangePages)
             button.setMenu(m)
             button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
             proxy_widget = self.addWidget(button)

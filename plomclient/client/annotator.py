@@ -6,6 +6,7 @@
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
 # Copyright (C) 2024 Bryan Tanady
+# Copyright (C) 2025 Brody Sanderson
 # Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
@@ -33,6 +34,7 @@ from PyQt6 import QtGui, uic
 from PyQt6.QtCore import (
     QElapsedTimer,
     Qt,
+    QSize,
     QTimer,
     pyqtSignal,
     pyqtSlot,
@@ -57,6 +59,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QProgressDialog,
     QPushButton,
+    QSplitter,
     QToolButton,
     QWidget,
 )
@@ -75,7 +78,6 @@ from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
 from .useful_classes import SimpleQuestion, SimpleQuestionCheckBox
 from .useful_classes import _json_path_to_str
-from .about_dialog import show_about_dialog
 
 
 log = logging.getLogger("annotr")
@@ -102,17 +104,15 @@ tipText = {
 
 
 class Annotator(QWidget):
-    """The main annotation window for annotating group-images.
-
-    A subclass of QWidget
-    """
+    """The main annotation widget for annotating groups of images."""
 
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
+    cleanChanged = pyqtSignal(bool)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
-        """Initializes a new annotator window.
+        """Initializes a new annotator widget.
 
         Args:
             username (str): username of Marker
@@ -139,11 +139,14 @@ class Annotator(QWidget):
         self.maxMark = 0
 
         # help mypy understand stuff coming from uic
-        self.revealBox0: QFrame
+        self.splitter: QSplitter
         self.hideableBox: QFrame
-        self.wideButton: QPushButton
         self.hamMenuButton: QToolButton
+        self.saveNextButton: QToolButton
+        self.arrangePagesButton: QToolButton
+        self.toolsLayout: QBoxLayout
         self.zoomCB: QComboBox
+        self.helpButton: QToolButton
         self.boxButton: QToolButton
         self.tickButton: QToolButton
         self.crossButton: QToolButton
@@ -158,6 +161,7 @@ class Annotator(QWidget):
         self.redoButton: QToolButton
         self.pageFrame: QFrame
         self.container_rubricwidget: QBoxLayout
+        self.markLabel: QLabel
         self.attnFrame: QFrame
         self.attnLeftLabel: QLabel
         self.attnRightLabel: QLabel
@@ -176,8 +180,6 @@ class Annotator(QWidget):
         # current or last used tool, tracked so we can switch back
         self._which_tool = self._list_of_minor_modes[0]
 
-        # hide the "revealbox" which is revealed when the hideBox is hidden.
-        self.ui.revealBox0.setHidden(True)
         self.wideLayout()
 
         self.update_attn_bar()
@@ -238,6 +240,15 @@ class Annotator(QWidget):
             log.info("starting new (empty) custom overlay")
         else:
             log.info("loaded custom overlay: %s", self.keybinding_custom_overlay)
+
+        # Note: this isn't a real user-interactive splitter right now, so
+        # why have it at all?  It helps me resize dynamically with setSizes()
+        self.ui.splitter.setChildrenCollapsible(False)
+        # self.ui.splitter.setCollapsible(0, False)
+        # self.ui.splitter.setCollapsible(1, False)
+        h = self.ui.splitter.handle(1)
+        assert h is not None
+        h.setEnabled(False)
 
         self.ui.hamMenuButton.setMenu(self.buildHamburger())
         # heaven == hamburger? works for me!
@@ -361,12 +372,18 @@ class Annotator(QWidget):
         m = QMenu()
         key = keydata["next-paper"]["keys"][0]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Next paper\t{key}", self.saveAndGetNext)
-        m.addAction("Done (save and close)", self.saveAndClose)
-        m.addAction("Defer and go to next", lambda: None).setEnabled(False)
+        m.addAction(f"Save && next paper\t{key}", self.saveAndGetNext)
+
+        # TRANSLATOR: this option discards every back to the latest save
+        # m.addAction("Revert changes", self.revert_changes)
+
+        # TODO: possible this should be in the RHS task list not here?
+        # TRANSLATOR: this option resets a task completely
+        # m.addAction("Remove all annotations", self.todo_somemethod)
+
         (key,) = keydata["cancel"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Close without saving\t{key}", self.close)
+        m.addAction(f"Exit annotate mode\t{key}", self.close)
         m.addSeparator()
         (key,) = keydata["quick-show-prev-paper"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
@@ -381,7 +398,7 @@ class Annotator(QWidget):
         m.addSeparator()
         (key,) = keydata["rearrange-pages"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Adjust pages\t{key}", self.rearrangePages)
+        m.addAction(f"Adjust pages\t{key}", self.arrangePages)
         (key,) = keydata["crop-in"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Crop to region\t{key}", self.to_crop_mode)
@@ -449,15 +466,17 @@ class Annotator(QWidget):
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Compact UI\t{key}", self.narrowLayout)
-        # TODO: this should be an indicator but for now compact doesn't have the hamburg menu
-        # m.addAction("&Wide UI\thome", self.wideLayout)
+        x = m.addAction(f"Compact UI\t{key}")
+        x.setCheckable(True)
+        if self.is_ui_compact():
+            x.setChecked(True)
+        x.triggered.connect(self._toggle_compact)
+        self._compact_ui_toggle_action = x
         m.addSeparator()
         m.addAction("Help", lambda: self.keyPopUp(tab_idx=0))
         (key,) = keydata["help"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Show shortcut keys...\t{key}", self.keyPopUp)
-        m.addAction("About Plom", lambda: show_about_dialog(self))
         return m
 
     def close_current_scene(self) -> None:
@@ -504,7 +523,6 @@ class Annotator(QWidget):
         self.close_current_scene()
         self.task = None
         self.testName = None
-        self.setWindowTitle("Annotator")
         self.paperDir = None
         self.saveName = None
         # feels like a bit of a kludge
@@ -563,7 +581,6 @@ class Annotator(QWidget):
         self.question_label = question_label
         self.testName = testName
         s = "{} of {}: {}".format(self.question_label, testName, task)
-        self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
         self.saveName = Path(saveName)
@@ -580,6 +597,10 @@ class Annotator(QWidget):
         self.timer.start()
 
         self.update_attn_bar(tags=tags)
+
+        # Emit signal that we are now in a clean state.  Not sure *we* should
+        # *have* to do this, but somehow the undostack isn't doing it.
+        self.cleanChanged.emit(True)
 
     def load_new_scene(self, src_img_data, *, plomDict=None):
         # Set up the graphicsview and graphicsscene of the group-image
@@ -669,8 +690,6 @@ class Annotator(QWidget):
         Returns:
             None
         """
-        self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
-        self.ui.narrowMarkLabel.setStyleSheet("color: #ff0000; font: bold;")
         # TODO: some duplication of code b/w here and pagescene.ScoreBox
         s = ""
         if self.question_label:
@@ -680,7 +699,6 @@ class Annotator(QWidget):
         else:
             s += f"{pprint_score(score)} out of {self.maxMark}"
         self.ui.markLabel.setText(s)
-        self.ui.narrowMarkLabel.setText(s)
 
     def loadCursors(self):
         """Load custom cursors and set their hotspots.
@@ -719,35 +737,72 @@ class Annotator(QWidget):
 
         self.cursor = cursor
 
-    def toggleTools(self) -> None:
-        """Shows/Hides tools making more space to view the group-image.
+    def set_tool_icon_size(self, s: int) -> None:
+        for b in (
+            self.ui.tickButton,
+            self.ui.crossButton,
+            self.ui.textButton,
+            self.ui.lineButton,
+            self.ui.boxButton,
+            self.ui.penButton,
+        ):
+            b.setIconSize(QSize(s, s))
+        if s <= 24:
+            self.ui.toolsLayout.setSpacing(0)
+        else:
+            self.ui.toolsLayout.setSpacing(6)
 
-        Returns:
-            None but modifies self.ui.hideableBox
-        """
-        # All tools in gui inside 'hideablebox' - so easily shown/hidden
-        if self.ui.hideableBox.isHidden():
+    def is_ui_compact(self) -> bool:
+        """Is the UI currently in compact mode?"""
+        # TODO: fragile hack, e.g., translation
+        return not self.ui.saveNextButton.text().startswith("Save")
+
+    def toggle_compact(self) -> None:
+        """Shows/Hides tools making more space to view the group-image."""
+        self._compact_ui_toggle_action.trigger()
+
+    def _toggle_compact(self) -> None:
+        if self.is_ui_compact():
             self.wideLayout()
         else:
-            self.narrowLayout()
+            self.compact_layout()
 
-    def narrowLayout(self) -> None:
-        """Changes view to narrow Layout style.
+    def compact_layout(self) -> None:
+        """Changes view to use a more narrow layout style."""
+        self.ui.markLabel.setStyleSheet("color: #ff0000")
+        # TODO: condensed font
+        # QFont.setStretch(50)
+        self.set_tool_icon_size(24)
+        if hasattr(self, "rubric_widget"):
+            self.rubric_widget.hideB.setVisible(False)
+            # self.rubric_widget.syncB.setVisible(False)
+        # self.ui.frameTools.setVisible(False)
+        self.ui.helpButton.setText("?")
+        self.ui.saveNextButton.setText("Next")
+        # self.ui.arrangePagesButton.setText("\N{PAGES}")
+        self.ui.arrangePagesButton.setText("")
+        self.setIcon(self.ui.arrangePagesButton, "Rearrange pages", "extra_page.svg")
 
-        Returns:
-            None but modifies self.ui
-        """
-        self.ui.revealBox0.show()
-        self.ui.hideableBox.hide()
+        # magic value :(
+        self.ui.hideableBox.setMinimumWidth(120)
+        self.ui.splitter.setSizes([120, 4096])
 
     def wideLayout(self) -> None:
-        """Changes view to Wide Layout style.
+        """Changes view to Wide Layout style."""
+        # self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
+        # Note: I think it looks better non-bold
+        self.ui.markLabel.setStyleSheet("color: #ff0000;")
+        self.set_tool_icon_size(40)
+        if hasattr(self, "rubric_widget"):
+            self.rubric_widget.hideB.setVisible(True)
+            self.rubric_widget.syncB.setVisible(True)
+        # self.ui.frameTools.setVisible(True)
+        self.ui.helpButton.setText("Key help")
+        self.ui.saveNextButton.setText("Save && Next")
+        self.ui.arrangePagesButton.setText("Adjust pages")
+        self.ui.arrangePagesButton.setIcon(QIcon())
 
-        Returns:
-            None but modifies self.ui
-        """
-        self.ui.hideableBox.show()
-        self.ui.revealBox0.hide()
+        self.ui.hideableBox.setMinimumWidth(0)
 
     def next_rubric_or_reselect_rubric_tool(self):
         """Changes the tool to rubric or pick the next rubric.
@@ -776,15 +831,19 @@ class Annotator(QWidget):
     def prev_tab(self):
         self.rubric_widget.prev_tab()
 
-    def next_minor_tool(self, dir=1, always_move=False):
+    def next_minor_tool(self, dir: int = 1, *, always_move: bool = False) -> None:
         """Switch to current minor tool or advance to next minor tool.
 
         Args:
-            dir (int): +1 for next (default), -1 for previous.
-            always_move (bool): the minor tools keep track of the
+            dir: +1 for next (default), -1 for previous.
+
+        Keyword Args:
+            always_move: the minor tools keep track of the
                 last-used tool.  Often, but not always, we want to
                 switch back to the last-used tool.  False by default.
         """
+        if not self.scene:
+            return
         L = self._list_of_minor_modes
         # if always-move then select the next/previous tool according to dir
         # elif in a tool-mode then select next/prev tool according to dir
@@ -820,8 +879,8 @@ class Annotator(QWidget):
         labels = [x["pagename"] for x in pagedata]
         WholeTestView(testnum, pagedata, labels, parent=self).exec()
 
-    def rearrangePages(self) -> None:
-        """Rearranges pages in UI."""
+    def arrangePages(self) -> None:
+        """Arrange or rearrange pages in UI."""
         if not self.task or not self.scene:
             return
         self.parentMarkerUI.Qapp.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -1011,8 +1070,15 @@ class Annotator(QWidget):
         )
         # connect view to scene
         self.view.connectScene(self.scene)
+        self.scene.undoStack.cleanChanged.connect(self._gunk)
         # scene knows which views are connected via self.views()
         log.debug("Scene has this list of views: {}".format(self.scene.views()))
+
+    # I get crashes when I try to hack with lambdas, "just" want to forward
+    # the undoStack's cleanChanged onward as if it came from Annotator
+    @pyqtSlot(bool)
+    def _gunk(self, clean: bool) -> None:
+        self.cleanChanged.emit(clean)
 
     def keyToChangeRubric(self, keyNumber) -> None:
         """Translates a the numerical key into a selection of that visible row of the current rubric tab.
@@ -1070,15 +1136,11 @@ class Annotator(QWidget):
 
     def _setModeLabels(self, mode):
         if mode == "rubric":
-            self.ui.narrowModeLabel.setText(
-                " rubric \n {} ".format(self.rubric_widget.getCurrentTabName())
-            )
-            self.ui.wideModeLabel.setText(
+            self.ui.modeLabel.setText(
                 " rubric {} ".format(self.rubric_widget.getCurrentTabName())
             )
         else:
-            self.ui.narrowModeLabel.setText(" {} ".format(mode))
-            self.ui.wideModeLabel.setText(" {} ".format(mode))
+            self.ui.modeLabel.setText(" {} ".format(mode))
 
     def setIcon(self, toolButton, name, iconfile: str) -> None:
         """Sets a name and svg icon for a given QToolButton.
@@ -1131,6 +1193,7 @@ class Annotator(QWidget):
             tmp_task = None
 
         # Workaround getting too far ahead of Marker's upload queue
+        # TODO: surely this can move to Marker... pop open the side panel if hidden
         queue_len = self.parentMarkerUI.get_upload_queue_length()
         if queue_len >= 3:
             WarnMsg(
@@ -1144,6 +1207,8 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
+        # TODO: close_current_question should emit(tmp_task)
+        # TODO: self.caller_give_us_more.emit(tmp_task)
         stuff = self.parentMarkerUI.getMorePapers(tmp_task)
         if not stuff:
             self.update_attn_bar(tags=[], msg="", show=False)
@@ -1153,6 +1218,11 @@ class Annotator(QWidget):
 
         log.debug("saveAndGetNext: new stuff is {}".format(stuff))
         self.load_new_question(*stuff)
+
+    # TODO: @pyqtSlot()?
+    # def revert_changes(self) -> None:
+    #     InfoMsg(self, "Not implemented yet").exec()
+    #     print("TODO")
 
     @pyqtSlot()
     def saveAndClose(self) -> None:
@@ -1210,7 +1280,7 @@ class Annotator(QWidget):
         """
         keydata = self.get_key_bindings()
         actions_and_methods = (
-            ("toggle-wide-narrow", self.toggleTools),
+            ("toggle-wide-narrow", self.toggle_compact),
             ("help", self.keyPopUp),
             ("show-whole-paper", self.viewWholePaper),
             ("show-solutions", self.viewSolutions),
@@ -1227,7 +1297,7 @@ class Annotator(QWidget):
             ("pan-back-slowly", lambda: self.view.depanThrough(0.02)),
             ("undo-2", self.toUndo),
             ("redo-2", self.toRedo),
-            ("rearrange-pages", self.rearrangePages),
+            ("rearrange-pages", self.arrangePages),
             ("quick-show-prev-paper", self.show_previous),
             ("increase-annotation-scale", lambda: self.change_annot_scale(1.1)),
             ("decrease-annotation-scale", lambda: self.change_annot_scale(1 / 1.1)),
@@ -1371,20 +1441,8 @@ class Annotator(QWidget):
         # First up connect the rubric list's signal to the annotator's
         # handle rubric function.
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
-        self.ui.rearrangePagesButton.clicked.connect(self.rearrangePages)
-        # Connect up the finishing functions - using a dropdown menu
-        m = QMenu()
-        m.addAction("Done", self.saveAndClose)
-        m.addSeparator()
-        m.addAction("Cancel", self.close)
-        self.ui.finishedButton.setMenu(m)
-        self.ui.finishedButton.setPopupMode(
-            QToolButton.ToolButtonPopupMode.MenuButtonPopup
-        )
-        self.ui.finishedButton.clicked.connect(self.saveAndGetNext)
-
-        # connect the "wide" button in the narrow-view
-        self.ui.wideButton.clicked.connect(self.wideLayout)
+        self.ui.arrangePagesButton.clicked.connect(self.arrangePages)
+        self.ui.saveNextButton.clicked.connect(self.saveAndGetNext)
 
     def _uncheck_exclusive_group(self):
         # Stupid hackery to uncheck an autoexclusive button.
@@ -1423,12 +1481,6 @@ class Annotator(QWidget):
 
     def loadWindowSettings(self):
         """Loads the window settings."""
-        # load the window geometry, else maximise.
-        if self.parentMarkerUI.annotatorSettings["geometry"] is not None:
-            self.restoreGeometry(self.parentMarkerUI.annotatorSettings["geometry"])
-        else:
-            self.showMaximized()
-
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
         if self.parentMarkerUI.annotatorSettings.get("_config"):
@@ -1460,7 +1512,7 @@ class Annotator(QWidget):
         # wide vs compact
         if self.parentMarkerUI.annotatorSettings["compact"] is True:
             log.debug("compacting UI (b/c of last use setting")
-            self.toggleTools()
+            self.toggle_compact()
 
     def saveWindowSettings(self):
         """Saves current window settings and other state into the parent.
@@ -1468,7 +1520,6 @@ class Annotator(QWidget):
         Returns:
             None: modifies self.parentMarkerUI and self.scene
         """
-        self.parentMarkerUI.annotatorSettings["geometry"] = self.saveGeometry()
         self.parentMarkerUI.annotatorSettings["viewRectangle"] = (
             self.view.getCurrentViewRect()
         )
@@ -1476,10 +1527,10 @@ class Annotator(QWidget):
         self.parentMarkerUI.annotatorSettings["zoomState"] = (
             self.ui.zoomCB.currentIndex()
         )
-        if self.ui.hideableBox.isVisible():
-            self.parentMarkerUI.annotatorSettings["compact"] = False
-        else:
+        if self.is_ui_compact():
             self.parentMarkerUI.annotatorSettings["compact"] = True
+        else:
+            self.parentMarkerUI.annotatorSettings["compact"] = False
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -2106,7 +2157,7 @@ class Annotator(QWidget):
             WarnMsg(
                 self,
                 "The client cannot determine the previous paper. "
-                "Please cancel this annotation and select from the list.",
+                "Please select from the task list instead.",
             ).exec()
             return
         keydata = self.get_key_bindings()

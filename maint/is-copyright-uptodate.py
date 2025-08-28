@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2022-2024 Colin B. Macdonald
+# Copyright (C) 2022-2025 Colin B. Macdonald
 # Copyright (C) 2023-2024 Andrew Rechnitzer
 # Copyright (C) 2023 Natalie Balashov
 
@@ -28,7 +28,8 @@ ok_no_copyright = [
     "CHANGELOG*",
     "CONTRIBUTORS*",
     "*README.md",
-    "*/uiFiles/ui_*.py",
+    "*README.txt",
+    "*/ui_files/ui_*.py",
     ".mailmap",
 ]
 

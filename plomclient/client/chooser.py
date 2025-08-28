@@ -44,6 +44,7 @@ import urllib3
 from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from plomclient.common import Default_Port
 from plomclient.messenger import Plom_API_Version, Messenger
@@ -170,6 +171,14 @@ class Chooser(QDialog):
         self.ui.pgSB.setValue(int(self.lastTime["question"]))
         self.ui.vSB.setValue(int(self.lastTime["v"]))
         self.ui.fontSB.setValue(int(self.lastTime["fontSize"]))
+
+        # perhaps temporarily, same shortcut key as Marker
+        self._store_QShortcuts = []
+        key = "ctrl+q"
+        command = self.close
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
 
     # TODO: see Issue #3423, this below workaround doesn't work for me
     # def keyPressEvent(self, event):
@@ -763,7 +772,7 @@ class Chooser(QDialog):
 
     @pyqtSlot(int, list)
     def on_marker_window_close(self, value: int, stuff: list[Any] | None) -> None:
-        # `value` is always 2, no real meaning yet
+        # `value` is 1 or 2, 2 means stay in the chooser dialog, 1 means quit
         self.show()
         self.setEnabled(True)
         # TODO: wall-paper for Issue #2903
@@ -777,3 +786,5 @@ class Chooser(QDialog):
             self.lastTime["KeyBinding"] = stuff[0]
         # TODO: not writing to disc until Issue #2254
         # self.lastTime["CustomKeys"] = stuff[1]
+        if value == 1:
+            self.close()
