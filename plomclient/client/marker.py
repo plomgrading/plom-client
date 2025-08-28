@@ -1043,9 +1043,8 @@ class MarkerClient(QWidget):
                     return
             except PlomSeriousException as err:
                 log.exception("Unexpected error getting next task: %s", err)
-                # TODO: Issue #2146, parent=self will cause Marker to popup on top of Annotator
                 ErrorMsg(
-                    None,
+                    self,
                     "Unexpected error getting next task. Client will now crash!",
                     info=str(err),
                 ).exec()
