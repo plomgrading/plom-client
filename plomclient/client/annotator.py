@@ -59,6 +59,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QProgressDialog,
     QPushButton,
+    QSplitter,
     QToolButton,
     QWidget,
 )
@@ -137,6 +138,7 @@ class Annotator(QWidget):
         self.maxMark = 0
 
         # help mypy understand stuff coming from uic
+        self.splitter: QSplitter
         self.hideableBox: QFrame
         self.hamMenuButton: QToolButton
         self.zoomCB: QComboBox
@@ -238,9 +240,6 @@ class Annotator(QWidget):
         self.ui.splitter.setChildrenCollapsible(False)
         # self.ui.splitter.setCollapsible(0, False)
         # self.ui.splitter.setCollapsible(1, False)
-        print(self.ui.splitter.handle)
-        print(self.ui.splitter.handle(0))
-        print(self.ui.splitter.handle(1))
         self.ui.splitter.handle(1).setEnabled(False)
 
         self.ui.hamMenuButton.setMenu(self.buildHamburger())
@@ -1115,11 +1114,11 @@ class Annotator(QWidget):
 
     def _setModeLabels(self, mode):
         if mode == "rubric":
-            self.ui.wideModeLabel.setText(
+            saelf.ui.modeLabel.setText(
                 " rubric {} ".format(self.rubric_widget.getCurrentTabName())
             )
         else:
-            self.ui.wideModeLabel.setText(" {} ".format(mode))
+            self.ui.modeLabel.setText(" {} ".format(mode))
 
     def setIcon(self, toolButton, name, iconfile: str) -> None:
         """Sets a name and svg icon for a given QToolButton.
