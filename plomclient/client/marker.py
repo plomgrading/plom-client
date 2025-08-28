@@ -1602,7 +1602,7 @@ class MarkerClient(QWidget):
             self._requestNext()
 
     def reset_task(
-        self, task: str | None = None, *, advance_to_next: bool = True
+        self, task: str | None = None, *, advance_to_next: bool = False
     ) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
 
@@ -1612,7 +1612,7 @@ class MarkerClient(QWidget):
 
         Keyword Args:
             advance_to_next: whether to also advance to the next task
-                (default).
+                (default off).
         """
         if not task:
             task = self.get_current_task_id_or_none()
@@ -1641,6 +1641,9 @@ class MarkerClient(QWidget):
 
         if advance_to_next:
             self._requestNext()
+        else:
+            # TODO: if not, we need to repaint the task list
+            self.refresh_server_data()
 
     def startTheAnnotator(self, initialData) -> None:
         """This fires up the annotation widget for user annotation + marking.
