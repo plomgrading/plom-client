@@ -143,7 +143,9 @@ class Annotator(QWidget):
         self.hamMenuButton: QToolButton
         self.saveNextButton: QToolButton
         self.arrangePagesButton: QToolButton
+        self.toolsLayout: QBoxLayout
         self.zoomCB: QComboBox
+        self.helpButton: QToolButton
         self.boxButton: QToolButton
         self.tickButton: QToolButton
         self.crossButton: QToolButton
@@ -158,6 +160,7 @@ class Annotator(QWidget):
         self.redoButton: QToolButton
         self.pageFrame: QFrame
         self.container_rubricwidget: QBoxLayout
+        self.markLabel: QLabel
         self.attnFrame: QFrame
         self.attnLeftLabel: QLabel
         self.attnRightLabel: QLabel
@@ -242,7 +245,9 @@ class Annotator(QWidget):
         self.ui.splitter.setChildrenCollapsible(False)
         # self.ui.splitter.setCollapsible(0, False)
         # self.ui.splitter.setCollapsible(1, False)
-        self.ui.splitter.handle(1).setEnabled(False)
+        h = self.ui.splitter.handle(1)
+        assert h is not None
+        h.setEnabled(False)
 
         self.ui.hamMenuButton.setMenu(self.buildHamburger())
         # heaven == hamburger? works for me!
