@@ -678,7 +678,6 @@ class Annotator(QWidget):
         Returns:
             None
         """
-        self.ui.markLabel.setStyleSheet("color: #ff0000; font: bold;")
         # TODO: some duplication of code b/w here and pagescene.ScoreBox
         s = ""
         if self.question_label:
