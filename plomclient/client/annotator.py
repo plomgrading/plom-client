@@ -1066,9 +1066,15 @@ class Annotator(QWidget):
         )
         # connect view to scene
         self.view.connectScene(self.scene)
-        self.scene.undoStack.cleanChanged.connect(lambda x: self.cleanChanged.emit(x))
+        self.scene.undoStack.cleanChanged.connect(self._gunk)
         # scene knows which views are connected via self.views()
         log.debug("Scene has this list of views: {}".format(self.scene.views()))
+
+    # I get crashes when I try to hack with lambdas, "just" want to forward
+    # the undoStack's cleanChanged onward as if it came from Annotator
+    @pyqtSlot(bool)
+    def _gunk(self, clean: bool) -> None:
+        self.cleanChanged.emit(clean)
 
     def keyToChangeRubric(self, keyNumber) -> None:
         """Translates a the numerical key into a selection of that visible row of the current rubric tab.

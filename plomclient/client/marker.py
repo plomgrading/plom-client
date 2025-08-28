@@ -327,6 +327,7 @@ class MarkerClient(QWidget):
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
 
+    @pyqtSlot()
     def update_window_title(self) -> None:
         try:
             question_label = get_question_label(self.exam_spec, self.question_idx)
@@ -341,7 +342,7 @@ class MarkerClient(QWidget):
                 papernumber=task,
                 question_label=question_label,
             )
-        # TRANSLATOR: note this [*] servers a technical purpose, do not edit
+        # note this [*] is used by Qt to know here to put an * to indicate unsaved results
         self.setWindowTitle("[*]" + window_title)
 
     def UIInitialization(self) -> None:
@@ -1626,7 +1627,7 @@ class MarkerClient(QWidget):
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
         # manages the "*" in the titlebar when the pagescene is dirty
-        annotator.cleanChanged.connect(lambda x: self.setWindowModified(not x))
+        annotator.cleanChanged.connect(self.clean_changed)
 
         # Do a bunch of (temporary) hacking to embed Annotator
         self._annotator = annotator
@@ -1640,6 +1641,11 @@ class MarkerClient(QWidget):
         self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
+
+    @pyqtSlot(bool)
+    def clean_changed(self, clean: bool) -> None:
+        """React to changes in the cleanliness of annotator, indicating that changes need to be saved."""
+        super().setWindowModified(not clean)
 
     def switch_task(self, task: str) -> None:
         """Try to switch to marking/viewing a particular task, possibly checking with user.
