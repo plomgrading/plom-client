@@ -105,7 +105,7 @@ class SceneParent(QWidget):
         """
         self._Qapp.processEvents()
 
-    def rearrangePages(self):
+    def arrangePages(self):
         pass
 
     def doStuff(self, src_img_data, saveName, maxMark, markStyle):

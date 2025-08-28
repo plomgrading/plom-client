@@ -213,7 +213,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QToolButton" name="rearrangePagesButton">
+             <widget class="QToolButton" name="arrangePagesButton">
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                 <horstretch>2</horstretch>
@@ -323,7 +323,7 @@
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="wideModeLabel">
+           <widget class="QLabel" name="modeLabel">
             <property name="text">
              <string>mode</string>
             </property>

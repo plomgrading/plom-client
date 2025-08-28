@@ -141,6 +141,8 @@ class Annotator(QWidget):
         self.splitter: QSplitter
         self.hideableBox: QFrame
         self.hamMenuButton: QToolButton
+        self.saveNextButton: QToolButton
+        self.arrangePagesButton: QToolButton
         self.zoomCB: QComboBox
         self.boxButton: QToolButton
         self.tickButton: QToolButton
@@ -390,7 +392,7 @@ class Annotator(QWidget):
         m.addSeparator()
         (key,) = keydata["rearrange-pages"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Adjust pages\t{key}", self.rearrangePages)
+        m.addAction(f"Adjust pages\t{key}", self.arrangePages)
         (key,) = keydata["crop-in"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Crop to region\t{key}", self.to_crop_mode)
@@ -764,9 +766,9 @@ class Annotator(QWidget):
         # self.ui.frameTools.setVisible(False)
         self.ui.helpButton.setText("?")
         self.ui.saveNextButton.setText("Next")
-        # self.ui.rearrangePagesButton.setText("\N{PAGES}")
-        self.ui.rearrangePagesButton.setText("")
-        self.setIcon(self.ui.rearrangePagesButton, "Rearrange pages", "extra_page.svg")
+        # self.ui.arrangePagesButton.setText("\N{PAGES}")
+        self.ui.arrangePagesButton.setText("")
+        self.setIcon(self.ui.arrangePagesButton, "Rearrange pages", "extra_page.svg")
 
         # magic value :(
         self.ui.hideableBox.setMinimumWidth(120)
@@ -784,8 +786,8 @@ class Annotator(QWidget):
         # self.ui.frameTools.setVisible(True)
         self.ui.helpButton.setText("Key help")
         self.ui.saveNextButton.setText("Save && Next")
-        self.ui.rearrangePagesButton.setText("Adjust pages")
-        self.ui.rearrangePagesButton.setIcon(QIcon())
+        self.ui.arrangePagesButton.setText("Adjust pages")
+        self.ui.arrangePagesButton.setIcon(QIcon())
 
         self.ui.hideableBox.setMinimumWidth(0)
 
@@ -864,8 +866,8 @@ class Annotator(QWidget):
         labels = [x["pagename"] for x in pagedata]
         WholeTestView(testnum, pagedata, labels, parent=self).exec()
 
-    def rearrangePages(self) -> None:
-        """Rearranges pages in UI."""
+    def arrangePages(self) -> None:
+        """Arrange or rearrange pages in UI."""
         if not self.task or not self.scene:
             return
         self.parentMarkerUI.Qapp.setOverrideCursor(Qt.CursorShape.WaitCursor)
@@ -1114,7 +1116,7 @@ class Annotator(QWidget):
 
     def _setModeLabels(self, mode):
         if mode == "rubric":
-            saelf.ui.modeLabel.setText(
+            self.ui.modeLabel.setText(
                 " rubric {} ".format(self.rubric_widget.getCurrentTabName())
             )
         else:
@@ -1275,7 +1277,7 @@ class Annotator(QWidget):
             ("pan-back-slowly", lambda: self.view.depanThrough(0.02)),
             ("undo-2", self.toUndo),
             ("redo-2", self.toRedo),
-            ("rearrange-pages", self.rearrangePages),
+            ("rearrange-pages", self.arrangePages),
             ("quick-show-prev-paper", self.show_previous),
             ("increase-annotation-scale", lambda: self.change_annot_scale(1.1)),
             ("decrease-annotation-scale", lambda: self.change_annot_scale(1 / 1.1)),
@@ -1419,7 +1421,7 @@ class Annotator(QWidget):
         # First up connect the rubric list's signal to the annotator's
         # handle rubric function.
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
-        self.ui.rearrangePagesButton.clicked.connect(self.rearrangePages)
+        self.ui.arrangePagesButton.clicked.connect(self.arrangePages)
         self.ui.saveNextButton.clicked.connect(self.saveAndGetNext)
 
     def _uncheck_exclusive_group(self):
