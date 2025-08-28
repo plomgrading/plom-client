@@ -765,6 +765,7 @@ class Annotator(QWidget):
 
         # magic value :(
         self.ui.hideableBox.setMinimumWidth(120)
+        self.ui.splitter.setSizes([120, 4096])
 
     def wideLayout(self) -> None:
         """Changes view to Wide Layout style."""
