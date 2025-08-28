@@ -368,9 +368,13 @@ class MarkerClient(QWidget):
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
         self.ui.splitter.setCollapsible(0, False)
         self.ui.splitter.setCollapsible(1, False)
-        self.ui.splitter.setStyleSheet(
-            "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
-        )
+        # TODO: for some reason, Andrew's stylesheet applies to OTHER splitters as well
+        # which makes things a bit ugly (e.g., my dummy splitter on the left and the
+        # Page Arranger dialog.  For now, turn it off.
+        # self.ui.splitter.setStyleSheet(
+        #     "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
+        # )
+
         # Note: for some reason the RHS panel isn't as small as it could be
         # This call should make it smaller
         # TODO: yuck yuck yuck, dislike this Qtimer things
