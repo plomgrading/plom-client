@@ -109,6 +109,7 @@ class Annotator(QWidget):
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
+    cleanChanged = pyqtSignal(bool)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
         """Initializes a new annotator widget.
@@ -522,7 +523,6 @@ class Annotator(QWidget):
         self.close_current_scene()
         self.task = None
         self.testName = None
-        self.setWindowTitle("Annotator")
         self.paperDir = None
         self.saveName = None
         # feels like a bit of a kludge
@@ -581,8 +581,6 @@ class Annotator(QWidget):
         self.question_label = question_label
         self.testName = testName
         s = "{} of {}: {}".format(self.question_label, testName, task)
-        # TODO: might be the parent! is this signal/slot thing?
-        self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
         self.saveName = Path(saveName)
@@ -599,6 +597,10 @@ class Annotator(QWidget):
         self.timer.start()
 
         self.update_attn_bar(tags=tags)
+
+        # Emit signal that we are now in a clean state.  Not sure *we* should
+        # *have* to do this, but somehow the undostack isn't doing it.
+        self.cleanChanged.emit(True)
 
     def load_new_scene(self, src_img_data, *, plomDict=None):
         # Set up the graphicsview and graphicsscene of the group-image
@@ -1068,8 +1070,15 @@ class Annotator(QWidget):
         )
         # connect view to scene
         self.view.connectScene(self.scene)
+        self.scene.undoStack.cleanChanged.connect(self._gunk)
         # scene knows which views are connected via self.views()
         log.debug("Scene has this list of views: {}".format(self.scene.views()))
+
+    # I get crashes when I try to hack with lambdas, "just" want to forward
+    # the undoStack's cleanChanged onward as if it came from Annotator
+    @pyqtSlot(bool)
+    def _gunk(self, clean: bool) -> None:
+        self.cleanChanged.emit(clean)
 
     def keyToChangeRubric(self, keyNumber) -> None:
         """Translates a the numerical key into a selection of that visible row of the current rubric tab.
