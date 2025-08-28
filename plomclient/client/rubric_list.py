@@ -22,11 +22,14 @@ from PyQt6.QtWidgets import (
     QDialog,
     QInputDialog,
     QGridLayout,
+    QHBoxLayout,
     QMenu,
     QMessageBox,
     QPushButton,
     QToolButton,
+    QSizePolicy,
     QStackedWidget,
+    QSpacerItem,
     QTabBar,
     QTabWidget,
     QTableWidget,
@@ -948,9 +951,16 @@ class RubricWidget(QWidget):
         # self.syncB.setText("\N{Rightwards Harpoon Over Leftwards Harpoon}")
         self.syncB.setText("Sync")
         self.syncB.setToolTip("Synchronise rubrics")
-        grid.addWidget(self.addB, 3, 1)
-        grid.addWidget(self.hideB, 3, 2)
-        grid.addWidget(self.syncB, 3, 3)
+        a = QHBoxLayout()
+        grid.addLayout(a, 3, 1, 1, 4)
+        a.addWidget(self.addB)
+        a.addWidget(self.hideB)
+        a.addWidget(self.syncB)
+        a.addItem(
+            QSpacerItem(
+                0, 10, QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Minimum
+            )
+        )
         grid.setSpacing(0)
         self.setLayout(grid)
         # connect the buttons to functions.

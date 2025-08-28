@@ -273,6 +273,9 @@ class MarkerClient(QWidget):
         self.ui.tableView.selectionModel().selectionChanged.connect(
             self.ensureAllDownloaded
         )
+        self.ui.tableView.selectionModel().selectionChanged.connect(
+            self.update_window_title
+        )
 
         # Get a question to mark from the server
         self.requestNext(enter_annotate_mode_if_possible=True)
@@ -324,23 +327,47 @@ class MarkerClient(QWidget):
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
 
+    @pyqtSlot()
+    def update_window_title(self) -> None:
+        try:
+            question_label = get_question_label(self.exam_spec, self.question_idx)
+        except (ValueError, KeyError):
+            question_label = ""
+        if self.exam_spec:
+            assessment_name = self.exam_spec["name"]
+        else:
+            assessment_name = ""
+
+        task = self.get_current_task_id_or_none()
+        if not ((task or question_label) and assessment_name):
+            window_title = "Plom"
+        else:
+            window_title = "{what} of {assessment_name} \N{EM DASH} Plom".format(
+                what=(task if task else question_label),
+                assessment_name=assessment_name,
+            )
+        # note this [*] is used by Qt to know here to put an * to indicate unsaved results
+        self.setWindowTitle("[*]" + window_title)
+
     def UIInitialization(self) -> None:
         """Startup procedure for the user interface.
 
         Returns:
             None: Modifies self.ui
         """
-        self.setWindowTitle('Plom Marker: "{}"'.format(self.exam_spec["name"]))
         try:
             question_label = get_question_label(self.exam_spec, self.question_idx)
         except (ValueError, KeyError):
             question_label = "???"
         self.ui.labelTasks.setText(
-            "{} (ver. {})\n{}".format(
-                question_label, self.version, self.exam_spec["name"]
+            "{question_label} (ver. {question_version})\n{assessment_name}".format(
+                question_label=question_label,
+                question_version=self.version,
+                assessment_name=self.exam_spec["name"],
             )
         )
         self.ui.labelTasks.setWordWrap(True)
+        self.update_window_title()
 
         self.prxM.setSourceModel(self.examModel)
         self.ui.tableView.setModel(self.prxM)
@@ -366,10 +393,19 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
-        self.ui.splitter.setCollapsible(1, True)
-        self.ui.splitter.setStyleSheet(
-            "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
-        )
+        self.ui.splitter.setCollapsible(0, False)
+        self.ui.splitter.setCollapsible(1, False)
+        # TODO: for some reason, Andrew's stylesheet applies to OTHER splitters as well
+        # which makes things a bit ugly (e.g., my dummy splitter on the left and the
+        # Page Arranger dialog.  For now, turn it off.
+        # self.ui.splitter.setStyleSheet(
+        #     "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
+        # )
+
+        # Note: for some reason the RHS panel isn't as small as it could be
+        # This call should make it smaller
+        # TODO: yuck yuck yuck, dislike this Qtimer things
+        QTimer.singleShot(100, lambda: self.ui.splitter.setSizes([4096, 100]))
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
@@ -1594,6 +1630,8 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
+        # manages the "*" in the titlebar when the pagescene is dirty
+        annotator.cleanChanged.connect(self.clean_changed)
 
         # Do a bunch of (temporary) hacking to embed Annotator
         self._annotator = annotator
@@ -1607,6 +1645,11 @@ class MarkerClient(QWidget):
         self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
+
+    @pyqtSlot(bool)
+    def clean_changed(self, clean: bool) -> None:
+        """React to changes in the cleanliness of annotator, indicating that changes need to be saved."""
+        super().setWindowModified(not clean)
 
     def switch_task(self, task: str) -> None:
         """Try to switch to marking/viewing a particular task, possibly checking with user.
