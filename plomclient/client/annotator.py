@@ -109,6 +109,7 @@ class Annotator(QWidget):
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
+    cleanChanged = pyqtSignal(bool)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
         """Initializes a new annotator widget.
@@ -1068,6 +1069,7 @@ class Annotator(QWidget):
         )
         # connect view to scene
         self.view.connectScene(self.scene)
+        self.scene.undoStack.cleanChanged.connect(lambda x: self.cleanChanged.emit(x))
         # scene knows which views are connected via self.views()
         log.debug("Scene has this list of views: {}".format(self.scene.views()))
 

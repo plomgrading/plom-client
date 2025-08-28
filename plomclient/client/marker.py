@@ -1622,6 +1622,8 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
+        # manages the "*" in the titlebar when the pagescene is dirty
+        annotator.cleanChanged.connect(lambda x: self.setWindowModified(not x))
 
         # Do a bunch of (temporary) hacking to embed Annotator
         self._annotator = annotator
