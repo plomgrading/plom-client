@@ -523,7 +523,6 @@ class Annotator(QWidget):
         self.close_current_scene()
         self.task = None
         self.testName = None
-        self.setWindowTitle("Annotator")
         self.paperDir = None
         self.saveName = None
         # feels like a bit of a kludge
@@ -582,8 +581,6 @@ class Annotator(QWidget):
         self.question_label = question_label
         self.testName = testName
         s = "{} of {}: {}".format(self.question_label, testName, task)
-        # TODO: might be the parent! is this signal/slot thing?
-        self.setWindowTitle("{} - Plom Annotator".format(s))
         log.info("Annotating {}".format(s))
         self.paperDir = paperdir
         self.saveName = Path(saveName)
