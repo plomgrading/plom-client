@@ -333,18 +333,26 @@ class MarkerClient(QWidget):
             question_label = get_question_label(self.exam_spec, self.question_idx)
         except (ValueError, KeyError):
             question_label = ""
-        # TODO: assesssment name?
+        if self.exam_spec:
+            assessment_name = self.exam_spec["name"]
+        else:
+            assessment_name = ""
+
         task = self.get_current_task_id_or_none()
         if not task:
             if not question_label:
                 window_title = "Plom"
             else:
-                window_title = "{question_label} \N{EM DASH} Plom".format(
-                    question_label=question_label,
+                window_title = (
+                    "{question_label} of {assessment_name} \N{EM DASH} Plom".format(
+                        question_label=question_label,
+                        assessment_name=assessment_name,
+                    )
                 )
         else:
-            window_title = "{task_code} \N{EM DASH} Plom".format(
+            window_title = "{task_code} of {assessment_name} \N{EM DASH} Plom".format(
                 task_code=task,
+                assessment_name=assessment_name,
             )
         # note this [*] is used by Qt to know here to put an * to indicate unsaved results
         self.setWindowTitle("[*]" + window_title)
