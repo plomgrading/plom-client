@@ -465,7 +465,7 @@ class Annotator(QWidget):
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Compact UI\t{key}", self.narrowLayout)
+        m.addAction(f"Compact UI\t{key}", self.compact_layout)
         # TODO: this should be an indicator but for now compact doesn't have the hamburg menu
         # m.addAction("&Wide UI\thome", self.wideLayout)
         m.addSeparator()
@@ -747,20 +747,20 @@ class Annotator(QWidget):
         else:
             self.ui.toolsLayout.setSpacing(6)
 
-    def is_compact_toolbar(self) -> bool:
-        """Are the UI toolbars currently in compact mode?"""
+    def is_ui_compact(self) -> bool:
+        """Is the UI currently in compact mode?"""
         # TODO: fragile hack, e.g., translation
         return not self.ui.saveNextButton.text().startswith("Save")
 
-    def toggleTools(self) -> None:
+    def toggle_compact(self) -> None:
         """Shows/Hides tools making more space to view the group-image."""
-        if self.is_compact_toolbar():
+        if self.is_ui_compact():
             self.wideLayout()
         else:
-            self.narrowLayout()
+            self.compact_layout()
 
-    def narrowLayout(self) -> None:
-        """Changes view to narrow Layout style."""
+    def compact_layout(self) -> None:
+        """Changes view to use a more narrow layout style."""
         self.ui.markLabel.setStyleSheet("color: #ff0000")
         # TODO: condensed font
         # QFont.setStretch(50)
@@ -1265,7 +1265,7 @@ class Annotator(QWidget):
         """
         keydata = self.get_key_bindings()
         actions_and_methods = (
-            ("toggle-wide-narrow", self.toggleTools),
+            ("toggle-wide-narrow", self.toggle_compact),
             ("help", self.keyPopUp),
             ("show-whole-paper", self.viewWholePaper),
             ("show-solutions", self.viewSolutions),
@@ -1497,7 +1497,7 @@ class Annotator(QWidget):
         # wide vs compact
         if self.parentMarkerUI.annotatorSettings["compact"] is True:
             log.debug("compacting UI (b/c of last use setting")
-            self.toggleTools()
+            self.toggle_compact()
 
     def saveWindowSettings(self):
         """Saves current window settings and other state into the parent.
@@ -1512,7 +1512,7 @@ class Annotator(QWidget):
         self.parentMarkerUI.annotatorSettings["zoomState"] = (
             self.ui.zoomCB.currentIndex()
         )
-        if self.is_compact_toolbar():
+        if self.is_ui_compact():
             self.parentMarkerUI.annotatorSettings["compact"] = True
         else:
             self.parentMarkerUI.annotatorSettings["compact"] = False
