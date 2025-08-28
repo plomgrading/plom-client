@@ -366,6 +366,7 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
+        self.ui.splitter.setCollapsible(0, False)
         self.ui.splitter.setCollapsible(1, False)
         self.ui.splitter.setStyleSheet(
             "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
