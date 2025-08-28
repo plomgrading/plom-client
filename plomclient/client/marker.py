@@ -370,6 +370,10 @@ class MarkerClient(QWidget):
         self.ui.splitter.setStyleSheet(
             "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
         )
+        # Note: for some reason the RHS panel isn't as small as it could be
+        # This call should make it smaller
+        # TODO: yuck yuck yuck, dislike this Qtimer things
+        QTimer.singleShot(100, lambda: self.ui.splitter.setSizes([4096, 100]))
 
         if Version(__version__).is_devrelease:
             self.ui.technicalButton.setChecked(True)
