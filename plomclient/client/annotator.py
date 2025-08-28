@@ -34,6 +34,7 @@ from PyQt6 import QtGui, uic
 from PyQt6.QtCore import (
     QElapsedTimer,
     Qt,
+    QSize,
     QTimer,
     pyqtSignal,
     pyqtSlot,
@@ -726,8 +727,6 @@ class Annotator(QWidget):
         self.cursor = cursor
 
     def set_tool_icon_size(self, s: int) -> None:
-        from PyQt6.QtCore import QSize
-
         for b in (
             self.ui.tickButton,
             self.ui.crossButton,
@@ -770,8 +769,6 @@ class Annotator(QWidget):
         self.ui.rearrangePagesButton.setText("")
         self.setIcon(self.ui.rearrangePagesButton, "Rearrange pages", "extra_page.svg")
 
-        from PyQt6.QtCore import QSize
-
         # magic value :(
         self.ui.hideableBox.setMinimumWidth(120)
         self.ui.splitter.setSizes([120, 4096])
@@ -790,7 +787,6 @@ class Annotator(QWidget):
         self.ui.saveNextButton.setText("Save && Next")
         self.ui.rearrangePagesButton.setText("Adjust pages")
         self.ui.rearrangePagesButton.setIcon(QIcon())
-        from PyQt6.QtCore import QSize
 
         self.ui.hideableBox.setMinimumWidth(0)
 
