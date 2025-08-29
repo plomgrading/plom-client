@@ -406,18 +406,19 @@ class MarkerClient(QWidget):
         self.ui.splitter.setCollapsible(1, True)
         self.ui.splitter.setHandleWidth(30)
         # some labels to stick on the grab bar
-        self.ui.collapse_label0 = QLabel(">")
-        self.ui.collapse_label1 = QLabel(">")
+        self.ui.collapse_label0 = QLabel("")
+        self.ui.collapse_label1 = QLabel("")
 
         def check_split_width():
             # if the right-widget (ie marker task list) is narrow, then
             # set the labels to indicate 'expansion'
             if self.ui.splitter.sizes()[1] < 8:
-                self.ui.collapse_label0.setText("<")
-                self.ui.collapse_label1.setText("<")
+                # TRANSLATOR: decorative, no meaning
+                self.ui.collapse_label0.setText("<\n<\n<")
+                self.ui.collapse_label1.setText("<\n<\n<")
             else:
-                self.ui.collapse_label0.setText(">")
-                self.ui.collapse_label1.setText(">")
+                self.ui.collapse_label0.setText("")
+                self.ui.collapse_label1.setText("")
 
         self.ui.splitter.splitterMoved.connect(check_split_width)
         handy = self.ui.splitter.handle(1)
