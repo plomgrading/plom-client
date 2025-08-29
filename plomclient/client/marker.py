@@ -560,7 +560,7 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    def exit_annotate_mode(self):
+    def _exit_annotate_mode(self):
         self._annotator = None
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
@@ -1954,7 +1954,7 @@ class MarkerClient(QWidget):
         """
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self.exit_annotate_mode()
+        self._exit_annotate_mode()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
