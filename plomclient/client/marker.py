@@ -560,22 +560,8 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    # We experimented with the "Mark" button being checkable, could revisit.
-    # Note: consider that users may accidentally get to "view mode" by double-clicking
-    # def annotate_button_clicked(self):
-    #     """Handle the click event of the annotate button."""
-    #     # Note: this is the state after *just* toggling, we are reacting
-    #     if not self.annButton.isChecked():
-    #         # assert self._annotator, "illegal: checked annButton but no Annotator"
-    #         if self._annotator:
-    #             self._annotator.close()
-    #         # self.exit_annotate_mode()
-    #     else:
-    #         self.annotate_task()
-
-    def exit_annotate_mode(self):
+    def _exit_annotate_mode(self):
         self._annotator = None
-        self.ui.annButton.setChecked(False)
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
@@ -1641,8 +1627,6 @@ class MarkerClient(QWidget):
         self.ui.tableView.clicked.connect(self.annotate_task)
         # not sure why this needs a typing exception...
         annotator.ui.verticalLayout.setContentsMargins(0, 0, 6, 0)  # type: ignore[attr-defined]
-        # use the "Annotate & Mark" button to indicate edit/view mode
-        self.ui.annButton.setChecked(True)
         # TODO: doesn't help, why not?  Not worth worrying about if we remove
         # self.testImg.resetView()
 
@@ -1968,10 +1952,9 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
-        self.setEnabled(True)
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self.exit_annotate_mode()
+        self._exit_annotate_mode()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
@@ -2250,6 +2233,16 @@ class MarkerClient(QWidget):
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         log.debug("Something has triggered a shutdown event")
+
+        if self._annotator:
+            if self._annotator.is_dirty():
+                msg0 = SimpleQuestion(self, "Discard unsaved annotations and quit?")
+                if msg0.exec() != QMessageBox.StandardButton.Yes:
+                    if event:
+                        event.ignore()
+                    return
+            self._exit_annotate_mode()
+
         while not self.Qapp.downloader.stop(500):
             if (
                 SimpleQuestion(
