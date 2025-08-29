@@ -420,7 +420,7 @@ class MarkerClient(QWidget):
                 self.ui.collapse_label1.setText(">")
 
         self.ui.splitter.splitterMoved.connect(check_split_width)
-        self.ui.handy = self.ui.splitter.handle(1)
+        handy = self.ui.splitter.handle(1)
         vb = QVBoxLayout()
         si = QSpacerItem(
             1,
@@ -446,7 +446,7 @@ class MarkerClient(QWidget):
                 vb.addItem(si)
                 vb.addWidget(self.ui.collapse_label1)
         vb.addItem(si)
-        self.ui.handy.setLayout(vb)
+        handy.setLayout(vb)
 
         # Note: for some reason the RHS panel isn't as small as it could be
         # This call should make it smaller
