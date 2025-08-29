@@ -406,19 +406,22 @@ class MarkerClient(QWidget):
         self.ui.splitter.setCollapsible(1, True)
         self.ui.splitter.setHandleWidth(30)
         # some labels to stick on the grab bar
-        self.ui.collapse_label0 = QLabel("")
-        self.ui.collapse_label1 = QLabel("")
+        label0 = QLabel("")
+        label1 = QLabel("")
+        # "dark" too light and "shadow" too dark ;-(
+        # label0.setStyleSheet("QLabel { color: palette(dark); }")
+        # label1.setStyleSheet("QLabel { color: palette(shadow); }")
 
         def check_split_width():
             # if the right-widget (ie marker task list) is narrow, then
             # set the labels to indicate 'expansion'
             if self.ui.splitter.sizes()[1] < 8:
                 # TRANSLATOR: decorative, no meaning
-                self.ui.collapse_label0.setText("<\n<\n<")
-                self.ui.collapse_label1.setText("<\n<\n<")
+                label0.setText("<\n<\n<")
+                label1.setText("<\n<\n<")
             else:
-                self.ui.collapse_label0.setText("")
-                self.ui.collapse_label1.setText("")
+                label0.setText("")
+                label1.setText("")
 
         self.ui.splitter.splitterMoved.connect(check_split_width)
         handy = self.ui.splitter.handle(1)
@@ -442,10 +445,10 @@ class MarkerClient(QWidget):
             vb.addLayout(hb)
             if n == 0:
                 vb.addItem(si)
-                vb.addWidget(self.ui.collapse_label0)
+                vb.addWidget(label0)
             if n == 1:
                 vb.addItem(si)
-                vb.addWidget(self.ui.collapse_label1)
+                vb.addWidget(label1)
         vb.addItem(si)
         handy.setLayout(vb)
 
