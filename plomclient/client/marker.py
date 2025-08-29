@@ -1952,7 +1952,6 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
-        self.setEnabled(True)
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
         self.exit_annotate_mode()
