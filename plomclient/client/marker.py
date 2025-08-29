@@ -1615,6 +1615,10 @@ class MarkerClient(QWidget):
         Keyword Args:
             advance_to_next: whether to also advance to the next task
                 (default off).
+
+        Note: if you reset the current task that is being annotated,
+        and `advance_to_next` is False, we'll kick you back to
+        view-mode.
         """
         if not task:
             task = self.get_current_task_id_or_none()
@@ -1622,6 +1626,7 @@ class MarkerClient(QWidget):
             return
         papernum, qidx = task_id_str_to_paper_question_index(task)
         question_label = get_question_label(self.exam_spec, qidx)
+
         msg = SimpleQuestion(
             self,
             f"This will reset task {task}; any annotations will be discarded."
@@ -1631,6 +1636,19 @@ class MarkerClient(QWidget):
         )
         if msg.exec() != QMessageBox.StandardButton.Yes:
             return
+
+        if self._annotator:
+            if task == self._annotator.task:
+                # Note even if _annotator.is_dirty(), user has already confirmed
+
+                log.debug("We are resetting the very task we are annotating...")
+                # we're resetting the task we're annotating
+                advance_to_next = True  # ???
+
+                # TODO: e.g.,  Issue #5063
+                # if not advance_to_next:
+                #     self._exit_annotate_mode()
+
         try:
             self.msgr.reset_task(papernum, qidx)
         except (
@@ -1644,7 +1662,7 @@ class MarkerClient(QWidget):
         if advance_to_next:
             self._requestNext()
         else:
-            # TODO: if not, we need to repaint the task list
+            # If not, we need to repaint the task list
             # TODO: but if we were on this one, annotator needs reset!
             self.refresh_server_data()
 
