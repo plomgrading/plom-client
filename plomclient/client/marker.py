@@ -2236,8 +2236,8 @@ class MarkerClient(QWidget):
 
         if self._annotator:
             if self._annotator.is_dirty():
-                msg = SimpleQuestion(self, "Discard unsaved annotations and quit?")
-                if msg.exec() != QMessageBox.StandardButton.Yes:
+                msg0 = SimpleQuestion(self, "Discard unsaved annotations and quit?")
+                if msg0.exec() != QMessageBox.StandardButton.Yes:
                     if event:
                         event.ignore()
                     return
