@@ -400,15 +400,26 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
+
+        # mess around with the splitter
         self.ui.splitter.setCollapsible(0, False)
         self.ui.splitter.setCollapsible(1, True)
-        # TODO: for some reason, Andrew's stylesheet applies to OTHER splitters as well
-        # which makes things a bit ugly (e.g., my dummy splitter on the left and the
-        # Page Arranger dialog.  For now, turn it off.
-        # self.ui.splitter.setStyleSheet(
-        #     "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
-        # )
         self.ui.splitter.setHandleWidth(24)
+        # some labels to stick on the grab bar
+        self.ui.collapse_label0 = QLabel(">")
+        self.ui.collapse_label1 = QLabel(">")
+
+        def check_split_width():
+            # if the right-widget (ie marker task list) is narrow, then
+            # set the labels to indicate 'expansion'
+            if self.ui.splitter.sizes()[1] < 8:
+                self.ui.collapse_label0.setText("<")
+                self.ui.collapse_label1.setText("<")
+            else:
+                self.ui.collapse_label0.setText(">")
+                self.ui.collapse_label1.setText(">")
+
+        self.ui.splitter.splitterMoved.connect(check_split_width)
         self.ui.handy = self.ui.splitter.handle(1)
         vb = QVBoxLayout()
         si = QSpacerItem(
@@ -428,8 +439,12 @@ class MarkerClient(QWidget):
                 hb.addWidget(f)
             vb.addItem(si)
             vb.addLayout(hb)
-            if n != 2:
-                vb.addWidget(QLabel("<"))
+            if n == 0:
+                vb.addItem(si)
+                vb.addWidget(self.ui.collapse_label0)
+            if n == 1:
+                vb.addItem(si)
+                vb.addWidget(self.ui.collapse_label1)
         vb.addItem(si)
         self.ui.handy.setLayout(vb)
 
