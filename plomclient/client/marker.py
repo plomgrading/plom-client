@@ -412,7 +412,8 @@ class MarkerClient(QWidget):
         # label0.setStyleSheet("QLabel { color: palette(dark); }")
         # label1.setStyleSheet("QLabel { color: palette(shadow); }")
 
-        def check_split_width():
+        @pyqtSlot()
+        def _check_split_width():
             # if the right-widget (ie marker task list) is narrow, then
             # set the labels to indicate 'expansion'
             if self.ui.splitter.sizes()[1] < 8:
@@ -423,7 +424,7 @@ class MarkerClient(QWidget):
                 label0.setText("")
                 label1.setText("")
 
-        self.ui.splitter.splitterMoved.connect(check_split_width)
+        self.ui.splitter.splitterMoved.connect(_check_split_width)
         handy = self.ui.splitter.handle(1)
         vb = QVBoxLayout()
         si = QSpacerItem(
