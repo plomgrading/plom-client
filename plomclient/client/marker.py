@@ -2233,6 +2233,16 @@ class MarkerClient(QWidget):
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         log.debug("Something has triggered a shutdown event")
+
+        if self._annotator:
+            if self._annotator.is_dirty():
+                msg = SimpleQuestion(self, "Discard unsaved annotations and quit?")
+                if msg.exec() != QMessageBox.StandardButton.Yes:
+                    if event:
+                        event.ignore()
+                    return
+            self._exit_annotate_mode()
+
         while not self.Qapp.downloader.stop(500):
             if (
                 SimpleQuestion(
