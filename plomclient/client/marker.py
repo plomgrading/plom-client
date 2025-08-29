@@ -404,7 +404,7 @@ class MarkerClient(QWidget):
         # mess around with the splitter
         self.ui.splitter.setCollapsible(0, False)
         self.ui.splitter.setCollapsible(1, True)
-        self.ui.splitter.setHandleWidth(24)
+        self.ui.splitter.setHandleWidth(30)
         # some labels to stick on the grab bar
         self.ui.collapse_label0 = QLabel(">")
         self.ui.collapse_label1 = QLabel(">")
