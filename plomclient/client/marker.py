@@ -51,6 +51,13 @@ from PyQt6.QtWidgets import (
     QProgressDialog,
     QToolButton,
     QWidget,
+    #
+    QFrame,
+    QLabel,
+    QSpacerItem,
+    QSizePolicy,
+    QHBoxLayout,
+    QVBoxLayout,
 )
 from PyQt6.QtGui import QKeySequence, QShortcut
 
@@ -393,14 +400,57 @@ class MarkerClient(QWidget):
         # A view window for the papers so user can zoom in as needed.
         # Paste into appropriate location in gui.
         self.ui.paperBoxLayout.addWidget(self.testImg, 10)
+
+        # mess around with the splitter
         self.ui.splitter.setCollapsible(0, False)
-        self.ui.splitter.setCollapsible(1, False)
-        # TODO: for some reason, Andrew's stylesheet applies to OTHER splitters as well
-        # which makes things a bit ugly (e.g., my dummy splitter on the left and the
-        # Page Arranger dialog.  For now, turn it off.
-        # self.ui.splitter.setStyleSheet(
-        #     "QSplitter::handle {background-color: #dddddd; margin: 1ex;}"
-        # )
+        self.ui.splitter.setCollapsible(1, True)
+        self.ui.splitter.setHandleWidth(30)
+        # some labels to stick on the grab bar
+        label0 = QLabel("")
+        label1 = QLabel("")
+        # "dark" too light and "shadow" too dark ;-(
+        # label0.setStyleSheet("QLabel { color: palette(dark); }")
+        # label1.setStyleSheet("QLabel { color: palette(shadow); }")
+
+        def check_split_width():
+            # if the right-widget (ie marker task list) is narrow, then
+            # set the labels to indicate 'expansion'
+            if self.ui.splitter.sizes()[1] < 8:
+                # TRANSLATOR: decorative, no meaning
+                label0.setText("<\n<\n<")
+                label1.setText("<\n<\n<")
+            else:
+                label0.setText("")
+                label1.setText("")
+
+        self.ui.splitter.splitterMoved.connect(check_split_width)
+        handy = self.ui.splitter.handle(1)
+        vb = QVBoxLayout()
+        si = QSpacerItem(
+            1,
+            64,
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,
+        )
+
+        for n in range(3):
+            hb = QHBoxLayout()
+            hb.setSpacing(1)
+            for i in range(3):
+                f = QFrame()
+                f.setFrameShape(QFrame.Shape.VLine)
+                f.setFrameShadow(QFrame.Shadow.Raised)
+                hb.addWidget(f)
+            vb.addItem(si)
+            vb.addLayout(hb)
+            if n == 0:
+                vb.addItem(si)
+                vb.addWidget(label0)
+            if n == 1:
+                vb.addItem(si)
+                vb.addWidget(label1)
+        vb.addItem(si)
+        handy.setLayout(vb)
 
         # Note: for some reason the RHS panel isn't as small as it could be
         # This call should make it smaller
@@ -902,7 +952,7 @@ class MarkerClient(QWidget):
 
         self.ui.explainQuotaButton.setVisible(False)
         if info["user_quota_limit"] is not None:
-            s = f'Marking limit: {info["user_quota_limit"]} papers'
+            s = f"Marking limit: {info['user_quota_limit']} papers"
             self.ui.labelProgress.setText(s)
             self.ui.explainQuotaButton.setVisible(True)
             self.ui.mProgressBar.setMaximum(info["user_quota_limit"])
