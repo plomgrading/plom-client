@@ -1263,11 +1263,13 @@ class MarkerClient(QWidget):
             if self.allowBackgroundOps:
                 self.backgroundUploader.disable_fail_mode()
 
-    def moveToNextUnmarkedTest(self, task: str | None = None) -> bool:
+    def moveToNextUnmarkedTest(self, start_from_task: str | None = None) -> bool:
         """Move the list to the next unmarked test, if possible.
 
         Args:
-            task: the task number of the next unmarked test.
+            start_from_task: the task number to start searching from.
+                If this task is untouched, you'll get that one.  If
+                omitted, we start searching at the top of the table.
 
         Returns:
             True if move was successful, False if not, for any reason.
@@ -1279,8 +1281,8 @@ class MarkerClient(QWidget):
             return False
 
         prstart = None
-        if task:
-            prstart = self.prxM.rowFromTask(task)
+        if start_from_task:
+            prstart = self.prxM.rowFromTask(start_from_task)
         if not prstart:
             # it might be hidden by filters
             prstart = 0  # put 'start' at row=0
@@ -1600,12 +1602,26 @@ class MarkerClient(QWidget):
         ):
             InfoMsg(self, "Cannot defer a marked test.").exec()
             return
-        # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
-        # with choices [defer] [cancel]
+
+        if self._annotator:
+            # currently always true but maybe in future you can defer others
+            if task == self._annotator.task:
+                if self._annotator.is_dirty():
+                    # TODO:
+                    InfoMsg(
+                        self,
+                        "Sorry, 'defer' not implemented when you have modified the paper",
+                    ).exec()
+                    # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
+                    # with choices [defer] [cancel]
+                    # TODO: maybe Ann needs a "revert" option?
+                    return
         self.examModel.deferPaper(task)
-        # TODO: if task was None, we should do this!
         if advance_to_next:
-            self._requestNext()
+            self.request_one_more()
+            self.moveToNextUnmarkedTest()
+            # alternatively or if we want to search "forward" of current:
+            # self.moveToNextUnmarkedTest(task)
 
     def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
