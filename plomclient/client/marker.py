@@ -412,7 +412,8 @@ class MarkerClient(QWidget):
         # label0.setStyleSheet("QLabel { color: palette(dark); }")
         # label1.setStyleSheet("QLabel { color: palette(shadow); }")
 
-        def check_split_width():
+        @pyqtSlot()
+        def _check_split_width():
             # if the right-widget (ie marker task list) is narrow, then
             # set the labels to indicate 'expansion'
             if self.ui.splitter.sizes()[1] < 8:
@@ -423,33 +424,54 @@ class MarkerClient(QWidget):
                 label0.setText("")
                 label1.setText("")
 
-        self.ui.splitter.splitterMoved.connect(check_split_width)
+        self.ui.splitter.splitterMoved.connect(_check_split_width)
         handy = self.ui.splitter.handle(1)
         vb = QVBoxLayout()
-        si = QSpacerItem(
-            1,
-            64,
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Minimum,
-        )
-
         for n in range(3):
             hb = QHBoxLayout()
-            hb.setSpacing(1)
+            hb.setSpacing(3)  # little gap between each line
             for i in range(3):
                 f = QFrame()
                 f.setFrameShape(QFrame.Shape.VLine)
                 f.setFrameShadow(QFrame.Shadow.Raised)
                 hb.addWidget(f)
-            vb.addItem(si)
+            vb.addItem(
+                QSpacerItem(
+                    1,
+                    64,
+                    QSizePolicy.Policy.Preferred,
+                    QSizePolicy.Policy.Minimum,
+                )
+            )
             vb.addLayout(hb)
             if n == 0:
-                vb.addItem(si)
+                vb.addItem(
+                    QSpacerItem(
+                        1,
+                        64,
+                        QSizePolicy.Policy.Preferred,
+                        QSizePolicy.Policy.Minimum,
+                    )
+                )
                 vb.addWidget(label0)
             if n == 1:
-                vb.addItem(si)
+                vb.addItem(
+                    QSpacerItem(
+                        1,
+                        64,
+                        QSizePolicy.Policy.Preferred,
+                        QSizePolicy.Policy.Minimum,
+                    )
+                )
                 vb.addWidget(label1)
-        vb.addItem(si)
+        vb.addItem(
+            QSpacerItem(
+                1,
+                64,
+                QSizePolicy.Policy.Preferred,
+                QSizePolicy.Policy.Minimum,
+            )
+        )
         handy.setLayout(vb)
 
         # Note: for some reason the RHS panel isn't as small as it could be
