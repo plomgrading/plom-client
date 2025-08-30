@@ -2204,10 +2204,9 @@ class MarkerClient(QWidget):
             )
 
         if not unexpected:
-            # TODO: Issue #2146, parent=self will cause Marker to popup on top of Annotator
-            WarnMsg(None, msg, info=errmsg).exec()
+            WarnMsg(self, msg, info=errmsg).exec()
         else:
-            ErrorMsg(None, msg, info=errmsg).exec()
+            ErrorMsg(self, msg, info=errmsg).exec()
 
     def updatePreviewImage(self, new, old):
         """Updates the displayed image when the selection changes.
