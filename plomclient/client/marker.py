@@ -479,7 +479,9 @@ class MarkerClient(QWidget):
             None but modifies self.ui
         """
         self.ui.getMoreButton.clicked.connect(self.request_one_more)
-        self.ui.getMoreButton.setVisible(False)
+        # TODO: we're considering hiding this, so its only in the menu
+        # (a good idea when space is tight; less clear when panel is large)
+        # self.ui.getMoreButton.setVisible(False)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
         m.addAction("&Defer selected task", self.defer_task)
