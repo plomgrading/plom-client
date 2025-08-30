@@ -1621,6 +1621,11 @@ class MarkerClient(QWidget):
                     return
         self.examModel.deferPaper(task)
         if advance_to_next:
+            # TODO: maybe we really need request_one_more_if_necessary
+            # TODO: or that someone would just notice we're not far enough ahead
+            # TODO: problem with current approach is if you "get more" til you
+            # TODO: have 4 untouched, each defer will get one more untouhed.
+            # TODO: IMHO, I'd rather this only happen when there is less than 2 untouched
             self.request_one_more()
             self.moveToNextUnmarkedTask()
             # alternatively or if we want to search "forward" of current:
