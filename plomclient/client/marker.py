@@ -1749,8 +1749,7 @@ class MarkerClient(QWidget):
                         "reassign the task to yourself).",
                     ).exec()
                     return
-            # TODO: document the "public interface!")
-            self._annotator.close_current_question()
+            self._annotator.close_current_task()
         self.moveSelectionToTask(task)
 
     def annotate_task(self, task: str | None = None) -> None:
@@ -1775,8 +1774,7 @@ class MarkerClient(QWidget):
                     old_task = self._annotator.task
                     self.moveSelectionToTask(old_task)
                     return
-            # TODO: document the "public interface!")
-            self._annotator.close_current_question()
+            self._annotator.close_current_task()
 
         inidata = self.getDataForAnnotator(task)
         if inidata is None:

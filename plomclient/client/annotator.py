@@ -510,8 +510,10 @@ class Annotator(QWidget):
         del self.scene
         self.scene = None
 
-    def close_current_question(self):
+    def close_current_task(self):
         """Closes the current question, closes scene and clears instance vars.
+
+        As of 2025-Aug, this is something users of the the class can and do call.
 
         Notes:
             As a result of this method, many instance variables will be `None`.
@@ -1188,7 +1190,7 @@ class Annotator(QWidget):
                 return
             log.debug("We have surrendered task %s", self.task)
             tmp_task = self.task
-            self.close_current_question()
+            self.close_current_task()
         else:
             tmp_task = None
 
@@ -1207,7 +1209,7 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
-        # TODO: close_current_question should emit(tmp_task)
+        # TODO: close_current_task should emit(tmp_task)
         # TODO: self.caller_give_us_more.emit(tmp_task)
         stuff = self.parentMarkerUI.getMorePapers(tmp_task)
         if not stuff:
