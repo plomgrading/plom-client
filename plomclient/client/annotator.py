@@ -514,6 +514,8 @@ class Annotator(QWidget):
         """Closes the current question, closes scene and clears instance vars.
 
         As of 2025-Aug, this is something users of the the class can and do call.
+        Its non-interactive: if you user-interactivity such as confirming via
+        dialog, call something else.
 
         Notes:
             As a result of this method, many instance variables will be `None`.

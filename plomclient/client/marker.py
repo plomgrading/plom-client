@@ -279,6 +279,9 @@ class MarkerClient(QWidget):
             self.updatePreviewImage
         )
         self.ui.tableView.selectionModel().selectionChanged.connect(
+            self.update_annotator
+        )
+        self.ui.tableView.selectionModel().selectionChanged.connect(
             self.ensureAllDownloaded
         )
         self.ui.tableView.selectionModel().selectionChanged.connect(
@@ -1174,10 +1177,6 @@ class MarkerClient(QWidget):
         # Clean up the table
         self.ui.tableView.resizeColumnsToContents()
         self.ui.tableView.resizeRowsToContents()
-        if self._annotator:
-            # if the annotator is open, we update it
-            # TODO: seems like signals and slots problem
-            self.annotate_task()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1786,6 +1785,25 @@ class MarkerClient(QWidget):
                     return
             self._annotator.close_current_task()
 
+        self._annotate_task(task)
+
+    def _annotate_task(self, task: str | None = None) -> None:
+        """Lower-level non-interactive start/switch Annotator."""
+        if not task:
+            task = self.get_current_task_id_or_none()
+        if not task:
+            return
+
+        if self.examModel.getStatusByTask(task) == "To Do":
+            log.warn("Ignored attempt to annotate 'To Do' task %s", task)
+            return
+        if self.examModel.getStatusByTask(task) == "Complete":
+            if not self.examModel.is_our_task(task, self.msgr.username):
+                log.warn(
+                    "Ignored attempt to annotate 'Complete' task %s, not our's", task
+                )
+                return
+
         inidata = self.getDataForAnnotator(task)
         if inidata is None:
             return
@@ -2233,6 +2251,38 @@ class MarkerClient(QWidget):
             return
         # Note: a single selection should have length 11 all with same row: could assert
         self._updateImage(idx[0].row())
+
+    def update_annotator(self, new: QItemSelection, old: QItemSelection) -> None:
+        """If the annotator is active, make sure it is showing the correct task.
+
+        Args:
+            new: the newly selected cells.
+            old: the previously selected cells.
+
+        This is not the time for asking questions: we're well past the point of
+        user interactivity: so if the scene is modified ("dirty") then too bad:
+        discard and move!
+
+        TODO: perhaps some unpleasant duplication between this and :method:`switch_task`.
+        One difference is that code it allowed to be interactive and this is not.
+        """
+        if not self._annotator:
+            return
+        idx = new.indexes()
+        idx2 = old.indexes()
+        if len(idx) == 0:
+            log.debug(f"UPDATE ANNOTR FROM SELECTION: new idx={idx}, old idx={idx2}")
+            # TODO: we're getting here with empties after "refresh_server_data"
+            # TODO: perhaps need to pause signals during that call?
+            # Remove preview when user unselects row (e.g., ctrl-click)
+            log.debug("User managed to unselect current row... or???")
+            # TODO: we probably want close_current_task but annoying with above bug
+            # self._annotator.close_current_task()
+            # self._annotator._close_without_saving()
+            # return
+
+        self._annotator.close_current_task()
+        self._annotate_task()
 
     def ensureAllDownloaded(self, new, old):
         """Whenever the selection changes, ensure downloaders are either finished or running for each image.
