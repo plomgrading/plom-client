@@ -39,6 +39,7 @@ from packaging.version import Version
 from PyQt6 import QtGui, uic
 from PyQt6.QtCore import (
     Qt,
+    QItemSelection,
     QTimer,
     pyqtSignal,
     pyqtSlot,
@@ -334,6 +335,7 @@ class MarkerClient(QWidget):
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
 
+    # TODO: does it matter if we connect to selectionChanged that sends new/old?
     @pyqtSlot()
     def update_window_title(self) -> None:
         try:
@@ -2213,12 +2215,12 @@ class MarkerClient(QWidget):
         else:
             ErrorMsg(self, msg, info=errmsg).exec()
 
-    def updatePreviewImage(self, new, old):
+    def updatePreviewImage(self, new: QItemSelection, old: QItemSelection) -> None:
         """Updates the displayed image when the selection changes.
 
         Args:
-            new (QItemSelection): the newly selected cells.
-            old (QItemSelection): the previously selected cells.
+            new: the newly selected cells.
+            old: the previously selected cells.
 
         Returns:
             None
