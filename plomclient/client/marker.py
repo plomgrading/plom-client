@@ -1611,15 +1611,13 @@ class MarkerClient(QWidget):
             # currently always true but maybe in future you can defer others
             if task == self._annotator.task:
                 if self._annotator.is_dirty():
-                    # TODO:
-                    InfoMsg(
-                        self,
-                        "Sorry, 'defer' not implemented when you have modified the paper",
-                    ).exec()
-                    # TODO: if dirty, ask "you have unsaved annotations, lost if defer"
-                    # with choices [defer] [cancel]
+                    msg = SimpleQuestion(
+                        self, "Discard any annotations and defer this task?"
+                    )
+                    if msg.exec() != QMessageBox.StandardButton.Yes:
+                        return
                     # TODO: maybe Ann needs a "revert" option?
-                    return
+                    self._annotator.close_current_task()
         self.examModel.deferPaper(task)
         if advance_to_next:
             # TODO: maybe we really need request_one_more_if_necessary
