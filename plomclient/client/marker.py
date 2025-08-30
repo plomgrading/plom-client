@@ -1637,8 +1637,9 @@ class MarkerClient(QWidget):
             task: a string such as `"0123g5"` or if None / omitted, then
                 try to get from the current selection.
 
-        Note: if you reset the current task that is being annotated,
-        we'll kick you back to view-mode.
+        Note: if you reset the current task that is being annotated, its not
+        entirely (currently) well specified which task will be selected, but
+        currently it stays in edit mode.
         """
         if not task:
             task = self.get_current_task_id_or_none()
@@ -1661,7 +1662,7 @@ class MarkerClient(QWidget):
             if task == self._annotator.task:
                 # Note even if _annotator.is_dirty(), user has already confirmed
                 log.debug("We are resetting the very task we are annotating...")
-                self._annotator._close_without_saving()
+                self._annotator.close_current_task()
 
         try:
             self.msgr.reset_task(papernum, qidx)
