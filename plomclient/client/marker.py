@@ -427,13 +427,6 @@ class MarkerClient(QWidget):
         self.ui.splitter.splitterMoved.connect(_check_split_width)
         handy = self.ui.splitter.handle(1)
         vb = QVBoxLayout()
-        si = QSpacerItem(
-            1,
-            64,
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Minimum,
-        )
-
         for n in range(3):
             hb = QHBoxLayout()
             hb.setSpacing(1)
@@ -442,14 +435,38 @@ class MarkerClient(QWidget):
                 f.setFrameShape(QFrame.Shape.VLine)
                 f.setFrameShadow(QFrame.Shadow.Raised)
                 hb.addWidget(f)
+            si = QSpacerItem(
+                1,
+                64,
+                QSizePolicy.Policy.Preferred,
+                QSizePolicy.Policy.Minimum,
+            )
             vb.addItem(si)
             vb.addLayout(hb)
             if n == 0:
+                si = QSpacerItem(
+                    1,
+                    64,
+                    QSizePolicy.Policy.Preferred,
+                    QSizePolicy.Policy.Minimum,
+                )
                 vb.addItem(si)
                 vb.addWidget(label0)
             if n == 1:
+                si = QSpacerItem(
+                    1,
+                    64,
+                    QSizePolicy.Policy.Preferred,
+                    QSizePolicy.Policy.Minimum,
+                )
                 vb.addItem(si)
                 vb.addWidget(label1)
+        si = QSpacerItem(
+            1,
+            64,
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,
+        )
         vb.addItem(si)
         handy.setLayout(vb)
 
