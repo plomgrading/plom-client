@@ -1263,8 +1263,11 @@ class MarkerClient(QWidget):
             if self.allowBackgroundOps:
                 self.backgroundUploader.disable_fail_mode()
 
-    def moveToNextUnmarkedTest(self, start_from_task: str | None = None) -> bool:
-        """Move the list to the next unmarked test, if possible.
+    def moveToNextUnmarkedTask(self, start_from_task: str | None = None) -> bool:
+        """Move the task list selection to the next unmarked test, if possible.
+
+        Updating this selection should be enough for the rest of the UI
+        to react to the changes.
 
         Args:
             start_from_task: the task number to start searching from.
@@ -1619,9 +1622,9 @@ class MarkerClient(QWidget):
         self.examModel.deferPaper(task)
         if advance_to_next:
             self.request_one_more()
-            self.moveToNextUnmarkedTest()
+            self.moveToNextUnmarkedTask()
             # alternatively or if we want to search "forward" of current:
-            # self.moveToNextUnmarkedTest(task)
+            # self.moveToNextUnmarkedTask(task)
 
     def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
@@ -2128,7 +2131,7 @@ class MarkerClient(QWidget):
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
             self.request_one_more()
-        if not self.moveToNextUnmarkedTest(old_task if old_task else None):
+        if not self.moveToNextUnmarkedTask(old_task if old_task else None):
             return None
         task_id_str = self.get_current_task_id_or_none()
         if not task_id_str:
