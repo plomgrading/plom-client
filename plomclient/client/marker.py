@@ -429,7 +429,7 @@ class MarkerClient(QWidget):
         vb = QVBoxLayout()
         for n in range(3):
             hb = QHBoxLayout()
-            hb.setSpacing(1)
+            hb.setSpacing(3)  # little gap between each line
             for i in range(3):
                 f = QFrame()
                 f.setFrameShape(QFrame.Shape.VLine)
