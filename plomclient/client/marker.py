@@ -435,39 +435,43 @@ class MarkerClient(QWidget):
                 f.setFrameShape(QFrame.Shape.VLine)
                 f.setFrameShadow(QFrame.Shadow.Raised)
                 hb.addWidget(f)
-            si = QSpacerItem(
+            vb.addItem(
+                QSpacerItem(
+                    1,
+                    64,
+                    QSizePolicy.Policy.Preferred,
+                    QSizePolicy.Policy.Minimum,
+                )
+            )
+            vb.addLayout(hb)
+            if n == 0:
+                vb.addItem(
+                    QSpacerItem(
+                        1,
+                        64,
+                        QSizePolicy.Policy.Preferred,
+                        QSizePolicy.Policy.Minimum,
+                    )
+                )
+                vb.addWidget(label0)
+            if n == 1:
+                vb.addItem(
+                    QSpacerItem(
+                        1,
+                        64,
+                        QSizePolicy.Policy.Preferred,
+                        QSizePolicy.Policy.Minimum,
+                    )
+                )
+                vb.addWidget(label1)
+        vb.addItem(
+            QSpacerItem(
                 1,
                 64,
                 QSizePolicy.Policy.Preferred,
                 QSizePolicy.Policy.Minimum,
             )
-            vb.addItem(si)
-            vb.addLayout(hb)
-            if n == 0:
-                si = QSpacerItem(
-                    1,
-                    64,
-                    QSizePolicy.Policy.Preferred,
-                    QSizePolicy.Policy.Minimum,
-                )
-                vb.addItem(si)
-                vb.addWidget(label0)
-            if n == 1:
-                si = QSpacerItem(
-                    1,
-                    64,
-                    QSizePolicy.Policy.Preferred,
-                    QSizePolicy.Policy.Minimum,
-                )
-                vb.addItem(si)
-                vb.addWidget(label1)
-        si = QSpacerItem(
-            1,
-            64,
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Minimum,
         )
-        vb.addItem(si)
         handy.setLayout(vb)
 
         # Note: for some reason the RHS panel isn't as small as it could be
