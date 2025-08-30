@@ -1822,6 +1822,11 @@ class Annotator(QWidget):
         finally:
             self.scene.highlight_pages_reset()
 
+    def _close_without_saving(self) -> None:
+        """Bit of a hack so we can tell Annotator to go away without popping up to ask the user stuff."""
+        self._priv_force_close = True
+        self.close()
+
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         """Overrides the usual QWidget close event.
 
@@ -1855,7 +1860,7 @@ class Annotator(QWidget):
         # Save the current window settings for next time annotator is launched
         self.saveWindowSettings()
 
-        # weird hacking to force close if we came from saving.
+        # weird hack to force close if we came from saving (or explicitly not saving)
         # Appropriate signals have already been sent so just close
         force = getattr(self, "_priv_force_close", False)
         if force:

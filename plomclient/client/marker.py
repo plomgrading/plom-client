@@ -613,6 +613,8 @@ class MarkerClient(QWidget):
         InfoMsg(self, s).exec()
 
     def _exit_annotate_mode(self):
+        # Careful with this: its currently more "in reaction to annotr closing"
+        # rather than "tell/force the annotator to close".
         self._annotator = None
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
@@ -1603,22 +1605,15 @@ class MarkerClient(QWidget):
         if advance_to_next:
             self._requestNext()
 
-    def reset_task(
-        self, task: str | None = None, *, advance_to_next: bool = False
-    ) -> None:
+    def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
 
         Args:
             task: a string such as `"0123g5"` or if None / omitted, then
                 try to get from the current selection.
 
-        Keyword Args:
-            advance_to_next: whether to also advance to the next task
-                (default off).
-
         Note: if you reset the current task that is being annotated,
-        and `advance_to_next` is False, we'll kick you back to
-        view-mode.
+        we'll kick you back to view-mode.
         """
         if not task:
             task = self.get_current_task_id_or_none()
@@ -1640,14 +1635,8 @@ class MarkerClient(QWidget):
         if self._annotator:
             if task == self._annotator.task:
                 # Note even if _annotator.is_dirty(), user has already confirmed
-
                 log.debug("We are resetting the very task we are annotating...")
-                # we're resetting the task we're annotating
-                advance_to_next = True  # ???
-
-                # TODO: e.g.,  Issue #5063
-                # if not advance_to_next:
-                #     self._exit_annotate_mode()
+                self._annotator._close_without_saving()
 
         try:
             self.msgr.reset_task(papernum, qidx)
@@ -1658,13 +1647,7 @@ class MarkerClient(QWidget):
         ) as e:
             InfoMsg(self, f"{e}").exec()
             return
-
-        if advance_to_next:
-            self._requestNext()
-        else:
-            # If not, we need to repaint the task list
-            # TODO: but if we were on this one, annotator needs reset!
-            self.refresh_server_data()
+        self.refresh_server_data()
 
     def startTheAnnotator(self, initialData) -> None:
         """This fires up the annotation widget for user annotation + marking.
