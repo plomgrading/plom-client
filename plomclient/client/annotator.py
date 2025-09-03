@@ -54,11 +54,14 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QFrame,
     QGraphicsRectItem,
+    QHBoxLayout,
     QLabel,
     QMenu,
     QMessageBox,
     QProgressDialog,
     QPushButton,
+    QSizePolicy,
+    QSpacerItem,
     QSplitter,
     QToolButton,
     QWidget,
@@ -190,6 +193,19 @@ class Annotator(QWidget):
         l = self.ui.pageFrame.layout()
         assert l is not None
         l.addWidget(self.view)
+        # add in another save/next button bottom-right
+        snb_l = QHBoxLayout()
+        self.another_save_next_button = QPushButton("Save && Next")
+        snb_l.addItem(
+            QSpacerItem(
+                1,
+                0,
+                QSizePolicy.Policy.Expanding,
+                QSizePolicy.Policy.Preferred,
+            )
+        )
+        snb_l.addWidget(self.another_save_next_button)
+        l.addLayout(snb_l)
 
         # Create the rubric list widget and put into gui.
         self.rubric_widget = RubricWidget(self)
@@ -1004,9 +1020,7 @@ class Annotator(QWidget):
                     perm = {}\n
                     annotr src_img_data = {}\n
                     pagedata = {}
-                    """.format(
-                        perm, src_img_data, pagedata
-                    )
+                    """.format(perm, src_img_data, pagedata)
                 ).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
@@ -1447,6 +1461,7 @@ class Annotator(QWidget):
         self.rubric_widget.rubricSignal.connect(self.handleRubric)
         self.ui.arrangePagesButton.clicked.connect(self.arrangePages)
         self.ui.saveNextButton.clicked.connect(self.saveAndGetNext)
+        self.another_save_next_button.clicked.connect(self.saveAndGetNext)
 
     def _uncheck_exclusive_group(self):
         # Stupid hackery to uncheck an autoexclusive button.
