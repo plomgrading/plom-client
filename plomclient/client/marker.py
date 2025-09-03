@@ -485,13 +485,12 @@ class MarkerClient(QWidget):
         QTimer.singleShot(100, lambda: self.ui.splitter.setSizes([4096, 100]))
 
         if Version(__version__).is_devrelease:
-            self.ui.technicalButton.setChecked(True)
+            # self.ui.technicalButton.setChecked(True)
+            # TODO: trigger the action instead?
             self.ui.failmodeCB.setEnabled(True)
         else:
-            self.ui.technicalButton.setChecked(False)
+            # self.ui.technicalButton.setChecked(False)
             self.ui.failmodeCB.setEnabled(False)
-        # if we want it to look like a label
-        # self.ui.technicalButton.setStyleSheet("QToolButton { border: none; }")
         self.show_hide_technical()
         # self.force_update_technical_stats()
         self.update_technical_stats_upload(0, 0, 0, 0)
@@ -538,7 +537,6 @@ class MarkerClient(QWidget):
         self.ui.filterInvCB.stateChanged.connect(self.setFilter)
         self.ui.viewButton.clicked.connect(self.choose_and_view_other)
         self.ui.viewButton.setVisible(False)
-        self.ui.technicalButton.clicked.connect(self.show_hide_technical)
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
 
@@ -564,6 +562,12 @@ class MarkerClient(QWidget):
         m.addAction("Refresh task list", self.refresh_server_data)
         m.addAction("View another paper...", self.choose_and_view_other)
 
+        m.addSeparator()
+
+        x = m.addAction(f"Show technical debugging info")
+        x.setCheckable(True)
+        x.triggered.connect(self.show_hide_technical)
+        self._show_hide_technical_action = x
         m.addSeparator()
 
         m.addAction("Help", self.show_help)
@@ -1204,7 +1208,6 @@ class MarkerClient(QWidget):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
         self.ui.labelTech2.setText(f"last msg: downloaded img id={img_id}")
         self.ui.labelTech2.setToolTip(f"{filename}")
-        self.ui.labelTech2.setWordWrap(True)
         # TODO: not all downloads require redrawing the current row...
         # if any("placeholder" in x for x in testImg.imagenames):
         # force a redraw
@@ -1227,7 +1230,6 @@ class MarkerClient(QWidget):
             f" {d['retries']} retried, {d['fails']} failed"
             "</p>"
         )
-        self.ui.labelTech1.setWordWrap(True)
 
     def update_technical_stats_upload(self, n, m, numup, failed):
         if n == 0 and m == 0:
@@ -1236,23 +1238,15 @@ class MarkerClient(QWidget):
             txt = f"u/l: {n} queued, {m} inprogress"
         txt += f", {numup} done, {failed} failed"
         self.ui.labelTech3.setText(txt)
-        self.ui.labelTech1.setWordWrap(True)
 
     def show_hide_technical(self):
         """Toggle the technical panel in response to checking a button."""
-        if self.ui.technicalButton.isChecked():
-            self.ui.technicalButton.setText("info")
-            self.ui.technicalButton.setArrowType(Qt.ArrowType.DownArrow)
+        if not self.ui.frameTechnical.isVisible():
             self.ui.frameTechnical.setVisible(True)
             ptsz = self.ui.hamMenuButton.fontInfo().pointSizeF()
             self.ui.frameTechnical.setStyleSheet(
                 f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
             )
-            self.ui.technicalButton.setStyleSheet(
-                f"QWidget {{ font-size: {0.7 * ptsz}pt; }}"
-            )
-            # future use
-            self.ui.labelTech4.setVisible(False)
             # toggle various columns without end-user useful info
             for i in self.ui.examModel.columns_to_hide:
                 self.ui.tableView.showColumn(i)
@@ -1261,8 +1255,6 @@ class MarkerClient(QWidget):
 
                 self.ui.tableView.setColumnWidth(i, 128)
         else:
-            self.ui.technicalButton.setText("info")
-            self.ui.technicalButton.setArrowType(Qt.ArrowType.RightArrow)
             self.ui.frameTechnical.setVisible(False)
             for i in self.ui.examModel.columns_to_hide:
                 self.ui.tableView.hideColumn(i)

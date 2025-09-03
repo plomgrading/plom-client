@@ -447,59 +447,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frameClose">
-         <layout class="QHBoxLayout" name="layoutClose">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QToolButton" name="technicalButton">
-            <property name="text">
-             <string>Technical info</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-            <property name="arrowType">
-             <enum>Qt::ArrowType::DownArrow</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <widget class="QFrame" name="frameTechnical">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <property name="leftMargin">
@@ -519,12 +466,18 @@
             <property name="text">
              <string>TextLabel</string>
             </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="labelTech2">
             <property name="text">
              <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -533,12 +486,8 @@
             <property name="text">
              <string/>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelTech4">
-            <property name="text">
-             <string/>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
