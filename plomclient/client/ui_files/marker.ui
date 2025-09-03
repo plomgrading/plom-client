@@ -380,7 +380,7 @@
               </widget>
              </item>
              <item row="2" column="1" colspan="3">
-              <widget class="QToolButton" name="getNextButton">
+              <widget class="QToolButton" name="getMoreButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                  <horstretch>0</horstretch>
@@ -391,7 +391,7 @@
                 <enum>Qt::FocusPolicy::NoFocus</enum>
                </property>
                <property name="text">
-                <string>&amp;Get next</string>
+                <string>&amp;Get more</string>
                </property>
               </widget>
              </item>

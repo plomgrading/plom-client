@@ -510,8 +510,12 @@ class Annotator(QWidget):
         del self.scene
         self.scene = None
 
-    def close_current_question(self):
+    def close_current_task(self):
         """Closes the current question, closes scene and clears instance vars.
+
+        As of 2025-Aug, this is something users of the the class can and do call.
+        Its non-interactive: if you user-interactivity such as confirming via
+        dialog, call something else.
 
         Notes:
             As a result of this method, many instance variables will be `None`.
@@ -1188,7 +1192,7 @@ class Annotator(QWidget):
                 return
             log.debug("We have surrendered task %s", self.task)
             tmp_task = self.task
-            self.close_current_question()
+            self.close_current_task()
         else:
             tmp_task = None
 
@@ -1207,7 +1211,7 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
-        # TODO: close_current_question should emit(tmp_task)
+        # TODO: close_current_task should emit(tmp_task)
         # TODO: self.caller_give_us_more.emit(tmp_task)
         stuff = self.parentMarkerUI.getMorePapers(tmp_task)
         if not stuff:
@@ -1822,6 +1826,11 @@ class Annotator(QWidget):
         finally:
             self.scene.highlight_pages_reset()
 
+    def _close_without_saving(self) -> None:
+        """Bit of a hack so we can tell Annotator to go away without popping up to ask the user stuff."""
+        self._priv_force_close = True
+        self.close()
+
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
         """Overrides the usual QWidget close event.
 
@@ -1855,7 +1864,7 @@ class Annotator(QWidget):
         # Save the current window settings for next time annotator is launched
         self.saveWindowSettings()
 
-        # weird hacking to force close if we came from saving.
+        # weird hack to force close if we came from saving (or explicitly not saving)
         # Appropriate signals have already been sent so just close
         force = getattr(self, "_priv_force_close", False)
         if force:
