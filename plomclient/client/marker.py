@@ -521,7 +521,7 @@ class MarkerClient(QWidget):
         m.addAction("Reset selected task", self.reset_task)
         m.addAction("Reassign selected task to me", self.reassign_task_to_me)
         m.addAction("Reassign selected task...", self.reassign_task)
-        self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
+        # self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
         self.ui.task_overflow_button.setMenu(m)
         self.ui.task_overflow_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
