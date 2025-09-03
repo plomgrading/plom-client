@@ -527,7 +527,7 @@ class MarkerClient(QWidget):
             QToolButton.ToolButtonPopupMode.InstantPopup
         )
         self.ui.deferButton.clicked.connect(self.defer_task)
-        self.ui.deferButton.setVisible(False)
+        # self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
         self.ui.refreshTaskListButton.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
