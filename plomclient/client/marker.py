@@ -1739,7 +1739,6 @@ class MarkerClient(QWidget):
         If it does succeed in switching, it will also update the task
         table selection indicator.
         """
-        print(f"We should switch to task {task}")
         if self._annotator:
             if self._annotator.task == task:
                 log.debug("Annotator already on %s; no change required", task)
