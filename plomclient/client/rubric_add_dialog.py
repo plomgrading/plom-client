@@ -739,7 +739,9 @@ class AddRubricDialog(QDialog):
         vlay.addWidget(b)
         b = QRadioButton("Server default / let server autodetect.")
         # b.setToolTip("Roughly: major changes for student-visible edits")
-        b.setToolTip("Currently (0.18.0) the server defaults to major edits")
+        b.setToolTip(
+            "Currently (0.19.x) the server defaults to major edits, subject to change."
+        )
         vlay.addWidget(b)
 
         buttons = QDialogButtonBox(

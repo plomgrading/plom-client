@@ -158,6 +158,45 @@
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="frameProgress">
+         <layout class="QHBoxLayout" name="layoutProgress">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelProgress">
+            <property name="text">
+             <string>Progress:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="explainQuotaButton">
+            <property name="text">
+             <string>?</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="mProgressBar">
+            <property name="value">
+             <number>1</number>
+            </property>
+            <property name="format">
+             <string>%v of %m</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QFrame" name="tableBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -312,6 +351,19 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="annButton">
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::NoFocus</enum>
+            </property>
+            <property name="text">
+             <string>M&amp;ark</string>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QFrame" name="frame">
             <layout class="QGridLayout" name="gridLayout">
              <property name="leftMargin">
@@ -326,27 +378,7 @@
              <property name="bottomMargin">
               <number>0</number>
              </property>
-             <item row="0" column="0" colspan="3">
-              <widget class="QPushButton" name="annButton">
-               <property name="focusPolicy">
-                <enum>Qt::FocusPolicy::NoFocus</enum>
-               </property>
-               <property name="text">
-                <string>M&amp;ark</string>
-               </property>
-               <property name="checkable">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item row="4" column="0" colspan="4">
-              <widget class="QPushButton" name="viewButton">
-               <property name="text">
-                <string>&amp;View</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="0" colspan="4">
+             <item row="2" column="0">
               <widget class="QToolButton" name="deferButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -362,14 +394,7 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="3">
-              <widget class="QToolButton" name="task_overflow_button">
-               <property name="text">
-                <string>menu</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
+             <item row="3" column="0">
               <widget class="QPushButton" name="tagButton">
                <property name="focusPolicy">
                 <enum>Qt::FocusPolicy::NoFocus</enum>
@@ -379,7 +404,20 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1" colspan="3">
+             <item row="3" column="1">
+              <widget class="QToolButton" name="task_overflow_button">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Tasks</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
               <widget class="QToolButton" name="getMoreButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -395,97 +433,15 @@
                </property>
               </widget>
              </item>
+             <item row="6" column="0" colspan="2">
+              <widget class="QPushButton" name="viewButton">
+               <property name="text">
+                <string>&amp;View</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="frameProgress">
-         <layout class="QHBoxLayout" name="layoutProgress">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QLabel" name="labelProgress">
-            <property name="text">
-             <string>Progress:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="explainQuotaButton">
-            <property name="text">
-             <string>?</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QProgressBar" name="mProgressBar">
-            <property name="value">
-             <number>1</number>
-            </property>
-            <property name="format">
-             <string>%v of %m</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
-        <widget class="QFrame" name="frameClose">
-         <layout class="QHBoxLayout" name="layoutClose">
-          <property name="leftMargin">
-           <number>0</number>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
-          <property name="rightMargin">
-           <number>0</number>
-          </property>
-          <property name="bottomMargin">
-           <number>0</number>
-          </property>
-          <item>
-           <widget class="QToolButton" name="technicalButton">
-            <property name="text">
-             <string>Technical info</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonStyle::ToolButtonTextBesideIcon</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-            <property name="arrowType">
-             <enum>Qt::ArrowType::DownArrow</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>0</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </widget>
@@ -510,12 +466,18 @@
             <property name="text">
              <string>TextLabel</string>
             </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QLabel" name="labelTech2">
             <property name="text">
              <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -524,12 +486,8 @@
             <property name="text">
              <string/>
             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="labelTech4">
-            <property name="text">
-             <string/>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

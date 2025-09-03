@@ -61,7 +61,7 @@ class TaskTableView(QTableView):
             r = clicked_idx.row()
             # TODO: here we muck around in the model, which we're probably not supposed to
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
-            print(f"DEBUG: have dblclick on row {r}, task {task}, emitting annotate...")
+            # print(f"DEBUG: have dblclick on row {r}, task {task}, emitting annotate...")
             self.want_to_annotate_task.emit(task)
         super().mouseDoubleClickEvent(event)
 
@@ -84,12 +84,12 @@ class TaskTableView(QTableView):
         clicked_idx = self.indexAt(event.pos())
         if clicked_idx.isValid():
             r = clicked_idx.row()
-            print(f"DEBUG: we have a click on a value index, row {r}")
+            # print(f"DEBUG: we have a click on a value index, row {r}")
             # TODO: here we muck around in the model, which we're probably not supposed to
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
-            print(f"DEBUG: this is task {task}")
+            # print(f"DEBUG: this is task {task}")
             if event.button() == Qt.MouseButton.LeftButton:
-                print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
+                # print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
                 self.want_to_change_task.emit(task)
                 # print("delaying 1 seconds")
                 # for __ in range(10):
@@ -109,12 +109,12 @@ class TaskTableView(QTableView):
 
     def mouseMoveEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
-        print("Debug: we have a mouseMoveEvent on task_table, discarding")
+        # print("Debug: we have a mouseMoveEvent on task_table, discarding")
         return
 
     def mousePressEvent(self, event: QMouseEvent | None) -> None:
         # TODO: we need to filter out drag events too: many clicks are actually short drags
-        print("Debug: we have a mousePressEvent on task_table, discarding")
+        # print("Debug: we have a mousePressEvent on task_table, discarding")
         return
 
     def contextMenuEvent(self, event: QContextMenuEvent | None) -> None:
@@ -128,10 +128,9 @@ class TaskTableView(QTableView):
         if clicked_idx.isValid():
             # TODO: what to do if invalid?  early return?
             r = clicked_idx.row()
-            print(f"DEBUG: contextmenu: we have a click on a value index, row {r}")
+            # print(f"DEBUG: contextmenu: we have a click on a value index, row {r}")
             # TODO: here we muck around in the model, which we're probably not supposed to
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
-            print(f"DEBUG: this is task {task}")
 
             a = QAction(f"Annotate task {task}", self)
             a.triggered.connect(lambda: self.want_to_annotate_task.emit(task))
