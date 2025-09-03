@@ -564,7 +564,7 @@ class MarkerClient(QWidget):
 
         m.addSeparator()
 
-        x = m.addAction(f"Show technical debugging info")
+        x = m.addAction("Show technical debugging info")
         x.setCheckable(True)
         x.triggered.connect(self.show_hide_technical)
         self._show_hide_technical_action = x
