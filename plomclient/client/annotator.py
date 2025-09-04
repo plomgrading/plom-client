@@ -196,24 +196,16 @@ class Annotator(QWidget):
         assert isinstance(l, QVBoxLayout)
         l.addWidget(self.view)
         # add in another save/next button bottom-right
-        self._snibble_bar = QFrame()
+        self._bottom_toolbar = QFrame()
         snb_l = QHBoxLayout()
         self.another_save_next_button = QPushButton("Save && Next")
         snb_l.addStretch()
         snb_l.addWidget(self.another_save_next_button)
-        self._snibble_bar.setLayout(snb_l)
-        self._snibble_bar.setContentsMargins(0, 0, 0, 0)
+        self._bottom_toolbar.setLayout(snb_l)
+        self._bottom_toolbar.setContentsMargins(0, 0, 0, 0)
         snb_l.setContentsMargins(0, 0, 0, 0)
-        l.addWidget(self._snibble_bar)
-        snb_l.addItem(
-            QSpacerItem(
-                8,
-                0,
-                QSizePolicy.Policy.Preferred,
-                QSizePolicy.Policy.Preferred,
-            )
-        )
-        self._snibble_bar.setVisible(False)
+        l.addWidget(self._bottom_toolbar)
+        self._bottom_toolbar.setVisible(False)
         # initially not visible
 
         # Create the rubric list widget and put into gui.
@@ -804,7 +796,7 @@ class Annotator(QWidget):
             self.compact_layout()
 
     def _toggle_extra_save_visibility(self) -> None:
-        self._snibble_bar.setVisible(not self._snibble_bar.isVisible())
+        self._bottom_toolbar.setVisible(not self._bottom_toolbar.isVisible())
 
     def compact_layout(self) -> None:
         """Changes view to use a more narrow layout style."""
