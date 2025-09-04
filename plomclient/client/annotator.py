@@ -193,6 +193,7 @@ class Annotator(QWidget):
         self.view = PageView(self)
         l = self.ui.pageFrame.layout()
         assert l is not None
+        assert isinstance(l, QVBoxLayout)
         l.addWidget(self.view)
         # add in another save/next button bottom-right
         snb_l = QHBoxLayout()
@@ -206,8 +207,6 @@ class Annotator(QWidget):
             )
         )
         snb_l.addWidget(self.another_save_next_button)
-        # for the sake of mypy remind it that it is really a qvboxlayout
-        assert type(l) is QVBoxLayout
         l.addLayout(snb_l)
         snb_l.addItem(
             QSpacerItem(
