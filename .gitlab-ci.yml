@@ -88,10 +88,11 @@ copyright_year:
   image: fedora:42
   stage: static_analysis
   before_script:
-    - echo $CI_COMMIT_TAG
     - dnf install -y python3 glab git
     - git --version
     - glab --version
+    - echo $CI_COMMIT_TAG
+    - echo $CI_COMMIT_BRANCH
     # Note that "upstream" is used as the local name for plom/plom-client
     - git remote add upstream https://gitlab.com/plom/plom-client.git
     - echo "Consider these various open merge requests"
