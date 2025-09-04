@@ -60,8 +60,6 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QProgressDialog,
     QPushButton,
-    QSizePolicy,
-    QSpacerItem,
     QSplitter,
     QToolButton,
     QVBoxLayout,
