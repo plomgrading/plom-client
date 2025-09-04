@@ -64,6 +64,7 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QSplitter,
     QToolButton,
+    QVBoxLayout,
     QWidget,
 )
 
@@ -205,6 +206,8 @@ class Annotator(QWidget):
             )
         )
         snb_l.addWidget(self.another_save_next_button)
+        # for the sake of mypy remind it that it is really a qvboxlayout
+        assert type(l) is QVBoxLayout
         l.addLayout(snb_l)
         snb_l.addItem(
             QSpacerItem(
@@ -1042,7 +1045,9 @@ class Annotator(QWidget):
                     perm = {}\n
                     annotr src_img_data = {}\n
                     pagedata = {}
-                    """.format(perm, src_img_data, pagedata)
+                    """.format(
+                        perm, src_img_data, pagedata
+                    )
                 ).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
