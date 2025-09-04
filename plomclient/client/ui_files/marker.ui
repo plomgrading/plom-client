@@ -356,7 +356,7 @@
              <enum>Qt::FocusPolicy::NoFocus</enum>
             </property>
             <property name="text">
-             <string>M&amp;ark</string>
+             <string>&amp;Mark</string>
             </property>
             <property name="checkable">
              <bool>false</bool>
