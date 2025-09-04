@@ -496,7 +496,7 @@ class Annotator(QWidget):
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
 
-        y = m.addAction(f"Toggle extra save button")
+        y = m.addAction("Toggle extra save button")
         y.setCheckable(True)
         y.setChecked(False)
         y.triggered.connect(self._toggle_extra_save_visibility)
