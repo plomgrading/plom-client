@@ -206,6 +206,16 @@ class Annotator(QWidget):
         )
         snb_l.addWidget(self.another_save_next_button)
         l.addLayout(snb_l)
+        snb_l.addItem(
+            QSpacerItem(
+                8,
+                0,
+                QSizePolicy.Policy.Preferred,
+                QSizePolicy.Policy.Preferred,
+            )
+        )
+        self.another_save_next_button.setVisible(False)
+        # initially not visible
 
         # Create the rubric list widget and put into gui.
         self.rubric_widget = RubricWidget(self)
@@ -482,12 +492,20 @@ class Annotator(QWidget):
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+
+        y = m.addAction(f"Toggle extra save button")
+        y.setCheckable(True)
+        y.setChecked(False)
+        y.triggered.connect(self._toggle_extra_save_visibility)
+        self._extra_save_visible = False
+
         x = m.addAction(f"Compact UI\t{key}")
         x.setCheckable(True)
         if self.is_ui_compact():
             x.setChecked(True)
         x.triggered.connect(self._toggle_compact)
         self._compact_ui_toggle_action = x
+
         m.addSeparator()
         m.addAction("Help", lambda: self.keyPopUp(tab_idx=0))
         (key,) = keydata["help"]["keys"]
@@ -786,6 +804,10 @@ class Annotator(QWidget):
             self.wideLayout()
         else:
             self.compact_layout()
+
+    def _toggle_extra_save_visibility(self) -> None:
+        self._extra_save_visible = not self._extra_save_visible
+        self.another_save_next_button.setVisible(self._extra_save_visible)
 
     def compact_layout(self) -> None:
         """Changes view to use a more narrow layout style."""
