@@ -41,6 +41,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QFrame,
     QInputDialog,
     QFormLayout,
@@ -66,8 +67,7 @@ from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
 
 
-# TODO this object only allows int inputs, replace to allow float scores
-class SignedSB(QSpinBox):
+class SignedSB(QDoubleSpinBox):
     # add an explicit sign to spinbox and no 0
     # range is from -N,..,-1,1,...N
     # note - to fix #1561 include +/- N in this range.
@@ -85,8 +85,8 @@ class SignedSB(QSpinBox):
         if self.value() == 0:
             self.setValue(self.value() + steps)
 
-    def textFromValue(self, v) -> str:
-        t = QSpinBox().textFromValue(v)
+    def textFromValue(self, v: int | float) -> str:
+        t = super().textFromValue(v)
         if v > 0:
             return "+" + t
         else:
@@ -517,14 +517,7 @@ class AddRubricDialog(QDialog):
         lay.addWidget(self.relative_value_SB)
         self.relative_value_SB.valueChanged.connect(b.click)
         # self.relative_value_SB.clicked.connect(b.click)
-        lay.addItem(
-            QSpacerItem(16, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        )
-        lay.addItem(
-            QSpacerItem(
-                48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
-            )
-        )
+        lay.addStretch()
         vlay.addLayout(lay)
 
         hlay = QHBoxLayout()
@@ -533,7 +526,7 @@ class AddRubricDialog(QDialog):
         b.setToolTip(abs_tooltip)
         hlay.addWidget(b)
         self.typeRB_absolute = b
-        __ = QSpinBox()
+        __ = QDoubleSpinBox()
         __.setRange(0, maxMark)
         __.setValue(0)
         __.valueChanged.connect(b.click)
@@ -551,11 +544,7 @@ class AddRubricDialog(QDialog):
         # _.clicked.connect(b.click)
         hlay.addWidget(__)
         self.abs_out_of_SB = __
-        hlay.addItem(
-            QSpacerItem(
-                48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
-            )
-        )
+        hlay.addStretch()
         vlay.addLayout(hlay)
         flay.addRow("Marks", frame)
 
@@ -803,10 +792,10 @@ class AddRubricDialog(QDialog):
                 if com["kind"] == "neutral":
                     self.typeRB_neutral.setChecked(True)
                 elif com["kind"] == "relative":
-                    self.relative_value_SB.setValue(int(com["value"]))  # int rubrics
+                    self.relative_value_SB.setValue(com["value"])
                     self.typeRB_relative.setChecked(True)
                 elif com["kind"] == "absolute":
-                    self.abs_value_SB.setValue(int(com["value"]))  # int rubrics
+                    self.abs_value_SB.setValue(com["value"])
                     self.abs_out_of_SB.setValue(int(com["out_of"]))  # int rubrics
                     self.typeRB_absolute.setChecked(True)
                 else:
