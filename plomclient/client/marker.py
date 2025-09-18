@@ -1998,6 +1998,9 @@ class MarkerClient(QWidget):
 
         Returns:
             List of paper numbers using the rubric.
+
+        Raises:
+            PlomNoServerSupportException
         """
         return self.msgr.get_other_rubric_usages(key)
 
