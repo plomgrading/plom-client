@@ -686,12 +686,22 @@ class AddRubricDialog(QDialog):
         flay.addRow("", self.last_modified_label)
 
         # Usage info and major/minor change
-        # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
+        self.usage_button = QToolButton()
+        self.usage_button.setCheckable(True)
+        self.usage_button.setChecked(False)
+        self.usage_button.setAutoRaise(True)
+        # TODO: perhaps we want a "14 uses" in the button label?
+        # then summary line can give instructions...  "expand for options"
+        self.usage_button.setText("Usage")
+        self.usage_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.usage_button.clicked.connect(self.toggle_usage_panel)
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
         vlay = QVBoxLayout(frame)
         self._major_minor_frame = frame
-        flay.addRow("Usage", frame)
+        flay.addRow(self.usage_button, frame)
         # vlay.setContentsMargins(0, 0, 0, 0)
         hlay = QHBoxLayout()
         self._uses_label_template = "This rubric is currently used by %s papers"
@@ -706,8 +716,7 @@ class AddRubricDialog(QDialog):
         vlay.addLayout(hlay)
 
         b = QRadioButton(
-            "This is a major edit; all tasks using this rubric will need"
-            " to be revisited (by a human)."
+            "This is a major edit; all tasks using this rubric should be revisited."
         )
         b.setToolTip('The "revision" number will increase; "track changes" enabled')
         self.majorRB = b
@@ -743,6 +752,7 @@ class AddRubricDialog(QDialog):
             "Currently (0.19.x) the server defaults to major edits, subject to change."
         )
         vlay.addWidget(b)
+        self.toggle_usage_panel()
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -1055,9 +1065,20 @@ class AddRubricDialog(QDialog):
             # QFormLayout.setRowVisible but only in Qt 6.4!
             # instead we are using a QFrame
             self.scope_frame.setVisible(True)
+            # self._formlayout.setRowVisible(self.scope_frame, False)
         else:
             self.scopeButton.setArrowType(Qt.ArrowType.RightArrow)
             self.scope_frame.setVisible(False)
+            # self._formlayout.setRowVisible(self.scope_frame, True)
+
+    def toggle_usage_panel(self):
+        """Show or hide the panel of "usage" options for rubrics."""
+        if self.usage_button.isChecked():
+            self.usage_button.setArrowType(Qt.ArrowType.DownArrow)
+            self._major_minor_frame.setVisible(True)
+        else:
+            self.usage_button.setArrowType(Qt.ArrowType.RightArrow)
+            self._major_minor_frame.setVisible(False)
 
     def refresh_usage(self):
         """Ask Annotator to call the server the find out how many tasks use this rubric."""
