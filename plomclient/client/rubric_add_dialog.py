@@ -692,6 +692,8 @@ class AddRubricDialog(QDialog):
         self.usage_button = QToolButton()
         self.usage_button.setCheckable(True)
         self.usage_button.setChecked(False)
+        if num_uses:
+            self.usage_button.setChecked(True)
         self.usage_button.setAutoRaise(True)
         self.update_usage_button(num_uses)
         self.usage_button.setToolButtonStyle(
