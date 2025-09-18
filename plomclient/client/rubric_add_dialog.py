@@ -397,6 +397,7 @@ class AddRubricDialog(QDialog):
         reapable=[],
         experimental=False,
         add_to_group=None,
+        num_uses=0,
     ):
         """Initialize a new dialog to edit/create a comment.
 
@@ -423,6 +424,7 @@ class AddRubricDialog(QDialog):
                 annotations and morph them into comments.
             experimental (bool): whether to enable experimental or advanced
                 features.
+            num_uses (int): how many annotations use this rubric.
 
         Raises:
             none expected!
@@ -690,9 +692,7 @@ class AddRubricDialog(QDialog):
         self.usage_button.setCheckable(True)
         self.usage_button.setChecked(False)
         self.usage_button.setAutoRaise(True)
-        # TODO: perhaps we want a "14 uses" in the button label?
-        # then summary line can give instructions...  "expand for options"
-        self.usage_button.setText("Usage")
+        self.update_usage_button(num_uses)
         self.usage_button.setToolButtonStyle(
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
@@ -703,12 +703,6 @@ class AddRubricDialog(QDialog):
         self._major_minor_frame = frame
         flay.addRow(self.usage_button, frame)
         # vlay.setContentsMargins(0, 0, 0, 0)
-        hlay = QHBoxLayout()
-        self._uses_label_template = "This rubric is currently used by %s papers"
-        self.uses_label = QLabel(self._uses_label_template % "??")
-        hlay.addWidget(self.uses_label)
-        hlay.addStretch(10)
-        vlay.addLayout(hlay)
 
         b = QRadioButton(
             "This is a major edit; all tasks using this rubric should be revisited."
@@ -1079,6 +1073,21 @@ class AddRubricDialog(QDialog):
             self.usage_button.setArrowType(Qt.ArrowType.RightArrow)
             self._major_minor_frame.setVisible(False)
 
+    def update_usage_button(self, n: int) -> None:
+        """Update a button in the interface."""
+        if n:
+            self.usage_button.setText(f"Used: {n}")
+            self.usage_button.setToolTip(
+                f"Currently, {n} saved annotations use this rubric; "
+                "click to expand for options"
+            )
+        else:
+            self.usage_button.setText("Unused")
+            self.usage_button.setToolTip(
+                "Currently, this rubric isn't used in any saved annotations; "
+                "click to expand for options"
+            )
+
     def refresh_usage(self):
         """Ask Annotator to call the server the find out how many tasks use this rubric."""
         if not self.is_edit():
@@ -1088,7 +1097,7 @@ class AddRubricDialog(QDialog):
         rid = self.label_rubric_id.text()
         __ = annotr.getOtherRubricUsagesFromServer(rid)
         N = len(__)
-        self.uses_label.setText(self._uses_label_template % str(N))
+        self.update_usage_button(N)
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ShiftModifier and (
