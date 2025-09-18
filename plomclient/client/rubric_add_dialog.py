@@ -773,12 +773,11 @@ class AddRubricDialog(QDialog):
             reaplabels = [shorten(x.strip(), 42, placeholder="...") for x in reapable]
             self.reapable_CB.addItems(reaplabels)
             self._list_of_reapables = reapable
-            self.reapable_CB.setToolTip("Choose existing text from page")
+            self.reapable_CB.setToolTip("Take from text annotations")
         else:
             self.reapable_CB.setEnabled(False)
-            self.reapable_CB.setToolTip(
-                "Choose existing text from page (none available)"
-            )
+            self.reapable_CB.setToolTip("Take from text annotations (none available)")
+            self.reapable_CB.setVisible(False)
         # Set up TE and CB so that when CB changed, text is updated
         self.reapable_CB.currentIndexChanged.connect(self.changedReapableCB)
 
