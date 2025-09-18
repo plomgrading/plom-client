@@ -747,11 +747,11 @@ class AddRubricDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        if self.is_edit():
-            # TODO: this would need to fresh everything, not just count
-            __ = QPushButton("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh")
-            __.clicked.connect(self.refresh_usage)
-            buttons.addButton(__, QDialogButtonBox.ButtonRole.ActionRole)
+        # if self.is_edit():
+        #     # TODO: this would need to fresh everything, not just count
+        #     __ = QPushButton("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh")
+        #     __.clicked.connect(self.refresh_usage)
+        #     buttons.addButton(__, QDialogButtonBox.ButtonRole.ActionRole)
 
         vlay = QVBoxLayout()
         vlay.addLayout(flay)
@@ -1097,7 +1097,10 @@ class AddRubricDialog(QDialog):
             )
 
     def refresh_usage(self):
-        """Ask Annotator to call the server the find out how many tasks use this rubric."""
+        """Ask Annotator to call the server the find out how many tasks use this rubric.
+
+        Currently unused.
+        """
         if not self.is_edit():
             return
         # TODO: No no use signals slots or something, not like this
