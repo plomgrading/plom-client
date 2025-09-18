@@ -706,12 +706,7 @@ class AddRubricDialog(QDialog):
         hlay = QHBoxLayout()
         self._uses_label_template = "This rubric is currently used by %s papers"
         self.uses_label = QLabel(self._uses_label_template % "??")
-        uses_button = QToolButton(text="\N{ANTICLOCKWISE OPEN CIRCLE ARROW}")
-        uses_button.setToolTip("Refresh use count")
-        uses_button.setAutoRaise(True)
-        uses_button.clicked.connect(self.refresh_usage)
         hlay.addWidget(self.uses_label)
-        hlay.addWidget(uses_button)
         hlay.addStretch(10)
         vlay.addLayout(hlay)
 
@@ -757,6 +752,11 @@ class AddRubricDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
+        if self.is_edit():
+            # TODO: this would need to fresh everything, not just count
+            __ = QPushButton("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh")
+            __.clicked.connect(self.refresh_usage)
+            buttons.addButton(__, QDialogButtonBox.ButtonRole.ActionRole)
 
         vlay = QVBoxLayout()
         vlay.addLayout(flay)
