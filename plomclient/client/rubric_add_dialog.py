@@ -263,6 +263,15 @@ class CorrectionWidget(QFrame):
         self.close()
 
 
+class ShortTextEdit(QTextEdit):
+    """Just like QTextEdit but doesn't want to be tall."""
+
+    def sizeHint(self):
+        sz = super().sizeHint()
+        sz.setHeight(sz.height() // 3)
+        return sz
+
+
 class WideTextEdit(QTextEdit):
     """Just like QTextEdit but with hacked sizeHint() to be wider.
 
@@ -315,6 +324,8 @@ class WideTextEdit(QTextEdit):
     def sizeHint(self):
         sz = super().sizeHint()
         sz.setWidth(sz.width() * 2)
+        # 2/3 height of default
+        sz.setHeight((sz.height() * 2) // 3)
         return sz
 
     def keyPressEvent(self, e: QtGui.QKeyEvent | None) -> None:
@@ -457,7 +468,7 @@ class AddRubricDialog(QDialog):
         self.hiliter = SubstitutionsHighlighter(self.TE)
         self.relative_value_SB = SignedSB(maxMark)  # QSpinBox allows only int
         self.TEtag = QLineEdit()
-        self.TEmeta = WideTextEdit()
+        self.TEmeta = ShortTextEdit()
         # cannot edit these
         self.label_rubric_id = QLabel("Will be auto-assigned")
         self.last_modified_label = QLabel()
@@ -466,9 +477,9 @@ class AddRubricDialog(QDialog):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding
         )
         sizePolicy.setVerticalStretch(3)
-        self.TE.setSizePolicy(sizePolicy)
+        self.splitter.setSizePolicy(sizePolicy)
         sizePolicy = QSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding
         )
         sizePolicy.setVerticalStretch(1)
         self.TEmeta.setSizePolicy(sizePolicy)
