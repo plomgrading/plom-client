@@ -424,7 +424,8 @@ class AddRubricDialog(QDialog):
                 annotations and morph them into comments.
             experimental (bool): whether to enable experimental or advanced
                 features.
-            num_uses (int): how many annotations use this rubric.
+            num_uses (int/None): how many annotations use this rubric.
+                Might also be `None` if the server doesn't support this.
 
         Raises:
             none expected!
@@ -1073,19 +1074,26 @@ class AddRubricDialog(QDialog):
             self.usage_button.setArrowType(Qt.ArrowType.RightArrow)
             self._major_minor_frame.setVisible(False)
 
-    def update_usage_button(self, n: int) -> None:
+    def update_usage_button(self, n: int | None) -> None:
         """Update a button in the interface."""
-        if n:
+        if n is None:
+            self.usage_button.setText("Used: ??")
+            self.usage_button.setToolTip(
+                "Unknown how many annotations use this rubric "
+                "[perhaps no server support?]\n"
+                "Click to expand for options"
+            )
+        elif n:
             self.usage_button.setText(f"Used: {n}")
             self.usage_button.setToolTip(
-                f"Currently, {n} saved annotations use this rubric; "
-                "click to expand for options"
+                f"Currently, {n} saved annotations use this rubric.\n"
+                "Click to expand for options"
             )
         else:
             self.usage_button.setText("Unused")
             self.usage_button.setToolTip(
-                "Currently, this rubric isn't used in any saved annotations; "
-                "click to expand for options"
+                "Currently, this rubric isn't used in any saved annotations.\n"
+                "Click to expand for options"
             )
 
     def refresh_usage(self):
