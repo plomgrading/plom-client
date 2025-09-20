@@ -1121,8 +1121,7 @@ class AddRubricDialog(QDialog):
         annotr = self.parent()._parent
         rid = self.label_rubric_id.text()
         try:
-            __ = annotr.getOtherRubricUsagesFromServer(rid)
-            N = len(__)
+            N = len(annotr.getOtherRubricUsagesFromServer(rid))
         except PlomNoServerSupportException as e:
             InfoMsg(self, str(e)).exec()
             return
