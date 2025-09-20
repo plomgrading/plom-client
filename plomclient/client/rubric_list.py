@@ -1809,6 +1809,7 @@ class RubricWidget(QWidget):
         if edit:
             # TODO: No no use signals slots or something, not like this
             annotr = self._parent
+            assert com is not None
             try:
                 __ = annotr.getOtherRubricUsagesFromServer(com["rid"])
                 num_uses = len(__)
