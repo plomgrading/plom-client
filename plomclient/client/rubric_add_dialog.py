@@ -263,6 +263,15 @@ class CorrectionWidget(QFrame):
         self.close()
 
 
+class ShortTextEdit(QTextEdit):
+    """Just like QTextEdit but doesn't want to be tall."""
+
+    def sizeHint(self):
+        sz = super().sizeHint()
+        sz.setHeight(sz.height() // 3)
+        return sz
+
+
 class WideTextEdit(QTextEdit):
     """Just like QTextEdit but with hacked sizeHint() to be wider.
 
@@ -315,6 +324,8 @@ class WideTextEdit(QTextEdit):
     def sizeHint(self):
         sz = super().sizeHint()
         sz.setWidth(sz.width() * 2)
+        # 2/3 height of default
+        sz.setHeight((sz.height() * 2) // 3)
         return sz
 
     def keyPressEvent(self, e: QtGui.QKeyEvent | None) -> None:
@@ -397,6 +408,7 @@ class AddRubricDialog(QDialog):
         reapable=[],
         experimental=False,
         add_to_group=None,
+        num_uses=0,
     ):
         """Initialize a new dialog to edit/create a comment.
 
@@ -423,6 +435,8 @@ class AddRubricDialog(QDialog):
                 annotations and morph them into comments.
             experimental (bool): whether to enable experimental or advanced
                 features.
+            num_uses (int/None): how many annotations use this rubric.
+                Might also be `None` if the server doesn't support this.
 
         Raises:
             none expected!
@@ -454,7 +468,7 @@ class AddRubricDialog(QDialog):
         self.hiliter = SubstitutionsHighlighter(self.TE)
         self.relative_value_SB = SignedSB(maxMark)  # QSpinBox allows only int
         self.TEtag = QLineEdit()
-        self.TEmeta = WideTextEdit()
+        self.TEmeta = ShortTextEdit()
         # cannot edit these
         self.label_rubric_id = QLabel("Will be auto-assigned")
         self.last_modified_label = QLabel()
@@ -463,9 +477,9 @@ class AddRubricDialog(QDialog):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding
         )
         sizePolicy.setVerticalStretch(3)
-        self.TE.setSizePolicy(sizePolicy)
+        self.splitter.setSizePolicy(sizePolicy)
         sizePolicy = QSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.MinimumExpanding
         )
         sizePolicy.setVerticalStretch(1)
         self.TEmeta.setSizePolicy(sizePolicy)
@@ -686,28 +700,26 @@ class AddRubricDialog(QDialog):
         flay.addRow("", self.last_modified_label)
 
         # Usage info and major/minor change
-        # TODO: perhaps we want a "14 uses" as a "scope" button expanding this frame?
+        self.usage_button = QToolButton()
+        self.usage_button.setCheckable(True)
+        self.usage_button.setChecked(False)
+        if num_uses:
+            self.usage_button.setChecked(True)
+        self.usage_button.setAutoRaise(True)
+        self.update_usage_button(num_uses)
+        self.usage_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.usage_button.clicked.connect(self.toggle_usage_panel)
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
         vlay = QVBoxLayout(frame)
         self._major_minor_frame = frame
-        flay.addRow("Usage", frame)
+        flay.addRow(self.usage_button, frame)
         # vlay.setContentsMargins(0, 0, 0, 0)
-        hlay = QHBoxLayout()
-        self._uses_label_template = "This rubric is currently used by %s papers"
-        self.uses_label = QLabel(self._uses_label_template % "??")
-        uses_button = QToolButton(text="\N{ANTICLOCKWISE OPEN CIRCLE ARROW}")
-        uses_button.setToolTip("Refresh use count")
-        uses_button.setAutoRaise(True)
-        uses_button.clicked.connect(self.refresh_usage)
-        hlay.addWidget(self.uses_label)
-        hlay.addWidget(uses_button)
-        hlay.addStretch(10)
-        vlay.addLayout(hlay)
 
         b = QRadioButton(
-            "This is a major edit; all tasks using this rubric will need"
-            " to be revisited (by a human)."
+            "This is a major edit; all tasks using this rubric should be revisited."
         )
         b.setToolTip('The "revision" number will increase; "track changes" enabled')
         self.majorRB = b
@@ -743,10 +755,16 @@ class AddRubricDialog(QDialog):
             "Currently (0.19.x) the server defaults to major edits, subject to change."
         )
         vlay.addWidget(b)
+        self.toggle_usage_panel()
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
+        # if self.is_edit():
+        #     # TODO: this would need to fresh everything, not just count
+        #     __ = QPushButton("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh")
+        #     __.clicked.connect(self.refresh_usage)
+        #     buttons.addButton(__, QDialogButtonBox.ButtonRole.ActionRole)
 
         vlay = QVBoxLayout()
         vlay.addLayout(flay)
@@ -763,12 +781,11 @@ class AddRubricDialog(QDialog):
             reaplabels = [shorten(x.strip(), 42, placeholder="...") for x in reapable]
             self.reapable_CB.addItems(reaplabels)
             self._list_of_reapables = reapable
-            self.reapable_CB.setToolTip("Choose existing text from page")
+            self.reapable_CB.setToolTip("Take from text annotations")
         else:
             self.reapable_CB.setEnabled(False)
-            self.reapable_CB.setToolTip(
-                "Choose existing text from page (none available)"
-            )
+            self.reapable_CB.setToolTip("Take from text annotations (none available)")
+            self.reapable_CB.setVisible(False)
         # Set up TE and CB so that when CB changed, text is updated
         self.reapable_CB.currentIndexChanged.connect(self.changedReapableCB)
 
@@ -1055,12 +1072,48 @@ class AddRubricDialog(QDialog):
             # QFormLayout.setRowVisible but only in Qt 6.4!
             # instead we are using a QFrame
             self.scope_frame.setVisible(True)
+            # self._formlayout.setRowVisible(self.scope_frame, False)
         else:
             self.scopeButton.setArrowType(Qt.ArrowType.RightArrow)
             self.scope_frame.setVisible(False)
+            # self._formlayout.setRowVisible(self.scope_frame, True)
+
+    def toggle_usage_panel(self):
+        """Show or hide the panel of "usage" options for rubrics."""
+        if self.usage_button.isChecked():
+            self.usage_button.setArrowType(Qt.ArrowType.DownArrow)
+            self._major_minor_frame.setVisible(True)
+        else:
+            self.usage_button.setArrowType(Qt.ArrowType.RightArrow)
+            self._major_minor_frame.setVisible(False)
+
+    def update_usage_button(self, n: int | None) -> None:
+        """Update a button in the interface."""
+        if n is None:
+            self.usage_button.setText("Used: ??")
+            self.usage_button.setToolTip(
+                "Unknown how many annotations use this rubric "
+                "[perhaps no server support?]\n"
+                "Click to expand for options"
+            )
+        elif n:
+            self.usage_button.setText(f"Used: {n}")
+            self.usage_button.setToolTip(
+                f"Currently, {n} saved annotations use this rubric.\n"
+                "Click to expand for options"
+            )
+        else:
+            self.usage_button.setText("Unused")
+            self.usage_button.setToolTip(
+                "Currently, this rubric isn't used in any saved annotations.\n"
+                "Click to expand for options"
+            )
 
     def refresh_usage(self):
-        """Ask Annotator to call the server the find out how many tasks use this rubric."""
+        """Ask Annotator to call the server the find out how many tasks use this rubric.
+
+        Currently unused.
+        """
         if not self.is_edit():
             return
         # TODO: No no use signals slots or something, not like this
@@ -1068,7 +1121,7 @@ class AddRubricDialog(QDialog):
         rid = self.label_rubric_id.text()
         __ = annotr.getOtherRubricUsagesFromServer(rid)
         N = len(__)
-        self.uses_label.setText(self._uses_label_template % str(N))
+        self.update_usage_button(N)
 
     def keyPressEvent(self, event):
         if event.modifiers() == Qt.KeyboardModifier.ShiftModifier and (

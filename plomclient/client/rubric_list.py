@@ -1806,6 +1806,19 @@ class RubricWidget(QWidget):
             None, does its work through side effects on the comment list.
         """
         reapable = self.get_nonrubric_text_from_page()
+        if edit:
+            # TODO: No no use signals slots or something, not like this
+            annotr = self._parent
+            assert com is not None
+            try:
+                __ = annotr.getOtherRubricUsagesFromServer(com["rid"])
+                num_uses = len(__)
+            except PlomNoServerSupportException:
+                # checking will fail on legacy or maybe even not-so-recent
+                num_uses = None
+        else:
+            num_uses = 0
+
         dialog = AddRubricDialog(
             self,
             self.username,
@@ -1819,6 +1832,7 @@ class RubricWidget(QWidget):
             reapable=reapable,
             experimental=self._parent.is_experimental(),
             add_to_group=add_to_group,
+            num_uses=num_uses,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
