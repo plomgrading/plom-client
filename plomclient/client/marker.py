@@ -1998,6 +1998,9 @@ class MarkerClient(QWidget):
 
         Returns:
             List of paper numbers using the rubric.
+
+        Raises:
+            PlomNoServerSupportException
         """
         return self.msgr.get_other_rubric_usages(key)
 
@@ -2012,6 +2015,10 @@ class MarkerClient(QWidget):
         minor_change: bool | None = None,
         tag_tasks: bool | None = None,
     ) -> dict[str, Any]:
+        """Ask server to modify a rubric and get back new rubric.
+
+        See the messenger method for detailed docs.
+        """
         return self.msgr.MmodifyRubric(
             rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
         )

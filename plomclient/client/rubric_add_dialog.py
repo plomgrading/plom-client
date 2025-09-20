@@ -60,6 +60,7 @@ from PyQt6.QtWidgets import (
     QSplitter,
 )
 
+from plomclient.plom_exceptions import PlomNoServerSupportException
 from plomclient.misc_utils import next_in_longest_subsequence
 from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
@@ -1119,8 +1120,11 @@ class AddRubricDialog(QDialog):
         # TODO: No no use signals slots or something, not like this
         annotr = self.parent()._parent
         rid = self.label_rubric_id.text()
-        __ = annotr.getOtherRubricUsagesFromServer(rid)
-        N = len(__)
+        try:
+            N = len(annotr.getOtherRubricUsagesFromServer(rid))
+        except PlomNoServerSupportException as e:
+            InfoMsg(self, str(e)).exec()
+            return
         self.update_usage_button(N)
 
     def keyPressEvent(self, event):

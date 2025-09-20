@@ -1853,7 +1853,7 @@ class RubricWidget(QWidget):
             except PlomInconsistentRubric as e:
                 WarnMsg(self, f"Inconsistent Rubric: {e}").exec()
                 return
-            except PlomNoRubric as e:
+            except (PlomNoRubric, PlomNoServerSupportException) as e:
                 ErrorMsg(self, f"{e}").exec()
                 return
             except PlomConflict as e:
