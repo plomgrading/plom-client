@@ -211,7 +211,7 @@ class KeyEditDialog(QDialog):
         vb.addWidget(QLabel(f"Change key for <em>{label}</em>"))
         if not legal:
             legal = stringOfLegalKeys
-        _legal = [QKeySequence(c)[0] for c in legal]
+        _legal = [QKeySequence(c) for c in legal]
         self.keyedit = SingleKeyEdit(self, current_key, _legal)
         vb.addWidget(self.keyedit)
         if info:
@@ -241,7 +241,7 @@ class SingleKeyEdit(QLineEdit):
         self.theCode = None
         if currentKey:
             self.theKey = currentKey
-            self.theCode = QKeySequence(self.theKey)[0]
+            self.theCode = QKeySequence(self.theKey)
             self.setText(currentKey)
 
     def keyPressEvent(self, event):
@@ -270,7 +270,7 @@ class SingleKeyEdit(QLineEdit):
     def setText(self, omega):
         self.theKey = omega
         if len(omega) > 0:
-            self.theCode = QKeySequence(omega)[0]
+            self.theCode = QKeySequence(omega)
         super().setText(omega)
 
 
@@ -280,7 +280,7 @@ class SingleKeyEdit(QLineEdit):
 class KeyWrangler:
     def __init__(self):
         super().__init__()
-        self.legalKeyCodes = [QKeySequence(c)[0] for c in stringOfLegalKeys]
+        self.legalKeyCodes = [QKeySequence(c) for c in stringOfLegalKeys]
         self.actions = actions_with_changeable_keys
 
     def validate(self):
@@ -312,7 +312,8 @@ class KeyWrangler:
             if k not in actions_with_changeable_keys:
                 return f'overlay has invalid action "{k}"'
         # argh, keys like keyboard, not like dict indexing
-        all_keys = [v["keys"][0] for v in overlay.values()]
+        # TODO: removed [0] here; once this code is used, better ensure it works!
+        all_keys = [v["keys"] for v in overlay.values()]
         if len(set(all_keys)) != len(all_keys):
             return "Two actions have the same key"
         return None
