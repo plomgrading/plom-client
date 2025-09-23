@@ -2,9 +2,9 @@
 # Copyright (C) 2021 Andrew Rechnitzer
 # Copyright (C) 2021-2025 Colin B. Macdonald
 
-from copy import deepcopy
 import logging
 import sys
+from copy import deepcopy
 
 if sys.version_info >= (3, 9):
     from importlib import resources
@@ -175,7 +175,7 @@ def compute_keybinding_from_overlay(base, overlay, *, copy=True):
 
 
 class KeyEditDialog(QDialog):
-    def __init__(self, parent, *, label, info=None, currentKey=None, legal=None):
+    def __init__(self, parent, *, label: str, info=None, currentKey=None, legal=None):
         """Dialog to edit a single key-binding for an action.
 
         Very simple; no shift-ctrl etc modifier keys.
@@ -186,7 +186,7 @@ class KeyEditDialog(QDialog):
             parent (QWidget): what widget to parent this dialog.
 
         Keyword Args:
-            label (str): What action are we changing?
+            label: What action are we changing?
             currentKey (str): the current key to populate the dialog.
                 Can be blank or omitted.
             info (str): optional extra information to display.
@@ -205,9 +205,9 @@ class KeyEditDialog(QDialog):
         self._keyedit = SingleKeyEdit(self, currentKey, legal)
         vb.addWidget(self._keyedit)
         if info:
-            label = QLabel(info)
-            label.setWordWrap(True)
-            vb.addWidget(label)
+            __ = QLabel(info)
+            __.setWordWrap(True)
+            vb.addWidget(__)
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -241,7 +241,7 @@ class SingleKeyEdit(QLineEdit):
             Qt.Key.Key_Meta,
         ):
             return
-        if keyCode in [Qt.Key.Key_Backspace, Qt.Key.Key_Delete]:
+        if keyCode in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
             self.backspace()
             self.theCode = None
             self.theKey = ""
@@ -261,6 +261,9 @@ class SingleKeyEdit(QLineEdit):
         super().setText(omega)
 
 
+# TODO: no one seems to be using this class.  I dimly remember that it was
+# salvaged from some previous code with the idea that it should be used
+# one keymaps are saved to config files.
 class KeyWrangler:
     def __init__(self):
         super().__init__()
