@@ -273,10 +273,11 @@ class SingleKeyEdit(QLineEdit):
         self.setText(self.theKey)
 
     def setText(self, omega: str | None) -> None:
-        self.theKey = omega
         if omega and len(omega) > 0:
+            self.theKey = omega
             self.theCode = QKeySequence(omega)
         else:
+            self.theKey = ""
             self.theCode = None
         super().setText(omega)
 
