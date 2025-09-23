@@ -224,12 +224,12 @@ class SingleKeyEdit(QLineEdit):
         if legal is None:
             legal = []
         self.legal = legal
+        self.theKey = ""
+        self.theCode = None
         if currentKey:
             self.theKey = currentKey
             self.theCode = QKeySequence(self.theKey)[0]
             self.setText(currentKey)
-        else:
-            self.theKey = ""
 
     def keyPressEvent(self, event):
         keyCode = event.key()
