@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import sys
 from copy import deepcopy
+from typing import Any
 
 if sys.version_info >= (3, 9):
     from importlib import resources
@@ -70,7 +71,7 @@ TODO_other_key_layouts = {
 }
 
 
-_keybindings_list = [
+_keybindings_list: list[dict[str, Any]] = [
     {"name": "default", "file": "default_keys.toml"},
     {"name": "wasd", "file": "wasd_keys.toml"},
     {"name": "ijkl", "file": "ijkl_keys.toml"},
@@ -89,7 +90,7 @@ _keybindings_list = [
 ]
 
 
-def get_keybindings_list():
+def get_keybindings_list() -> list[dict[str, Any]]:
     it = deepcopy(_keybindings_list)
     for kb in it:
         f = kb["file"]
@@ -107,7 +108,8 @@ def get_keybindings_list():
     return it
 
 
-def get_keybinding_overlay(name):
+def get_keybinding_overlay(name: str) -> dict[str, Any]:
+    """An overlay is has only the changes compared to the basic shortcut keys."""
     _keybindings_dict = {x["name"]: x for x in _keybindings_list}
     keymap = _keybindings_dict[name]
     f = keymap["file"]
@@ -122,14 +124,14 @@ def get_keybinding_overlay(name):
     return overlay
 
 
-def get_key_bindings(name, custom_overlay={}):
+def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
     """Generate the keybindings from a name and or a custom overlay.
 
     Args:
-        name (str): which keybindings to use.
+        name: which keybindings to use.
 
     Keyword Args:.
-        custom_overlay (dict): if name is ``"custom"`` then take
+        custom_overlay: if name is ``"custom"`` then take
             additional shortcut keys from this dict on top of the
             default bindings.  If name isn't ``"custom"`` then
             this input is ignored.
@@ -145,7 +147,7 @@ def get_key_bindings(name, custom_overlay={}):
     """
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
-    with open(resources.files(plomclient.client) / f, "rb") as fh:
+    with (resources.files(plomclient.client) / f).open("rb") as fh:
         default_keydata = tomllib.load(fh)
     default_keydata.pop("__metadata__")
 
@@ -186,7 +188,7 @@ class KeyEditDialog(QDialog):
         current_key: str | None = None,
         legal: str | None = None,
         info: str | None = None,
-    ):
+    ) -> None:
         """Dialog to edit a single key-binding for an action.
 
         Very simple; no shift-ctrl etc modifier keys.
@@ -231,11 +233,11 @@ class KeyEditDialog(QDialog):
 
 
 class SingleKeyEdit(QLineEdit):
-    def __init__(self, parent, currentKey=None, legal=None):
+    def __init__(
+        self, parent: QWidget, currentKey: str | None = None, legal: list = []
+    ) -> None:
         super().__init__(parent)
         self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        if legal is None:
-            legal = []
         self.legal = legal
         self.theKey = ""
         self.theCode = None
