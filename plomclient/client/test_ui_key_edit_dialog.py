@@ -38,6 +38,27 @@ def test_KeyEditDialog_change_input(qtbot) -> None:
     assert key.casefold() == "b"
 
 
+def test_KeyEditDialog_no_modifier_keys_for_now(qtbot) -> None:
+    """No ctrl-alt-etc for now, but could change in the future!"""
+    d = KeyEditDialog(None, label="my-action", current_key="a")
+    qtbot.addWidget(d)
+    qtbot.keyClick(d.keyedit, Qt.Key.Key_Control)
+    qtbot.keyClick(d.keyedit, Qt.Key.Key_Shift)
+    qtbot.keyClick(d.keyedit, Qt.Key.Key_B)
+    d.accept()
+    key = d.get_key()
+    assert key.casefold() == "b"
+
+
+def test_KeyEditDialog_backspace(qtbot) -> None:
+    d = KeyEditDialog(None, label="my-action", current_key="a")
+    qtbot.addWidget(d)
+    qtbot.keyClick(d.keyedit, Qt.Key.Key_Backspace)
+    d.accept()
+    key = d.get_key()
+    assert key.casefold() == ""
+
+
 def test_KeyEditDialog_restrict_to_list(qtbot) -> None:
     d = KeyEditDialog(None, label="my-action", legal="abc")
     qtbot.addWidget(d)
