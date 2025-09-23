@@ -6,6 +6,7 @@ from __future__ import annotations
 from PyQt6.QtCore import Qt
 
 from .key_wrangler import KeyEditDialog
+from .key_help import KeyHelp
 
 
 def test_KeyEditDialog_open_close_blank(qtbot) -> None:
@@ -67,3 +68,28 @@ def test_KeyEditDialog_restrict_to_list(qtbot) -> None:
     d.accept()
     key = d.get_key()
     assert key.casefold() != "d"
+
+
+def test_KeyHelp_basics(qtbot) -> None:
+    d = KeyHelp(None, "default")
+    qtbot.addWidget(d)
+    d.accept()
+    name = d.get_selected_keybinding_name()
+    assert name == "default"
+    assert d.get_custom_overlay() == {}
+
+
+def test_KeyHelp_choose_new(qtbot) -> None:
+    d = KeyHelp(None, "default")
+    qtbot.addWidget(d)
+    qtbot.mouseClick(d._keyLayoutCB, Qt.MouseButton.LeftButton)
+    qtbot.keyClick(d._keyLayoutCB, Qt.Key.Key_Down)
+    name = d.get_selected_keybinding_name()
+    assert name.casefold() != "default"
+    # Maintainer: could change if the internal ordering changes; just update test
+    assert name.casefold() == "wasd"
+    qtbot.keyClick(d._keyLayoutCB, Qt.Key.Key_Down)
+    name = d.get_selected_keybinding_name()
+    # Maintainer: could change if the internal ordering changes; just update test
+    assert name.casefold() == "ijkl"
+    d.accept()

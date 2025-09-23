@@ -65,7 +65,7 @@ class KeyHelp(QDialog):
 
     def __init__(
         self,
-        parent: QWidget,
+        parent: QWidget | None,
         keybinding_name: str,
         *,
         custom_overlay: dict = {},
