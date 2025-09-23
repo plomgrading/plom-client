@@ -229,6 +229,7 @@ class KeyEditDialog(QDialog):
         self.setLayout(vb)
 
     def get_key(self) -> str:
+        """Get the key that was chosen, e.g., for callers after the dialog is done."""
         return self.keyedit.text()
 
 
@@ -246,7 +247,7 @@ class SingleKeyEdit(QLineEdit):
             self.theCode = QKeySequence(self.theKey)
             self.setText(currentKey)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         keyCode = event.key()
         # no modifiers please
         if keyCode in (
@@ -265,14 +266,18 @@ class SingleKeyEdit(QLineEdit):
             return
         self.theCode = keyCode
 
-    def keyReleaseEvent(self, event):
+    def keyReleaseEvent(self, event) -> None:
+        # Note: theCode can be None here and we get an empty string
+        # TODO: all this feels a bit circular and loopy to me
         self.theKey = QKeySequence(self.theCode).toString()
         self.setText(self.theKey)
 
-    def setText(self, omega):
+    def setText(self, omega: str | None) -> None:
         self.theKey = omega
-        if len(omega) > 0:
+        if omega and len(omega) > 0:
             self.theCode = QKeySequence(omega)
+        else:
+            self.theCode = None
         super().setText(omega)
 
 
