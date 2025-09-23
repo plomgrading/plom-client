@@ -2,6 +2,8 @@
 # Copyright (C) 2021 Andrew Rechnitzer
 # Copyright (C) 2021-2025 Colin B. Macdonald
 
+from __future__ import annotations
+
 import logging
 import sys
 from copy import deepcopy
@@ -24,6 +26,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QVBoxLayout,
+    QWidget,
 )
 
 import plomclient.client
@@ -175,7 +178,15 @@ def compute_keybinding_from_overlay(base, overlay, *, copy=True):
 
 
 class KeyEditDialog(QDialog):
-    def __init__(self, parent, *, label: str, info=None, currentKey=None, legal=None):
+    def __init__(
+        self,
+        parent: QWidget | None,
+        *,
+        label: str,
+        current_key: str | None = None,
+        legal: str | None = None,
+        info: str | None = None,
+    ):
         """Dialog to edit a single key-binding for an action.
 
         Very simple; no shift-ctrl etc modifier keys.
@@ -183,15 +194,14 @@ class KeyEditDialog(QDialog):
         TODO: custom line edit eats enter and esc.
 
         Args:
-            parent (QWidget): what widget to parent this dialog.
+            parent: widget to parent this dialog.
 
         Keyword Args:
             label: What action are we changing?
-            currentKey (str): the current key to populate the dialog.
-                Can be blank or omitted.
-            info (str): optional extra information to display.
-            legal (str): keys that can entered.  If omitted/empty, use
-                a default.
+            current_key: the current key as a string to populate the
+                dialog.  Can be blank or omitted.
+            info: optional extra information to display.
+            legal: keys that can entered, or defaults if omitted/empty.
 
         Returns:
             None
@@ -201,9 +211,9 @@ class KeyEditDialog(QDialog):
         vb.addWidget(QLabel(f"Change key for <em>{label}</em>"))
         if not legal:
             legal = stringOfLegalKeys
-        legal = [QKeySequence(c)[0] for c in legal]
-        self._keyedit = SingleKeyEdit(self, currentKey, legal)
-        vb.addWidget(self._keyedit)
+        _legal = [QKeySequence(c)[0] for c in legal]
+        self.keyedit = SingleKeyEdit(self, current_key, _legal)
+        vb.addWidget(self.keyedit)
         if info:
             __ = QLabel(info)
             __.setWordWrap(True)
@@ -215,6 +225,9 @@ class KeyEditDialog(QDialog):
         buttons.rejected.connect(self.reject)
         vb.addWidget(buttons)
         self.setLayout(vb)
+
+    def get_key(self) -> str:
+        return self.keyedit.text()
 
 
 class SingleKeyEdit(QLineEdit):

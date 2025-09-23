@@ -161,10 +161,10 @@ class KeyHelp(QDialog):
             """
         dat = self.keydata[action]
         old_key = dat["keys"][0]
-        diag = KeyEditDialog(self, label=dat["human"], currentKey=old_key, info=info)
+        diag = KeyEditDialog(self, label=dat["human"], current_key=old_key, info=info)
         if diag.exec() != QDialog.DialogCode.Accepted:
             return
-        new_key = diag._keyedit.text()
+        new_key = diag.get_key()
         if new_key == old_key:
             return
         log.info(f"diagram: {action} changing key from {old_key} to {new_key}")
