@@ -523,10 +523,17 @@ class IDClient(QWidget):
                     f"Found unexpected predictions by predictor {pred['predictor']}, which should not be here."
                 )
 
-        elif len(all_predictions_for_paper) == 2:
-            pred0, pred1 = all_predictions_for_paper
-            assert pred0["predictor"] in ("MLGreedy", "MLLAP")
-            assert pred1["predictor"] in ("MLGreedy", "MLLAP")
+        else:  # len(all_predictions_for_paper) >= 2:
+            (pred0,) = [
+                p for p in all_predictions_for_paper if p["predictor"] == "MLLAP"
+            ]
+            (pred1,) = [
+                p for p in all_predictions_for_paper if p["predictor"] == "MLGreedy"
+            ]
+            if len(all_predictions_for_paper) > 2:
+                print("WARNING: additional predictions discarded!")
+                for p in all_predictions_for_paper:
+                    print(p)
             if pred0["student_id"] == pred1["student_id"]:
                 # show just one bar
                 self.ui.predictionBox0.show()
@@ -579,10 +586,6 @@ class IDClient(QWidget):
 
                 self.ui.predictionBox0.setStyleSheet(warning_yellow_style)
                 self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
-        else:
-            raise RuntimeError(
-                f"Found unexpected 3 or more predictions:\n{all_predictions_for_paper}"
-            )
 
         # now update the snid entry line-edit.
         # if test is already identified then populate the ID-lineedit accordingly
