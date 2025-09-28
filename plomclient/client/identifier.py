@@ -458,9 +458,12 @@ class IDClient(QWidget):
         all_predictions_for_paper = self.predictions.get(str(tn), None)
 
         # helper function to hide all this SNID garbage
-        def get_name_from_id(sid):
-            _snid = self.student_id_to_snid[sid]
-            return self.snid_to_student_name[_snid]
+        def get_name_from_id(sid) -> str | None:
+            try:
+                _snid = self.student_id_to_snid[sid]
+                return self.snid_to_student_name[_snid]
+            except KeyError:
+                return None
 
         # Reset everything, fonts, etc then hide the boxes
         fnt = self.font()
