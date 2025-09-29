@@ -6,12 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.19.1] - 2025-09-29
 
 ### Added
 * Display all predictions when identifying.
-
-### Removed
 
 ### Changed
 * Add rubric dialog shows usage count automatically, and is slightly more compact to fit on small screens.
@@ -87,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.19.0...main
+[0.19.1]: https://gitlab.com/plom/plom-client/-/compare/v0.19.0...v0.19.1
 [0.19.0]: https://gitlab.com/plom/plom-client/-/compare/v0.18.1...v0.19.0
 [0.18.1]: https://gitlab.com/plom/plom-client/-/compare/v0.18.0...v0.18.1
 [0.18.0]: https://gitlab.com/plom/plom-client/-/compare/v0.17.2...v0.18.0
