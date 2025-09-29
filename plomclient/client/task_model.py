@@ -355,7 +355,7 @@ class MarkerExamModel(QStandardItemModel):
             The row index of the task.
 
         Raises:
-             ValueError if not found.
+            ValueError: if task not found.
         """
         r0 = []
         for r in range(self.rowCount()):
@@ -393,6 +393,9 @@ class MarkerExamModel(QStandardItemModel):
 
         Returns:
             Contents of task in `n`th column.
+
+        Raises:
+            ValueError: if task not found.
         """
         r = self._findTask(task)
         return self.data(self.index(r, n))
@@ -449,7 +452,11 @@ class MarkerExamModel(QStandardItemModel):
         self._setDataByTask(task, _idx_paper_dir, str(tdir))
 
     def get_source_image_data(self, task):
-        """Return the image data (as a list of dicts) for task."""
+        """Return the image data (as a list of dicts) for task.
+
+        Raises:
+            ValueError: if task not found.
+        """
         column_idx = _idx_src_img_data
         r = json.loads(self._getDataByTask(task, column_idx))
         return r
@@ -516,7 +523,11 @@ class MarkerExamModel(QStandardItemModel):
         self._setDataByTask(task, _idx_integrity, integrity)
 
     def getIntegrityCheck(self, task: str) -> str:
-        """Return the integrity check string for a task."""
+        """Return the integrity check string for a task.
+
+        Raises:
+            ValueError: if task not found.
+        """
         # not sure why we need str() here but it was returning int
         return str(self._getDataByTask(task, _idx_integrity))
 

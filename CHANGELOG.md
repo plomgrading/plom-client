@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix crash when identifying papers for which there are 3 or more predictions.
 * Fix crash when changing shortcut keys.
 * Fix ineffective shortcut key change dialog to actually accept keys.
+* Fix crash when using Ctrl-left/Ctrl-right after resetting papers.
 
 
 
