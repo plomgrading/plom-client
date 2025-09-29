@@ -753,19 +753,29 @@ class MarkerClient(QWidget):
         """
         # First, check if we have the three things: if so we're done.
         # TODO: special hack as empty "" comes back as Path which is "."
-        if (
-            self.examModel.get_source_image_data(task)
-            and self.examModel.getPaperDirByTask(task)
-            and str(self.examModel.getAnnotatedFileByTask(task)) != "."
-        ):
-            return True
+        try:
+            if (
+                self.examModel.get_source_image_data(task)
+                and self.examModel.getPaperDirByTask(task)
+                and str(self.examModel.getAnnotatedFileByTask(task)) != "."
+            ):
+                return True
+        except ValueError:
+            # Asking examModel about non-existent task is a ValueError.
+            # This can happen using Ctrl-left after resetting a task; just
+            # bail with False for now...  Issue #5078.
+            return False
 
         num, question_idx = task_id_str_to_paper_question_index(task)
         assert question_idx == self.question_idx, f"wrong qidx={question_idx}"
 
         # TODO: this integrity is almost certainly not important unless I want
         # to modify.  If just looking...?  Anyway, non-legacy doesn't enforce it
-        integrity = self.examModel.getIntegrityCheck(task)
+        try:
+            integrity = self.examModel.getIntegrityCheck(task)
+        except ValueError:
+            return False
+
         try:
             plomdata = self.msgr.get_annotations(
                 num, question_idx, edition=None, integrity=integrity
