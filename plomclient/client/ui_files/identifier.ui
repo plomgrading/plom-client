@@ -88,10 +88,10 @@
          <property name="title">
           <string>Search classlist by student ID or name</string>
          </property>
-	 <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
           <item>
-            <widget class="QLineEdit" name="idEdit"/>
-           </item>
+           <widget class="QLineEdit" name="idEdit"/>
+          </item>
           <item>
            <widget class="QPushButton" name="saveButton">
             <property name="text">
@@ -273,19 +273,16 @@
           <string>Machine prediction</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="1">
-           <widget class="QLabel" name="pSIDLabel0">
+          <item row="0" column="0" rowspan="2">
+           <widget class="QPushButton" name="explainButton0">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-              <horstretch>4</horstretch>
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Predicted Student ID</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
+             <string>Explain</string>
             </property>
            </widget>
           </item>
@@ -300,6 +297,22 @@
             <property name="text">
              <string>&amp;Accept
 prediction</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLabel" name="pSIDLabel0">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>4</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Predicted Student ID</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -319,19 +332,6 @@ prediction</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0" rowspan="2">
-           <widget class="QPushButton" name="explainButton0">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Explain</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -347,17 +347,19 @@ prediction</string>
           <string>2nd Machine prediction</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="1" rowspan="2">
-           <widget class="QPushButton" name="predButton1">
+          <item row="0" column="0">
+           <widget class="QLabel" name="pSIDLabel1">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>1</horstretch>
-              <verstretch>1</verstretch>
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>4</horstretch>
+              <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>&amp;Accept
-2nd prediction</string>
+             <string>2nd Predicted Student ID</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignCenter</set>
             </property>
            </widget>
           </item>
@@ -377,19 +379,27 @@ prediction</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="pSIDLabel1">
+          <item row="0" column="1" rowspan="2">
+           <widget class="QPushButton" name="predButton1">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-              <horstretch>4</horstretch>
-              <verstretch>0</verstretch>
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>2nd Predicted Student ID</string>
+             <string>&amp;Accept
+2nd prediction</string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="extraInfoLabel">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
