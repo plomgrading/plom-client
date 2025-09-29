@@ -2,9 +2,12 @@
 # Copyright (C) 2021 Andrew Rechnitzer
 # Copyright (C) 2021-2025 Colin B. Macdonald
 
-from copy import deepcopy
+from __future__ import annotations
+
 import logging
 import sys
+from copy import deepcopy
+from typing import Any
 
 if sys.version_info >= (3, 9):
     from importlib import resources
@@ -24,6 +27,7 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QVBoxLayout,
+    QWidget,
 )
 
 import plomclient.client
@@ -67,7 +71,7 @@ TODO_other_key_layouts = {
 }
 
 
-_keybindings_list = [
+_keybindings_list: list[dict[str, Any]] = [
     {"name": "default", "file": "default_keys.toml"},
     {"name": "wasd", "file": "wasd_keys.toml"},
     {"name": "ijkl", "file": "ijkl_keys.toml"},
@@ -86,7 +90,7 @@ _keybindings_list = [
 ]
 
 
-def get_keybindings_list():
+def get_keybindings_list() -> list[dict[str, Any]]:
     it = deepcopy(_keybindings_list)
     for kb in it:
         f = kb["file"]
@@ -104,7 +108,8 @@ def get_keybindings_list():
     return it
 
 
-def get_keybinding_overlay(name):
+def get_keybinding_overlay(name: str) -> dict[str, Any]:
+    """An overlay is has only the changes compared to the basic shortcut keys."""
     _keybindings_dict = {x["name"]: x for x in _keybindings_list}
     keymap = _keybindings_dict[name]
     f = keymap["file"]
@@ -119,14 +124,14 @@ def get_keybinding_overlay(name):
     return overlay
 
 
-def get_key_bindings(name, custom_overlay={}):
+def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
     """Generate the keybindings from a name and or a custom overlay.
 
     Args:
-        name (str): which keybindings to use.
+        name: which keybindings to use.
 
     Keyword Args:.
-        custom_overlay (dict): if name is ``"custom"`` then take
+        custom_overlay: if name is ``"custom"`` then take
             additional shortcut keys from this dict on top of the
             default bindings.  If name isn't ``"custom"`` then
             this input is ignored.
@@ -142,7 +147,7 @@ def get_key_bindings(name, custom_overlay={}):
     """
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
-    with open(resources.files(plomclient.client) / f, "rb") as fh:
+    with (resources.files(plomclient.client) / f).open("rb") as fh:
         default_keydata = tomllib.load(fh)
     default_keydata.pop("__metadata__")
 
@@ -175,7 +180,15 @@ def compute_keybinding_from_overlay(base, overlay, *, copy=True):
 
 
 class KeyEditDialog(QDialog):
-    def __init__(self, parent, *, label, info=None, currentKey=None, legal=None):
+    def __init__(
+        self,
+        parent: QWidget | None,
+        *,
+        label: str,
+        current_key: str | None = None,
+        legal: str | None = None,
+        info: str | None = None,
+    ) -> None:
         """Dialog to edit a single key-binding for an action.
 
         Very simple; no shift-ctrl etc modifier keys.
@@ -183,15 +196,14 @@ class KeyEditDialog(QDialog):
         TODO: custom line edit eats enter and esc.
 
         Args:
-            parent (QWidget): what widget to parent this dialog.
+            parent: widget to parent this dialog.
 
         Keyword Args:
-            label (str): What action are we changing?
-            currentKey (str): the current key to populate the dialog.
-                Can be blank or omitted.
-            info (str): optional extra information to display.
-            legal (str): keys that can entered.  If omitted/empty, use
-                a default.
+            label: What action are we changing?
+            current_key: the current key as a string to populate the
+                dialog.  Can be blank or omitted.
+            info: optional extra information to display.
+            legal: keys that can entered, or defaults if omitted/empty.
 
         Returns:
             None
@@ -201,13 +213,13 @@ class KeyEditDialog(QDialog):
         vb.addWidget(QLabel(f"Change key for <em>{label}</em>"))
         if not legal:
             legal = stringOfLegalKeys
-        legal = [QKeySequence(c)[0] for c in legal]
-        self._keyedit = SingleKeyEdit(self, currentKey, legal)
-        vb.addWidget(self._keyedit)
+        _legal = [QKeySequence(c) for c in legal]
+        self.keyedit = SingleKeyEdit(self, current_key, _legal)
+        vb.addWidget(self.keyedit)
         if info:
-            label = QLabel(info)
-            label.setWordWrap(True)
-            vb.addWidget(label)
+            __ = QLabel(info)
+            __.setWordWrap(True)
+            vb.addWidget(__)
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -216,22 +228,26 @@ class KeyEditDialog(QDialog):
         vb.addWidget(buttons)
         self.setLayout(vb)
 
+    def get_key(self) -> str:
+        """Get the key that was chosen, e.g., for callers after the dialog is done."""
+        return self.keyedit.text()
+
 
 class SingleKeyEdit(QLineEdit):
-    def __init__(self, parent, currentKey=None, legal=None):
+    def __init__(
+        self, parent: QWidget, currentKey: str | None = None, legal: list = []
+    ) -> None:
         super().__init__(parent)
         self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        if legal is None:
-            legal = []
         self.legal = legal
+        self.theKey = ""
+        self.theCode = None
         if currentKey:
             self.theKey = currentKey
-            self.theCode = QKeySequence(self.theKey)[0]
+            self.theCode = QKeySequence(self.theKey)
             self.setText(currentKey)
-        else:
-            self.theKey = ""
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event) -> None:
         keyCode = event.key()
         # no modifiers please
         if keyCode in (
@@ -241,7 +257,7 @@ class SingleKeyEdit(QLineEdit):
             Qt.Key.Key_Meta,
         ):
             return
-        if keyCode in [Qt.Key.Key_Backspace, Qt.Key.Key_Delete]:
+        if keyCode in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
             self.backspace()
             self.theCode = None
             self.theKey = ""
@@ -250,21 +266,29 @@ class SingleKeyEdit(QLineEdit):
             return
         self.theCode = keyCode
 
-    def keyReleaseEvent(self, event):
+    def keyReleaseEvent(self, event) -> None:
+        # Note: theCode can be None here and we get an empty string
+        # TODO: all this feels a bit circular and loopy to me
         self.theKey = QKeySequence(self.theCode).toString()
         self.setText(self.theKey)
 
-    def setText(self, omega):
-        self.theKey = omega
-        if len(omega) > 0:
-            self.theCode = QKeySequence(omega)[0]
+    def setText(self, omega: str | None) -> None:
+        if omega and len(omega) > 0:
+            self.theKey = omega
+            self.theCode = QKeySequence(omega)
+        else:
+            self.theKey = ""
+            self.theCode = None
         super().setText(omega)
 
 
+# TODO: no one seems to be using this class.  I dimly remember that it was
+# salvaged from some previous code with the idea that it should be used
+# one keymaps are saved to config files.
 class KeyWrangler:
     def __init__(self):
         super().__init__()
-        self.legalKeyCodes = [QKeySequence(c)[0] for c in stringOfLegalKeys]
+        self.legalKeyCodes = [QKeySequence(c) for c in stringOfLegalKeys]
         self.actions = actions_with_changeable_keys
 
     def validate(self):
@@ -296,7 +320,8 @@ class KeyWrangler:
             if k not in actions_with_changeable_keys:
                 return f'overlay has invalid action "{k}"'
         # argh, keys like keyboard, not like dict indexing
-        all_keys = [v["keys"][0] for v in overlay.values()]
+        # TODO: removed [0] here; once this code is used, better ensure it works!
+        all_keys = [v["keys"] for v in overlay.values()]
         if len(set(all_keys)) != len(all_keys):
             return "Two actions have the same key"
         return None
