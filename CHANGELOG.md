@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Display all predictions when identifying.
 
 ### Removed
 
@@ -18,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * "Delta rubrics" can now be added to custom tabs.
 * Fix some crashes when trying to do modern operations against legacy servers.
+* Fix crash when identifying papers for which there are 3 or more predictions.
+* Fix crash when changing shortcut keys.
+* Fix ineffective shortcut key change dialog to actually accept keys.
 
 
 

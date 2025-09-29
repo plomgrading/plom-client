@@ -455,12 +455,15 @@ class IDClient(QWidget):
         # update the prediction if present
         tn = int(self.exM.paperList[r].test)
 
-        all_predictions_for_paper = self.predictions.get(str(tn), None)
+        all_predictions = self.predictions.get(str(tn), None)
 
         # helper function to hide all this SNID garbage
-        def get_name_from_id(sid):
-            _snid = self.student_id_to_snid[sid]
-            return self.snid_to_student_name[_snid]
+        def get_name_from_id(sid) -> str | None:
+            try:
+                _snid = self.student_id_to_snid[sid]
+                return self.snid_to_student_name[_snid]
+            except KeyError:
+                return None
 
         # Reset everything, fonts, etc then hide the boxes
         fnt = self.font()
@@ -485,14 +488,15 @@ class IDClient(QWidget):
         self.ui.predictionBox1.setTitle("No prediction")
         self.ui.predictionBox1.setStyleSheet(no_style)
         self.ui.predButton1.hide()
+        self.ui.extraInfoLabel.setText("")
         self.ui.predictionBox1.hide()
         self.ui.explainButton0.hide()
 
-        # Handle case-by-case: no predictions, one prediction or two predictions
-        if not all_predictions_for_paper:
+        # Handle case-by-case depending on how many predictions
+        if not all_predictions:
             pass
-        elif len(all_predictions_for_paper) == 1:
-            (pred,) = all_predictions_for_paper
+        elif len(all_predictions) == 1:
+            (pred,) = all_predictions
             predicted_name = get_name_from_id(pred["student_id"])
 
             self.ui.predictionBox0.show()
@@ -523,11 +527,24 @@ class IDClient(QWidget):
                     f"Found unexpected predictions by predictor {pred['predictor']}, which should not be here."
                 )
 
-        elif len(all_predictions_for_paper) == 2:
-            pred0, pred1 = all_predictions_for_paper
-            assert pred0["predictor"] in ("MLGreedy", "MLLAP")
-            assert pred1["predictor"] in ("MLGreedy", "MLLAP")
-            if pred0["student_id"] == pred1["student_id"]:
+        else:  # len(all_predictions) >= 2:
+            pred0 = None
+            pred1 = None
+            others = []
+            # look for special predictions we expected
+            for p in all_predictions:
+                if p["predictor"] == "MLLAP":
+                    pred0 = p
+                elif p["predictor"] == "MLGreedy":
+                    pred1 = p
+                else:
+                    others.append(p)
+
+            # TODO: softer failure here might be wise!
+            assert pred0, "Could not find the MLLAP prediction"
+            assert pred1, "Could not find the MLGreedy prediction"
+
+            if all(p["student_id"] == pred0["student_id"] for p in all_predictions):
                 # show just one bar
                 self.ui.predictionBox0.show()
                 self.ui.predButton0.show()
@@ -537,10 +554,13 @@ class IDClient(QWidget):
                 if not predicted_name:
                     self.ui.predButton0.hide()
                 self.ui.predictionBox0.setTitle(
-                    f"{pred0['predictor']} prediction"
-                    f" with certainty {round(pred0['certainty'], 3)}"
-                    f" agrees with {pred1['predictor']} prediction"
-                    f" of certainty {round(pred1['certainty'], 3)}"
+                    "All predictions agree: "
+                    + "; ".join(
+                        [
+                            f"certainty {round(p['certainty'], 3)} by {p['predictor']}"
+                            for p in all_predictions
+                        ]
+                    )
                 )
                 # only single option shown, so keep alt-a shortcut
                 self.ui.predButton0.setText("&Accept\nPrediction")
@@ -549,7 +569,19 @@ class IDClient(QWidget):
                 else:
                     self.ui.predictionBox0.setStyleSheet(safe_green_style)
             else:
-                # show two bars
+                # show at most two bars, with overflow list of other predictions
+                if others:
+                    self.ui.extraInfoLabel.setText(
+                        "Others predictions: "
+                        + "; ".join(
+                            [
+                                f"{p['student_id']} by {p['predictor']}"
+                                + f" w/ certainty {round(p['certainty'], 3)}"
+                                for p in others
+                            ]
+                        )
+                    )
+
                 self.ui.predictionBox0.show()
                 self.ui.predButton0.show()
                 self.ui.predictionBox1.show()
@@ -579,10 +611,6 @@ class IDClient(QWidget):
 
                 self.ui.predictionBox0.setStyleSheet(warning_yellow_style)
                 self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
-        else:
-            raise RuntimeError(
-                f"Found unexpected 3 or more predictions:\n{all_predictions_for_paper}"
-            )
 
         # now update the snid entry line-edit.
         # if test is already identified then populate the ID-lineedit accordingly
