@@ -989,7 +989,7 @@ macos15_arm64_client:
 
 # Build Windows client binaries
 # This section written in PowerShell
-winpyinst:
+windows-client:
   tags:
   - saas-windows-medium-amd64
   stage: packaging
