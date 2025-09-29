@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add rubric dialog shows usage count automatically, and is slightly more compact to fit on small screens.
 
 ### Fixed
+* "Delta rubrics" can now be added to custom tabs.
 * Fix some crashes when trying to do modern operations against legacy servers.
 * Fix crash when identifying papers for which there are 3 or more predictions.
 * Fix crash when changing shortcut keys.

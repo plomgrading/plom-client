@@ -16,6 +16,7 @@ import random  # optionally used for debugging
 from typing import Any, Sequence
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6 import QtGui
 from PyQt6.QtGui import QAction, QColor, QCursor, QPalette
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -237,38 +238,56 @@ class RubricTable(QTableWidget):
     def is_shared_tab(self) -> bool:
         return self.tabType == "show"
 
-    def contextMenuEvent(self, event):
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent | None) -> None:
         """Delegate the context menu to appropriate function."""
+        if event is None:
+            return
         if self.is_hidden_tab():
             self.hideContextMenuEvent(event)
         elif self.is_shared_tab():
-            self.showContextMenuEvent(event)
+            self._contextMenuEvent(event)
         elif self.is_user_tab():
-            self.defaultContextMenuEvent(event)
+            self._contextMenuEvent(event, is_editable_tab=True)
         elif self.is_delta_tab():
-            self.tabContextMenuEvent(event)
+            self._contextMenuEvent(event, show_rubric_edit=False)
         elif self.is_group_tab():
-            self.showContextMenuEvent(event)
+            self._contextMenuEvent(event)
         else:
             event.ignore()
 
-    def tabContextMenuEvent(self, event):
-        menu = QMenu(self)
-        a = QAction("Add new tab", self)
-        a.triggered.connect(lambda: self._parent.add_new_tab())
-        menu.addAction(a)
-        menu.popup(QCursor.pos())
-        event.accept()
+    def _contextMenuEvent(
+        self,
+        event: QtGui.QContextMenuEvent,
+        *,
+        show_rubric_edit: bool = True,
+        is_editable_tab: bool = False,
+    ) -> None:
+        """Create and handle some of the events from context menus for tabs.
 
-    def defaultContextMenuEvent(self, event):
+        Args:
+            event: the event that causes the menu.
+
+        Keyword Args:
+            is_editable_tab: this tab is one that users can edit.  If True,
+                users can, for example, rename the the tab via the context
+                menu.  Default: False.
+            show_rubric_edit: this tab should allow users to edit rubrics.
+                For example, the delta rubrics are not editable so we
+                generally, wouldn't show "edit rubrics" on them.  Note
+                this isn't bullet-proof: many system rubrics are not really
+                editable but we would probably still show this button.
+                This option is really about disabling it for an entire tab.
+        """
         # first try to get the row from the event
-        row = self.rowAt(event.pos().y())
-        if row < 0:
+        _row = self.rowAt(event.pos().y())
+        if _row < 0:
             # no row under click but maybe one is highlighted
             row = self.getCurrentRubricRow()
+        else:
+            row = _row
         rid = None if row is None else self._get_rid_from_row(row)
 
-        # These are workaround for Issue #1441, lambdas in a loop
+        # workaround for Issue #1441, lambdas in a loop
         def add_func_factory(t, k: int):
             def add_func():
                 t.append_by_rid(k)
@@ -287,60 +306,6 @@ class RubricTable(QTableWidget):
 
             return edit_func
 
-        menu = QMenu(self)
-        if rid:
-            a = QAction("Edit rubric", self)
-            a.triggered.connect(edit_func_factory(self, rid))
-            menu.addAction(a)
-            menu.addSeparator()
-
-            for tab in self._parent.user_tabs:
-                if tab == self:
-                    continue
-                a = QAction(f"Move to tab {tab.shortname}", self)
-                a.triggered.connect(add_func_factory(tab, rid))
-                a.triggered.connect(del_func_factory(self, rid))
-                menu.addAction(a)
-            menu.addSeparator()
-
-            remAction = QAction("Remove from this tab", self)
-            remAction.triggered.connect(del_func_factory(self, rid))
-            menu.addAction(remAction)
-            menu.addSeparator()
-
-        a = QAction("Rename this tab...", self)
-        a.triggered.connect(self._parent.rename_current_tab)
-        menu.addAction(a)
-        a = QAction("Add new tab", self)
-        a.triggered.connect(self._parent.add_new_tab)
-        menu.addAction(a)
-        a = QAction("Remove this tab...", self)
-        a.triggered.connect(self._parent.remove_current_tab)
-        menu.addAction(a)
-        menu.popup(QCursor.pos())
-        event.accept()
-
-    def showContextMenuEvent(self, event):
-        # first try to get the row from the event
-        row = self.rowAt(event.pos().y())
-        if row < 0:
-            # no row under click but maybe one is highlighted
-            row = self.getCurrentRubricRow()
-        rid = None if row is None else self._get_rid_from_row(row)
-
-        # workaround for Issue #1441, lambdas in a loop
-        def add_func_factory(t, k: int):
-            def add_func():
-                t.append_by_rid(k)
-
-            return add_func
-
-        def edit_func_factory(t, k: int):
-            def edit_func():
-                t._parent.edit_rubric(k)
-
-            return edit_func
-
         def other_usage_factory(t, k: int):
             def other_usage():
                 t._parent.other_usage(k)
@@ -349,18 +314,32 @@ class RubricTable(QTableWidget):
 
         menu = QMenu(self)
         if rid:
-            a = QAction("Edit rubric", self)
-            a.triggered.connect(edit_func_factory(self, rid))
-            menu.addAction(a)
-            menu.addSeparator()
-
-            # TODO: walk in another order for moveable tabs?
-            # [self._parent.RTW.widget(n) for n in range(1, 5)]
-            for tab in self._parent.user_tabs:
-                a = QAction(f"Add to tab {tab.shortname}", self)
-                a.triggered.connect(add_func_factory(tab, rid))
+            if show_rubric_edit:
+                a = QAction("Edit rubric", self)
+                a.triggered.connect(edit_func_factory(self, rid))
                 menu.addAction(a)
-            menu.addSeparator()
+                menu.addSeparator()
+
+            if is_editable_tab:
+                for tab in self._parent.user_tabs:
+                    if tab == self:
+                        continue
+                    a = QAction(f"Move to tab {tab.shortname}", self)
+                    a.triggered.connect(add_func_factory(tab, rid))
+                    a.triggered.connect(del_func_factory(self, rid))
+                    menu.addAction(a)
+                menu.addSeparator()
+
+                remAction = QAction("Remove from this tab", self)
+                remAction.triggered.connect(del_func_factory(self, rid))
+                menu.addAction(remAction)
+                menu.addSeparator()
+            else:
+                for tab in self._parent.user_tabs:
+                    a = QAction(f"Add to tab {tab.shortname}", self)
+                    a.triggered.connect(add_func_factory(tab, rid))
+                    menu.addAction(a)
+                menu.addSeparator()
 
             other_usage = QAction("See other usage...", self)
             other_usage.triggered.connect(other_usage_factory(self, rid))
@@ -371,9 +350,19 @@ class RubricTable(QTableWidget):
             hideAction.triggered.connect(self.hideCurrentRubric)
             menu.addAction(hideAction)
             menu.addSeparator()
+
+        if is_editable_tab:
+            a = QAction("Rename this tab...", self)
+            a.triggered.connect(self._parent.rename_current_tab)
+            menu.addAction(a)
         a = QAction("Add new tab", self)
         a.triggered.connect(self._parent.add_new_tab)
         menu.addAction(a)
+        if is_editable_tab:
+            a = QAction("Remove this tab...", self)
+            a.triggered.connect(self._parent.remove_current_tab)
+            menu.addAction(a)
+
         menu.popup(QCursor.pos())
         event.accept()
 
