@@ -262,6 +262,22 @@ class RubricTable(QTableWidget):
         show_rubric_edit: bool = True,
         is_editable_tab: bool = False,
     ) -> None:
+        """Create and handle some of the events from context menus for tabs.
+
+        Args:
+            event: the event that causes the menu.
+
+        Keyword Args:
+            is_editable_tab: this tab is one that users can edit.  If True,
+                users can, for example, rename the the tab via the context
+                menu.  Default: False.
+            show_rubric_edit: this tab should allow users to edit rubrics.
+                For example, the delta rubrics are not editable so we
+                generally, wouldn't show "edit rubrics" on them.  Note
+                this isn't bullet-proof: many system rubrics are not really
+                editable but we would probably still show this button.
+                This option is really about disabling it for an entire tab.
+        """
         # first try to get the row from the event
         _row = self.rowAt(event.pos().y())
         if _row < 0:
