@@ -33,8 +33,12 @@ from PyQt6.QtCore import (
 from PyQt6.QtWidgets import (
     QCompleter,
     QDialog,
+    QLabel,
     QMenu,
     QMessageBox,
+    QPushButton,
+    QSizePolicy,
+    QSpacerItem,
     QToolButton,
     QWidget,
 )
@@ -72,6 +76,11 @@ angry_orange_style = "background-color: #FF7F50; color: #000;"
 warning_yellow_style = "background-color: #FFD700; color: #000"
 safe_green_style = "background-color: #00FA9A; color: #000;"
 notice_blue_style = "background-color: #89CFF0; color: #000"
+
+
+# future translation support
+def _(x: str) -> str:
+    return x
 
 
 class Paper:
@@ -283,7 +292,6 @@ class IDClient(QWidget):
         self.ui.saveButton.clicked.connect(self.enterID)
         self.ui.nextButton.clicked.connect(self.skipOnClick)
         self.ui.predButton0.clicked.connect(self.acceptPrediction0)
-        self.ui.predButton1.clicked.connect(self.acceptPrediction1)
         self.ui.blankButton.clicked.connect(self.blankPaper)
         self.ui.viewButton.clicked.connect(self.viewWholePaper)
 
@@ -525,81 +533,59 @@ class IDClient(QWidget):
         fnt = self.font()
         fnt.setPointSize(fnt.pointSize() * 2)
         self.ui.pNameLabel0.setFont(fnt)
-        self.ui.pNameLabel1.setFont(fnt)
         # also tweak size of "accept prediction" button font
         self.ui.predButton0.setFont(fnt)
-        self.ui.predButton1.setFont(fnt)
         # make the SID larger still.
         fnt.setPointSizeF(fnt.pointSize() * 1.5)
         self.ui.pSIDLabel0.setFont(fnt)
-        self.ui.pSIDLabel1.setFont(fnt)
         self.ui.pSIDLabel0.setText("")
         self.ui.pNameLabel0.setText("")
         self.ui.predictionBox0.setTitle("No prediction")
         self.ui.predictionBox0.setStyleSheet(no_style)
         self.ui.predButton0.hide()
         self.ui.predictionBox0.hide()
-        self.ui.pSIDLabel1.setText("")
-        self.ui.pNameLabel1.setText("")
         self.ui.predictionBox1.setTitle("No prediction")
         self.ui.predictionBox1.setStyleSheet(no_style)
-        self.ui.predButton1.hide()
-        self.ui.extraInfoLabel.setText("")
+        # remove the old widgets
+        lay = self.ui.predictionBox1.layout()
+        for i in reversed(range(lay.count())):
+            # print(f"deleting i={i}")
+            item = lay.itemAt(i)
+            w = item.widget()
+            # print((item, w))
+            if w:
+                w.deleteLater()
+            del item
+            del w
+        del lay
         self.ui.predictionBox1.hide()
         self.ui.explainButton0.hide()
 
-        # Handle case-by-case depending on how many predictions
         if not all_predictions:
             pass
-        elif len(all_predictions) == 1:
+        elif (
+            len(all_predictions) == 1
+            and all_predictions[0]["predictor"].casefold() == "prename"
+        ):
             (pred,) = all_predictions
             predicted_name = get_name_from_id(pred["student_id"])
 
+            self.ui.explainButton0.show()
             self.ui.predictionBox0.show()
-            self.ui.predButton0.show()
-            if not predicted_name:
-                self.ui.predButton0.hide()
+            if predicted_name:
+                self.ui.predButton0.show()
 
             self.ui.pSIDLabel0.setText(pred["student_id"])
             self.ui.pNameLabel0.setText(predicted_name)
-            if pred["predictor"] == "prename":
-                self.ui.predictionBox0.setTitle(
-                    "Prenamed paper: is it signed?  if not signed, is it blank?"
-                )
-                self.ui.predButton0.setText("Confirm\n&Prename")
-                self.ui.predictionBox0.setStyleSheet(notice_blue_style)
-                self.ui.explainButton0.show()
-            elif pred["predictor"] in ("MLLAP", "MLGreedy"):
-                self.ui.predictionBox0.setTitle(
-                    f"Prediction by {pred['predictor']} with certainty {round(pred['certainty'], 3)}"
-                )
-                self.ui.predButton0.setText("&Accept\nPrediction")
-                if pred["certainty"] < 0.3:
-                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
-                else:
-                    self.ui.predictionBox0.setStyleSheet(safe_green_style)
-            else:
-                raise RuntimeError(
-                    f"Found unexpected predictions by predictor {pred['predictor']}, which should not be here."
-                )
 
-        else:  # len(all_predictions) >= 2:
-            pred0 = None
-            pred1 = None
-            others = []
-            # look for special predictions we expected
-            for p in all_predictions:
-                if p["predictor"] == "MLLAP":
-                    pred0 = p
-                elif p["predictor"] == "MLGreedy":
-                    pred1 = p
-                else:
-                    others.append(p)
+            self.ui.predictionBox0.setTitle(
+                "Prenamed paper: is it signed?  if not signed, is it blank?"
+            )
+            self.ui.predButton0.setText("Confirm\n&Prename")
+            self.ui.predictionBox0.setStyleSheet(notice_blue_style)
 
-            # TODO: softer failure here might be wise!
-            assert pred0, "Could not find the MLLAP prediction"
-            assert pred1, "Could not find the MLGreedy prediction"
-
+        else:
+            pred0 = all_predictions[0]
             if all(p["student_id"] == pred0["student_id"] for p in all_predictions):
                 # show just one bar
                 self.ui.predictionBox0.show()
@@ -620,53 +606,51 @@ class IDClient(QWidget):
                 )
                 # only single option shown, so keep alt-a shortcut
                 self.ui.predButton0.setText("&Accept\nPrediction")
-                if pred0["certainty"] < 0.3 or pred1["certainty"] < 0.3:
-                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
-                else:
+                if all(p["certainty"] >= 0.3 for p in all_predictions):
                     self.ui.predictionBox0.setStyleSheet(safe_green_style)
+                else:
+                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
+
             else:
-                # show at most two bars, with overflow list of other predictions
-                if others:
-                    self.ui.extraInfoLabel.setText(
-                        "Others predictions: "
-                        + "; ".join(
-                            [
-                                f"{p['student_id']} by {p['predictor']}"
-                                + f" w/ certainty {round(p['certainty'], 3)}"
-                                for p in others
-                            ]
-                        )
+                warn = False
+                for i, p in enumerate(all_predictions):
+                    print(p)
+                    sid = p["student_id"]
+                    name = get_name_from_id(sid)
+                    if not name:
+                        disp_name = "<strong>[" + _("Not in class list!") + "]</strong>"
+                        warn = True
+                    else:
+                        disp_name = "<em>" + name + "</em>"
+                    q = QPushButton(f"Accept {sid}")
+                    q.setToolTip(f"Identify this paper as {sid}, {name}")
+                    q.clicked.connect(lambda: self.accept_prediction(sid, name))
+                    lay = self.ui.predictionBox1.layout()
+                    label = QLabel(
+                        f"{sid} {disp_name} w/ certainty {round(p['certainty'], 3)} by {p['predictor']}"
                     )
+                    lay.addItem(
+                        QSpacerItem(
+                            32,
+                            10,
+                            QSizePolicy.Policy.MinimumExpanding,
+                            QSizePolicy.Policy.Minimum,
+                        ),
+                        i,
+                        0,
+                    )
+                    lay.addWidget(label, i, 1)
+                    lay.addWidget(q, i, 2)
 
-                self.ui.predictionBox0.show()
-                self.ui.predButton0.show()
-                self.ui.predictionBox1.show()
-                self.ui.predButton1.show()
-
-                self.ui.pSIDLabel0.setText(pred0["student_id"])
-                predicted_name = get_name_from_id(pred0["student_id"])
-                self.ui.pNameLabel0.setText(predicted_name)
-                if not predicted_name:
-                    self.ui.predButton0.hide()
-                self.ui.predictionBox0.setTitle(
-                    f"Prediction by {pred0['predictor']} with certainty {round(pred0['certainty'], 3)}"
-                )
-                self.ui.predictionBox1.show()
-                self.ui.predButton1.show()
-                self.ui.pSIDLabel1.setText(pred1["student_id"])
-                predicted_name = get_name_from_id(pred1["student_id"])
-                self.ui.pNameLabel1.setText(predicted_name)
-                if not predicted_name:
-                    self.ui.predButton1.hide()
+                # TODO: "and at least one not in class"?
                 self.ui.predictionBox1.setTitle(
-                    f"Prediction by {pred1['predictor']} with certainty {round(pred1['certainty'], 3)}"
+                    f"Disagreement among {len(all_predictions)} predictors"
                 )
-                # two predictions shown - no alt-a shortcut to make you stop and think
-                self.ui.predButton0.setText("Accept\nPrediction")
-                self.ui.predButton1.setText("Accept\nPrediction")
-
-                self.ui.predictionBox0.setStyleSheet(warning_yellow_style)
-                self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
+                self.ui.predictionBox1.show()
+                if warn:
+                    self.ui.predictionBox1.setStyleSheet(angry_orange_style)
+                else:
+                    self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
 
         # now update the snid entry line-edit.
         # if test is already identified then populate the ID-lineedit accordingly
@@ -769,12 +753,11 @@ class IDClient(QWidget):
         return True
 
     def acceptPrediction0(self):
-        return self._acceptPrediction(which_one=0)
+        sname = self.ui.pNameLabel0.text()
+        sid = self.ui.pSIDLabel0.text()
+        self.acceptPrediction(sid, sname)
 
-    def acceptPrediction1(self):
-        return self._acceptPrediction(which_one=1)
-
-    def _acceptPrediction(self, which_one):
+    def accept_prediction(self, sid: str, sname: str) -> None:
         # first check currently selected paper is unidentified - else do nothing
         index = self.ui.tableView.selectedIndexes()
         status = self.exM.data(index[1])
@@ -785,15 +768,6 @@ class IDClient(QWidget):
                 return
         # code = self.exM.data(index[0])
 
-        if which_one == 0:
-            sname = self.ui.pNameLabel0.text()
-            sid = self.ui.pSIDLabel0.text()
-        elif which_one == 1:
-            sname = self.ui.pNameLabel1.text()
-            sid = self.ui.pSIDLabel1.text()
-        else:
-            return
-
         if not self.identifyStudent(index, sid, sname):
             return
 
@@ -802,7 +776,6 @@ class IDClient(QWidget):
         else:  # else move to the next unidentified paper.
             self.moveToNextUnID()  # doesn't
             self.updateProgress()
-        return
 
     def identifyStudent(
         self, index, sid, sname, blank=False, no_id=False
