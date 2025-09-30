@@ -2430,7 +2430,9 @@ class MarkerClient(QWidget):
                         event.ignore()
                     return
 
-            self._annotator.close()
+            # Maybe this is better than just .close, to avoid asking user twice
+            self.leave_annotate_mode_wo_saving()
+            # self.close()
 
         log.debug("Clean up any lingering solution-views etc")
         if self.solutionView:
