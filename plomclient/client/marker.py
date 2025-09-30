@@ -1777,19 +1777,15 @@ class MarkerClient(QWidget):
                     return
             if self.examModel.getStatusByTask(task) == "To Do":
                 # drop out of edit mode automatically
+                log.debug("Leaving edit mode to look at 'To Do' task %s", task)
                 self.leave_annotate_mode_wo_saving()
             if self.examModel.getStatusByTask(task) == "Complete":
                 if not self.examModel.is_our_task(task, self.msgr.username):
-                    InfoMsg(
-                        self,
-                        # TODO: useful to say what username here
-                        f"Task {task} is not our task. "
-                        "If you want to look at it, close the annotator "
-                        'and change to read-only "view-mode".  '
-                        "(If you want to edit this task, you'll need to "
-                        "reassign the task to yourself).",
-                    ).exec()
-                    return
+                    log.debug(
+                        "Leaving edit mode to look at someone's 'Complete' task %s",
+                        task,
+                    )
+                    self.leave_annotate_mode_wo_saving()
 
             if self._annotator:
                 self._annotator.close_current_task()
