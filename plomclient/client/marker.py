@@ -1822,25 +1822,31 @@ class MarkerClient(QWidget):
 
         If the task is "To Do", try to claim it.
 
-        For now, if the task belongs to someone else, abort.  But
-        in the future, ensure we ask the user before reassigning tasks,
-        b/c users otherwise might be unaware they are taking tasks from
-        others.
+        If the task belongs to someone else, ask the user before
+        reassigning to ourselves, b/c users otherwise might be unaware
+        they are taking tasks from others.
         """
         if not task:
             task = self.get_current_task_id_or_none()
         if not task:
             return
 
-        if self.examModel.getStatusByTask(task) == "To Do":
+        status = self.examModel.getStatusByTask(task).casefold()
+        if status == "to do":
             self.claim_task(task)
             log.info("Claiming 'To Do' task %s so we can annotate it...", task)
-        elif self.examModel.getStatusByTask(task) == "Complete":
+        elif status == "complete":
             if not self.examModel.is_our_task(task, self.msgr.username):
-                log.warn(
-                    "Ignored attempt to annotate 'Complete' task %s, not our's", task
+                user = self.examModel.get_username_by_task(task)
+                msg = SimpleQuestion(
+                    self,
+                    f"Task {task} belongs to {user}.  If you want "
+                    "to edit it, you can try to take it for yourself.",
+                    question="Do you want to reassign the task to yourself?",
                 )
-                return
+                if msg.exec() == QMessageBox.StandardButton.No:
+                    return
+                self.reassign_task_to_me(task)
 
         inidata = self.getDataForAnnotator(task)
         if inidata is None:
