@@ -655,13 +655,23 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    def _exit_annotate_mode(self):
+    def _react_to_annotator_close(self) -> None:
         # Careful with this: its currently more "in reaction to annotr closing"
         # rather than "tell/force the annotator to close".
         self._annotator = None
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
+
+    def leave_annotate_mode_wo_saving(self) -> None:
+        """Tell/force annotator to close (without asking the user about saving work).
+
+        If there is no Annotator, this does nothing.
+        """
+        if not self._annotator:
+            return
+        self._annotator.close_current_task()
+        self._annotator.close()
 
     def change_tag_range_options(self):
         all_tags = [tag for key, tag in self.msgr.get_all_tags()]
@@ -1766,16 +1776,8 @@ class MarkerClient(QWidget):
                 if msg.exec() != QMessageBox.StandardButton.Yes:
                     return
             if self.examModel.getStatusByTask(task) == "To Do":
-                InfoMsg(
-                    self,
-                    f"Task {task} may not be assigned to you. "
-                    "If you want to look at it, close the annotator "
-                    'and change to read-only "view-mode".  '
-                    "If you want to mark this paper, you can try to claim it.",
-                ).exec()
-                # TODO: QoL says put a "claim" button in the dialog
-                # TODO: or easier yes/no: "Do you want to claim it?"
-                return
+                # drop out of edit mode automatically
+                self.leave_annotate_mode_wo_saving()
             if self.examModel.getStatusByTask(task) == "Complete":
                 if not self.examModel.is_our_task(task, self.msgr.username):
                     InfoMsg(
@@ -1788,7 +1790,9 @@ class MarkerClient(QWidget):
                         "reassign the task to yourself).",
                     ).exec()
                     return
-            self._annotator.close_current_task()
+
+            if self._annotator:
+                self._annotator.close_current_task()
         self.moveSelectionToTask(task)
 
     def annotate_task(self, task: str | None = None) -> None:
@@ -2103,7 +2107,7 @@ class MarkerClient(QWidget):
         """
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self._exit_annotate_mode()
+        self._react_to_annotator_close()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
@@ -2421,6 +2425,7 @@ class MarkerClient(QWidget):
                     if event:
                         event.ignore()
                     return
+
             self._annotator.close()
 
         log.debug("Clean up any lingering solution-views etc")
