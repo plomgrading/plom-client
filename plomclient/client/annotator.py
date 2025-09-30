@@ -75,6 +75,7 @@ from .key_help import KeyHelp
 
 from .pagerearranger import RearrangementViewer
 from .viewers import SolutionViewer, WholeTestView, PreviousPaperViewer
+from .marker import task_id_str_to_paper_question_index
 from .pagescene import PageScene
 from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
@@ -896,17 +897,17 @@ class Annotator(QWidget):
         """
         if not self.task:
             return
-        testnum = self.task[:4]
-        log.debug("wholePage: downloading files for testnum %s", testnum)
+        papernum, __ = task_id_str_to_paper_question_index(self.task)
+        log.debug("wholePage: downloading files for papernum %s", papernum)
         dl = self.parentMarkerUI.Qapp.downloader
-        pagedata = dl.msgr.get_pagedata_context_question(testnum, self.question_num)
+        pagedata = dl.msgr.get_pagedata_context_question(papernum, self.question_num)
         # Issue #1553: we filter ID page out, somewhat crudely (Issue #2707)
         pagedata = [
             x for x in pagedata if not x["pagename"].casefold().startswith("id")
         ]
         pagedata = dl.sync_downloads(pagedata)
         labels = [x["pagename"] for x in pagedata]
-        WholeTestView(testnum, pagedata, labels, parent=self).exec()
+        WholeTestView(papernum, pagedata, labels, parent=self).exec()
 
     def arrangePages(self) -> None:
         """Arrange or rearrange pages in UI."""
@@ -916,7 +917,7 @@ class Annotator(QWidget):
         # disable ui before calling process events
         self.setEnabled(False)
         self.pause_to_process_events()
-        testNumber = self.task[:4]
+        papernum, __ = task_id_str_to_paper_question_index(self.task)
         src_img_data = self.scene.get_src_img_data()
         image_md5_list = [x["md5"] for x in src_img_data]
         # Look for duplicates by first inverting the dict
@@ -950,10 +951,10 @@ class Annotator(QWidget):
                     "Include this info if you think this is a bug!"
                 ),
             ).exec()
-        log.debug("adjustpgs: downloading files for testnum {}".format(testNumber))
+        log.debug("adjustpgs: downloading files for papernum %s", papernum)
 
         dl = self.parentMarkerUI.Qapp.downloader
-        pagedata = dl.msgr.get_pagedata_context_question(testNumber, self.question_num)
+        pagedata = dl.msgr.get_pagedata_context_question(papernum, self.question_num)
         # Issue #1553: we filter ID page out, somewhat crudely (Issue #2707)
         pagedata = [
             x for x in pagedata if not x["pagename"].casefold().startswith("id")
@@ -1000,7 +1001,7 @@ class Annotator(QWidget):
         has_annotations = self.scene.hasAnnotations()
         log.debug("pagedata is\n  {}".format("\n  ".join([str(x) for x in pagedata])))
         rearrangeView = RearrangementViewer(
-            self, testNumber, src_img_data, pagedata, has_annotations
+            self, papernum, src_img_data, pagedata, has_annotations
         )
         # TODO: have rearrange react to new downloads
         # PC.download_finished.connect(rearrangeView.shake_things_up)
@@ -2095,7 +2096,7 @@ class Annotator(QWidget):
             the annotator currently at.
         """
         assert self.task
-        curr_paper_number = int(self.task[:4])
+        curr_paper_number, __ = task_id_str_to_paper_question_index(self.task)
         result = self.parentMarkerUI.getOtherRubricUsagesFromServer(rid)
         if curr_paper_number in result:
             result.remove(curr_paper_number)

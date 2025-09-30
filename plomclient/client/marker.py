@@ -113,10 +113,15 @@ log = logging.getLogger("marker")
 
 def task_id_str_to_paper_question_index(task: str) -> tuple[int, int]:
     """Helper function to convert between task string and paper/question."""
+    task = task.casefold()
     assert task[0] != "q", f"invalid task code {task}: get rid of leading 'q'"
-    assert task[4] == "g", f"invalid task code {task}: no middle 'g'"
-    papernum = int(task[:4])
-    question_idx = int(task[5:])
+    assert task[0].isdigit(), f"invalid task code {task}: should start with digit"
+    assert task[-1].isdigit(), f"invalid task code {task}: should end with digit"
+    assert "g" in task or "q" in task, f"invalid task code {task}: no middle 'g'"
+    ns, qs = split(task, ("g", "q"))
+    assert ns and qs, f"invalid task code {task}: could not split"
+    papernum = int(ns)
+    question_idx = int(qs)
     return papernum, question_idx
 
 
