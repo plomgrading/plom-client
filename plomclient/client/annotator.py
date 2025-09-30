@@ -19,7 +19,6 @@ import html
 import json
 import logging
 import os
-import re
 import sys
 from pathlib import Path
 from textwrap import dedent
@@ -127,7 +126,11 @@ class Annotator(QWidget):
 
         self.username = username
         self.parentMarkerUI = parentMarkerUI
+
+        # these three should probably be kept consistent
         self.task: str | None = None
+        self.papernum: int | None = None
+        self.question_idx: int | None = None
 
         # a key-value store for local config, including "don't ask me again"
         self._config: Dict[str, Any] = {}
@@ -548,6 +551,8 @@ class Annotator(QWidget):
         """
         self.close_current_scene()
         self.task = None
+        self.papernum = None
+        self.question_idx = None
         self.testName = None
         self.paperDir = None
         self.saveName = None
@@ -601,7 +606,7 @@ class Annotator(QWidget):
             None: Modifies many instance vars.
         """
         self.task = task
-        self.question_num = int(re.split(r"\D+", task)[-1])
+        self.papernum, self.question_idx = unpack_task_code(task)
         self.version = version
         self.max_version = max_version
         self.question_label = question_label
@@ -640,7 +645,7 @@ class Annotator(QWidget):
         self.refreshDisplayedMark(self.getScore())
         # update rubrics
         self.rubric_widget.setQuestion(
-            self.question_num, self.question_label, self.maxMark
+            self.question_idx, self.question_label, self.maxMark
         )
         self.rubric_widget.setVersion(self.version, self.max_version)
         self.rubric_widget.setEnabled(True)
@@ -896,17 +901,18 @@ class Annotator(QWidget):
         """
         if not self.task:
             return
-        papernum, __ = unpack_task_code(self.task)
-        log.debug("wholePage: downloading files for papernum %s", papernum)
+        log.debug("wholePage: downloading files for papernum %s", self.papernum)
         dl = self.parentMarkerUI.Qapp.downloader
-        pagedata = dl.msgr.get_pagedata_context_question(papernum, self.question_num)
+        pagedata = dl.msgr.get_pagedata_context_question(
+            self.papernum, self.question_idx
+        )
         # Issue #1553: we filter ID page out, somewhat crudely (Issue #2707)
         pagedata = [
             x for x in pagedata if not x["pagename"].casefold().startswith("id")
         ]
         pagedata = dl.sync_downloads(pagedata)
         labels = [x["pagename"] for x in pagedata]
-        WholeTestView(papernum, pagedata, labels, parent=self).exec()
+        WholeTestView(self.papernum, pagedata, labels, parent=self).exec()
 
     def arrangePages(self) -> None:
         """Arrange or rearrange pages in UI."""
@@ -916,7 +922,6 @@ class Annotator(QWidget):
         # disable ui before calling process events
         self.setEnabled(False)
         self.pause_to_process_events()
-        papernum, __ = unpack_task_code(self.task)
         src_img_data = self.scene.get_src_img_data()
         image_md5_list = [x["md5"] for x in src_img_data]
         # Look for duplicates by first inverting the dict
@@ -950,10 +955,12 @@ class Annotator(QWidget):
                     "Include this info if you think this is a bug!"
                 ),
             ).exec()
-        log.debug("adjustpgs: downloading files for papernum %s", papernum)
+        log.debug("adjustpgs: downloading files for papernum %s", self.papernum)
 
         dl = self.parentMarkerUI.Qapp.downloader
-        pagedata = dl.msgr.get_pagedata_context_question(papernum, self.question_num)
+        pagedata = dl.msgr.get_pagedata_context_question(
+            self.papernum, self.question_idx
+        )
         # Issue #1553: we filter ID page out, somewhat crudely (Issue #2707)
         pagedata = [
             x for x in pagedata if not x["pagename"].casefold().startswith("id")
@@ -1000,7 +1007,7 @@ class Annotator(QWidget):
         has_annotations = self.scene.hasAnnotations()
         log.debug("pagedata is\n  {}".format("\n  ".join([str(x) for x in pagedata])))
         rearrangeView = RearrangementViewer(
-            self, papernum, src_img_data, pagedata, has_annotations
+            self, self.papernum, src_img_data, pagedata, has_annotations
         )
         # TODO: have rearrange react to new downloads
         # PC.download_finished.connect(rearrangeView.shake_things_up)
@@ -2078,7 +2085,7 @@ class Annotator(QWidget):
 
     def getRubricsFromServer(self) -> list[dict[str, Any]]:
         """Request a latest rubric list for current question."""
-        return self.parentMarkerUI.getRubricsFromServer(self.question_num)
+        return self.parentMarkerUI.getRubricsFromServer(self.question_idx)
 
     def getOneRubricFromServer(self, rid: int) -> dict[str, Any]:
         """Request a latest rubric list for current question."""
@@ -2095,7 +2102,7 @@ class Annotator(QWidget):
             the annotator currently at.
         """
         assert self.task
-        curr_paper_number, __ = unpack_task_code(self.task)
+        curr_paper_number = self.papernum
         result = self.parentMarkerUI.getOtherRubricUsagesFromServer(rid)
         if curr_paper_number in result:
             result.remove(curr_paper_number)
@@ -2118,7 +2125,7 @@ class Annotator(QWidget):
         if _parent is None:
             _parent = self
         self.parentMarkerUI.view_other(
-            paper_number=paper_number, question_idx=self.question_num, _parent=_parent
+            paper_number=paper_number, question_idx=self.question_idx, _parent=_parent
         )
 
     def saveTabStateToServer(self, tab_state):
