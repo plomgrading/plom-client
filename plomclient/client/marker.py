@@ -1838,15 +1838,24 @@ class MarkerClient(QWidget):
         elif status == "complete":
             if not self.examModel.is_our_task(task, self.msgr.username):
                 user = self.examModel.get_username_by_task(task)
-                msg = SimpleQuestion(
+                # msg = SimpleQuestion(
+                #     self,
+                #     f"Task {task} belongs to {user}.  If you want "
+                #     "to edit it, you can try to take it for yourself.",
+                #     question="Do you want to reassign the task to yourself?",
+                # )
+                # TODO: enable question later
+                # if msg.exec() == QMessageBox.StandardButton.No:
+                #     return
+                # self.reassign_task_to_me(task)
+                msg = InfoMsg(
                     self,
                     f"Task {task} belongs to {user}.  If you want "
-                    "to edit it, you can try to take it for yourself.",
-                    question="Do you want to reassign the task to yourself?",
+                    "to edit it, you will need to reassign it to yourself "
+                    "(you can do this by right-clicking on the task).",
                 )
-                if msg.exec() == QMessageBox.StandardButton.No:
-                    return
-                self.reassign_task_to_me(task)
+                msg.exec()
+                return
 
         inidata = self.getDataForAnnotator(task)
         if inidata is None:
