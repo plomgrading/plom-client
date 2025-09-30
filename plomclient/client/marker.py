@@ -1952,7 +1952,7 @@ class MarkerClient(QWidget):
 
         exam_name = self.exam_spec["name"]
 
-        papernum, question_idx = task_id_str_to_paper_question_index(task)
+        __, question_idx = task_id_str_to_paper_question_index(task)
         question_label = get_question_label(self.exam_spec, question_idx)
         integrity_check = self.examModel.getIntegrityCheck(task)
         return (
