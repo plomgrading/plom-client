@@ -66,7 +66,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient.misc_utils import pprint_score
+from plomclient.misc_utils import pprint_score, unpack_task_code
 from plomclient.rubric_utils import check_for_illadvised
 from . import cursors, icons, ui_files
 from .rubric_list import RubricWidget
@@ -75,7 +75,6 @@ from .key_help import KeyHelp
 
 from .pagerearranger import RearrangementViewer
 from .viewers import SolutionViewer, WholeTestView, PreviousPaperViewer
-from .marker import task_id_str_to_paper_question_index
 from .pagescene import PageScene
 from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
@@ -897,7 +896,7 @@ class Annotator(QWidget):
         """
         if not self.task:
             return
-        papernum, __ = task_id_str_to_paper_question_index(self.task)
+        papernum, __ = unpack_task_code(self.task)
         log.debug("wholePage: downloading files for papernum %s", papernum)
         dl = self.parentMarkerUI.Qapp.downloader
         pagedata = dl.msgr.get_pagedata_context_question(papernum, self.question_num)
@@ -917,7 +916,7 @@ class Annotator(QWidget):
         # disable ui before calling process events
         self.setEnabled(False)
         self.pause_to_process_events()
-        papernum, __ = task_id_str_to_paper_question_index(self.task)
+        papernum, __ = unpack_task_code(self.task)
         src_img_data = self.scene.get_src_img_data()
         image_md5_list = [x["md5"] for x in src_img_data]
         # Look for duplicates by first inverting the dict
@@ -2096,7 +2095,7 @@ class Annotator(QWidget):
             the annotator currently at.
         """
         assert self.task
-        curr_paper_number, __ = task_id_str_to_paper_question_index(self.task)
+        curr_paper_number, __ = unpack_task_code(self.task)
         result = self.parentMarkerUI.getOtherRubricUsagesFromServer(rid)
         if curr_paper_number in result:
             result.remove(curr_paper_number)
