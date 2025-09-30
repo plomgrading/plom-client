@@ -1822,16 +1822,24 @@ class MarkerClient(QWidget):
         self._annotate_task(task)
 
     def _annotate_task(self, task: str | None = None) -> None:
-        """Lower-level non-interactive start/switch Annotator."""
+        """Lower-level non-interactive start/switch Annotator.
+
+        If the task is "To Do", try to claim it.
+
+        For now, if the task belongs to someone else, abort.  But
+        in the future, ensure we ask the user before reassigning tasks,
+        b/c users otherwise might be unaware they are taking tasks from
+        others.
+        """
         if not task:
             task = self.get_current_task_id_or_none()
         if not task:
             return
 
         if self.examModel.getStatusByTask(task) == "To Do":
-            log.warn("Ignored attempt to annotate 'To Do' task %s", task)
-            return
-        if self.examModel.getStatusByTask(task) == "Complete":
+            self.claim_task(task)
+            log.info("Claiming 'To Do' task %s so we can annotate it...", task)
+        elif self.examModel.getStatusByTask(task) == "Complete":
             if not self.examModel.is_our_task(task, self.msgr.username):
                 log.warn(
                     "Ignored attempt to annotate 'Complete' task %s, not our's", task
