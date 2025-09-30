@@ -115,7 +115,7 @@ def task_id_str_to_paper_question_index(task: str) -> tuple[int, int]:
     """Helper function to convert between task string and paper/question."""
     assert task[0] != "q", f"invalid task code {task}: get rid of leading 'q'"
     assert task[4] == "g", f"invalid task code {task}: no middle 'g'"
-    papernum = int(task[1:4])
+    papernum = int(task[:4])
     question_idx = int(task[5:])
     return papernum, question_idx
 
