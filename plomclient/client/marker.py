@@ -63,6 +63,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QKeySequence, QShortcut
 
 from . import __version__
+from plomclient.misc_utils import unpack_task_code
 from plomclient.plom_exceptions import (
     PlomAuthenticationException,
     PlomBadTagError,
@@ -109,15 +110,6 @@ if platform.system() == "Darwin":
 
 
 log = logging.getLogger("marker")
-
-
-def task_id_str_to_paper_question_index(task: str) -> tuple[int, int]:
-    """Helper function to convert between task string and paper/question."""
-    assert task[0] != "q", f"invalid task code {task}: get rid of leading 'q'"
-    assert task[4] == "g", f"invalid task code {task}: no middle 'g'"
-    papernum = int(task[:4])
-    question_idx = int(task[5:])
-    return papernum, question_idx
 
 
 def paper_question_index_to_task_id_str(papernum: int, question_idx: int) -> str:
@@ -766,7 +758,7 @@ class MarkerClient(QWidget):
             # bail with False for now...  Issue #5078.
             return False
 
-        num, question_idx = task_id_str_to_paper_question_index(task)
+        num, question_idx = unpack_task_code(task)
         assert question_idx == self.question_idx, f"wrong qidx={question_idx}"
 
         # TODO: this integrity is almost certainly not important unless I want
@@ -920,7 +912,7 @@ class MarkerClient(QWidget):
         Raises:
             PlomConflict: no paper.
         """
-        papernum, qidx = task_id_str_to_paper_question_index(task)
+        papernum, qidx = unpack_task_code(task)
         pagedata = self.msgr.get_pagedata_context_question(papernum, qidx)
 
         # TODO: is this the main difference between pagedata and src_img_data?
@@ -1162,7 +1154,7 @@ class MarkerClient(QWidget):
             PlomTakenException
             PlomVersionMismatchException
         """
-        __, qidx = task_id_str_to_paper_question_index(task)
+        __, qidx = unpack_task_code(task)
         assert qidx == self.question_idx, f"wrong question: question_idx={qidx}"
         src_img_data, tags, integrity_check = self.msgr.claim_task(
             task, version=self.version
@@ -1534,7 +1526,7 @@ class MarkerClient(QWidget):
             task = self.get_current_task_id_or_none()
         if not task:
             return
-        papernum, qidx = task_id_str_to_paper_question_index(task)
+        papernum, qidx = unpack_task_code(task)
 
         if assign_to is None:
             # TODO: combobox or similar to choose users
@@ -1667,7 +1659,7 @@ class MarkerClient(QWidget):
             task = self.get_current_task_id_or_none()
         if not task:
             return
-        papernum, qidx = task_id_str_to_paper_question_index(task)
+        papernum, qidx = unpack_task_code(task)
         question_label = get_question_label(self.exam_spec, qidx)
 
         msg = SimpleQuestion(
@@ -1952,7 +1944,7 @@ class MarkerClient(QWidget):
 
         exam_name = self.exam_spec["name"]
 
-        __, question_idx = task_id_str_to_paper_question_index(task)
+        __, question_idx = unpack_task_code(task)
         question_label = get_question_label(self.exam_spec, question_idx)
         integrity_check = self.examModel.getIntegrityCheck(task)
         return (
