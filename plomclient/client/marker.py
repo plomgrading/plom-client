@@ -115,7 +115,7 @@ def task_id_str_to_paper_question_index(task: str) -> tuple[int, int]:
     """Helper function to convert between task string and paper/question."""
     assert task[0] != "q", f"invalid task code {task}: get rid of leading 'q'"
     assert task[4] == "g", f"invalid task code {task}: no middle 'g'"
-    papernum = int(task[1:4])
+    papernum = int(task[:4])
     question_idx = int(task[5:])
     return papernum, question_idx
 
@@ -826,13 +826,11 @@ class MarkerClient(QWidget):
         self.examModel.set_source_image_data(task, src_img_data)
 
         assert not task.startswith("q")
-        paperdir = Path(
-            tempfile.mkdtemp(prefix=task[1:] + "_", dir=self.workingDirectory)
-        )
+        paperdir = Path(tempfile.mkdtemp(prefix=task + "_", dir=self.workingDirectory))
         log.debug("create paperdir %s for already-graded download", paperdir)
         self.examModel.setPaperDirByTask(task, paperdir)
-        aname = paperdir / f"G{task[1:]}.{annot_img_info['extension']}"
-        pname = paperdir / f"G{task[1:]}.plom"
+        aname = paperdir / f"G{task}.{annot_img_info['extension']}"
+        pname = paperdir / f"G{task}.plom"
         with open(aname, "wb") as fh:
             fh.write(annot_img_bytes)
         with open(pname, "w") as f:
@@ -1891,9 +1889,7 @@ class MarkerClient(QWidget):
 
         # Create annotated filename.
         assert not task.startswith("q")
-        paperdir = Path(
-            tempfile.mkdtemp(prefix=task[1:] + "_", dir=self.workingDirectory)
-        )
+        paperdir = Path(tempfile.mkdtemp(prefix=task + "_", dir=self.workingDirectory))
         log.debug("create paperdir %s for annotating", paperdir)
         Gtask = "G" + task
         # note no extension yet
@@ -1956,7 +1952,7 @@ class MarkerClient(QWidget):
 
         exam_name = self.exam_spec["name"]
 
-        papernum, question_idx = task_id_str_to_paper_question_index(task)
+        __, question_idx = task_id_str_to_paper_question_index(task)
         question_label = get_question_label(self.exam_spec, question_idx)
         integrity_check = self.examModel.getIntegrityCheck(task)
         return (
