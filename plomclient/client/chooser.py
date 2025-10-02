@@ -75,6 +75,11 @@ cfgdir = platformdirs.user_config_path("plom", "PlomGrading.org")
 cfgfile = cfgdir / "plomConfig.toml"
 
 
+# future translation support
+def _(x: str) -> str:
+    return x
+
+
 def readLastTime() -> dict[str, Any]:
     """Read the login + server options that were used on the last run of the client."""
     lastTime: dict[str, Any] = {}
@@ -102,7 +107,6 @@ class Chooser(QDialog):
         uic.loadUi(resources.files(ui_files) / "chooser.ui", self)
         self.Qapp = Qapp
         self.messenger = None
-        self._old_client_note_seen = False
 
         self.lastTime = readLastTime()
 
@@ -468,40 +472,45 @@ class Chooser(QDialog):
 
             reason = rej.get("reason", "No reason given; client too old?")
             self.ui.infoLabel.setText(self.ui.infoLabel.text() + "\n" + reason)
+            details_str_for_dialog = _(
+                "You have Plom Client {client_version} with API {client_api_version}\n"
+                "Server: {server_product}\n"
+                "Server version: {server_version}"
+            ).format(
+                client_version=__version__,
+                client_api_version=self.APIVersion,
+                server_product=info["product_string"],
+                server_version=info["version"],
+            )
             if rej.get("action", "block") == "warn":
                 msg_ = WarningQuestion(
                     self,
-                    f"<p>Your client version {__version__} is on the server's reject list:</p>\n"
-                    f"<blockquote>{reason}</blockquote>\n"
-                    "<p>It is strongly recommended that you stop and update"
-                    " your client.  Continue anyway?</p>",
-                    details=(
-                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
-                        f"Server: {info['product_string']}\n"
-                        f"Server version: {info['version']}"
-                    ),
+                    _(
+                        """<p>Your client version {client_version} is
+                        on the server's reject list:</p>\n
+                        <blockquote>{reason}</blockquote>\n
+                        <p>It is strongly recommended that you stop and
+                        download a newer version of the client to
+                        connect to this server.</p>
+                        """
+                    ).format(client_version=__version__, reason=reason),
+                    question="Ignore warning and continue anyway?",
+                    details=details_str_for_dialog,
                 )
-                # TODO: re-enable hiding of this note?
-                # if not self._old_client_note_seen:
                 if msg_.exec() != QMessageBox.StandardButton.Yes:
                     return False
-                # self._old_client_note_seen = True
             else:
                 WarnMsg(
                     self,
-                    """<p>Your client version {version} is blocked by the
-                       server, which says:</p>\n
-                       <blockquote>{reason}</blockquote>\n
-                       <p>You will need to download a newer version of the
-                       client to connect to this server.</p>
-                    """.format(
-                        version=__version__, reason=reason
-                    ),
-                    details=(
-                        f"You have Plom Client {__version__} with API {self.APIVersion}\n"
-                        f"Server: {info['product_string']}\n"
-                        f"Server version: {info['version']}"
-                    ),
+                    _(
+                        """<p>Your client version {client_version} is
+                        blocked by the server, which says:</p>\n
+                        <blockquote>{reason}</blockquote>\n
+                        <p>You will need to download a newer version of the
+                        client to connect to this server.</p>
+                        """
+                    ).format(client_version=__version__, reason=reason),
+                    details=details_str_for_dialog,
                 ).exec()
                 return False
         return True
@@ -582,7 +591,6 @@ class Chooser(QDialog):
         self.messenger.stop()
         self.messenger = None
         self.ui.loginInfoLabel.setText("logged out")
-        self._old_client_note_seen = False
         self.ui.manageButton.setVisible(False)
         self.ui.logoutButton.setVisible(False)
         self.ui.userLE.setEnabled(True)
