@@ -29,6 +29,7 @@ from plomclient.misc_utils import utc_now_to_string
 from plomclient.client import __version__
 from plomclient.client import Chooser
 from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
+import plomclient.client.translations
 
 
 def add_popup_to_toplevel_exception_handler() -> None:
@@ -156,6 +157,9 @@ def main() -> None:
     timer.start(1000)
     # got this solution from
     # https://machinekoder.com/how-to-not-shoot-yourself-in-the-foot-using-python-qt/
+
+    # defines the translate function globally
+    plomclient.client.translations.setup()
 
     window = Chooser(app)
     window.show()

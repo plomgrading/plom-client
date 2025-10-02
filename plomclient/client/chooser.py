@@ -26,9 +26,6 @@ import tempfile
 import time
 from typing import Any
 
-import gettext
-import locale
-
 import arrow
 import platformdirs
 from packaging.version import Version
@@ -71,31 +68,7 @@ from .about_dialog import show_about_dialog
 from .question_labels import get_question_label
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, WarningQuestion
 from .useful_classes import ClientSettingsDialog
-
-
-# without translation _() is a no-op
-# code below will (hopefully?) overwrite this
-# but without this prototype, the `mypy` linter is unhappy.
-# def _(x: str) -> str:
-#     return x
-
-
-# localization parameters
-filename_stem = Path(__file__).stem
-localedir = "./plomclient/client/locales"
-usr_locale = locale.getlocale()  # pair (lang, encoding)
-
-# TODO: what if is?
-assert usr_locale[0] is not None
-
-# setup gettext
-en_i18n = gettext.translation(
-    filename_stem,
-    localedir,
-    fallback=True,  # fallback to original text if no translation found
-    languages=[usr_locale[0]],
-)
-en_i18n.install()
+from .translations import translate as _
 
 
 log = logging.getLogger("client")
