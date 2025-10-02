@@ -239,11 +239,9 @@ class Chooser(QDialog):
         if self.messenger.is_legacy_server() and self.messenger.username == "manager":
             InfoMsg(
                 self,
-                "<p>"
-                + _("You are not allowed to mark or ID papers while logged-in as")
-                + "&ldquo;"
-                + _("Manager")
-                + "&rdquo;.</p>",
+                # TRANSLATORS: don't bother translating this: legacy support will be removed
+                "<p>You are not allowed to mark or ID papers while "
+                "logged-in as &ldquo;manager&rdquo;.</p>",
             ).exec()
             return
 
