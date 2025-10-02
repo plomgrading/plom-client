@@ -72,10 +72,21 @@ from .question_labels import get_question_label
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, WarningQuestion
 from .useful_classes import ClientSettingsDialog
 
+
+# without translation _() is a no-op
+# code below will (hopefully?) overwrite this
+# but without this prototype, the `mypy` linter is unhappy.
+# def _(x: str) -> str:
+#     return x
+
+
 # localization parameters
 filename_stem = Path(__file__).stem
 localedir = "./plomclient/client/locales"
 usr_locale = locale.getlocale()  # pair (lang, encoding)
+
+# TODO: what if is?
+assert usr_locale[0] is not None
 
 # setup gettext
 en_i18n = gettext.translation(
@@ -85,6 +96,7 @@ en_i18n = gettext.translation(
     languages=[usr_locale[0]],
 )
 en_i18n.install()
+
 
 log = logging.getLogger("client")
 logdir = platformdirs.user_log_path("plom", "PlomGrading.org")
