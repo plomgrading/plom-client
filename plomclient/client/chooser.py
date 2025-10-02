@@ -489,9 +489,14 @@ class Chooser(QDialog):
             else:
                 WarnMsg(
                     self,
-                    f"<p>Your client version {__version__} is blocked by the server:</p>\n"
-                    f"<blockquote>{reason}</blockquote>\n"
-                    f"<p>You will need to update your client to connect to this server.</p>",
+                    """<p>Your client version {version} is blocked by the
+                       server, which says:</p>\n
+                       <blockquote>{reason}</blockquote>\n
+                       <p>You will need to download a newer version of the
+                       client to connect to this server.</p>
+                    """.format(
+                        version=__version__, reason=reason
+                    ),
                     details=(
                         f"You have Plom Client {__version__} with API {self.APIVersion}\n"
                         f"Server: {info['product_string']}\n"
