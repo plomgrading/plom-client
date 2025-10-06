@@ -2,7 +2,6 @@
 # Copyright (C) 2025 Colin B. Macdonald
 # This file is distributed under the AGPL-3.0-or-later license.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "POT-Creation-Date: 2025-08-21 08:37+0000\n"

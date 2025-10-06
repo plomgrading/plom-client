@@ -10,6 +10,8 @@
 cd plomclient/client
 pybabel extract chooser.py -o messages.pot
 pybabel update -i messages.pot -d locales/
+pybabel compile -d locales/
+
 
 # new language
 pybabel init -i messages.pot -d locales/ -l zh
