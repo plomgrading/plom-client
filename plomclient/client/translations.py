@@ -34,8 +34,7 @@ def setup():
     assert usr_locale[0] is not None
 
     _translations = gettext.translation(
-        # TODO: how to support all our files?
-        "chooser",
+        "messages",
         localedir,
         fallback=True,  # fallback to original text if no translation found
         languages=[usr_locale[0]],
