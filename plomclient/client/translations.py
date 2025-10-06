@@ -2,7 +2,18 @@
 # Copyright (C) 2025 Colin B. Macdonald
 # Copyright (C) 2025 Ambre G.
 
-"""Utilities for localization."""
+"""Utilities for localization.
+
+## Notes on how to updates:
+
+# keeping things up-to-date after changing python code:
+cd plomclient/client
+pybabel extract chooser.py -o messages.pot
+pybabel update -i messages.pot -d locales/
+
+# new language
+pybabel init -i messages.pot -d locales/ -l zh
+"""
 
 import gettext
 import locale
