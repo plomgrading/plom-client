@@ -566,6 +566,10 @@ binary_upload:
       Please see [plomgrading.org](https://plomgrading.org).
       If you're here looking for Clients, see "Plom Client" packages above.
 
+      #### macOS versions
+
+      We build binaries for macOS using macOS 14.  They might also work on macOS 13.
+      Users of older versions of macOS will need to upgrade their OS.
 
       #### Changes in this release
 
