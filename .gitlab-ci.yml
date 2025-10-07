@@ -762,6 +762,7 @@ macos14_universal_client:
     HOMEBREW_NO_AUTO_UPDATE: 1
     HOMEBREW_NO_INSTALL_CLEANUP: 1
     HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+    MINIMUM_MACOS_VER: 14
   script:
   - pwd
   - sw_vers
@@ -834,6 +835,9 @@ macos14_arm64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    # Maybe it works on macOS 13...?
+    MINIMUM_MACOS_VER: 13
   script:
   - pwd
   - sw_vers
@@ -886,6 +890,9 @@ macos14_x86_64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    # 2025-10-07: Colin tested on x86_64 macOS 13.7.4
+    MINIMUM_MACOS_VER: 13
   script:
   - pwd
   - sw_vers
@@ -944,6 +951,8 @@ macos15_arm64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    MINIMUM_MACOS_VER: 15
   script:
   - pwd
   - sw_vers
