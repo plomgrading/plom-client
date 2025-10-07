@@ -60,6 +60,6 @@ app = BUNDLE(
     version=__version__,
     info_plist={
         # prevent the binary from launching on old OSes
-        "LSMinimumSystemVersion": environ.get("MINIMUM_MACOS_VER", "12"),
+        "LSMinimumSystemVersion": os.environ.get("MINIMUM_MACOS_VER", "12"),
    }
 )

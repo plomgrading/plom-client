@@ -895,7 +895,7 @@ macos14_x86_64_client:
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
   variables:
-    # 2025-10-07: Colin tested on x86_64 macOS 13.7.4
+    # 2025-10-07: Colin tested on x86_64 macOS 13.7.4.
     MINIMUM_MACOS_VER: 13
   script:
   - pwd
