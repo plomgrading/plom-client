@@ -44,6 +44,7 @@ exe = EXE(pyz,
           name=f'PlomClient-{__version__}-macOS-x86_64.bin',
           debug=False,
           strip=False,
+          onefile=False,
           upx=True,
           runtime_tmpdir=None,
           console=False )
