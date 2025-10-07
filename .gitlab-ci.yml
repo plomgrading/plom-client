@@ -39,7 +39,7 @@ variables:
   MACBIN_PY_MAJOR_MINOR_VER: "3.12"
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
-  PYINSTALLER_VER: 6.14.2
+  PYINSTALLER_VER: 6.16.0
 
 stages:
   - static_analysis
