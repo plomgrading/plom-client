@@ -762,12 +762,6 @@ linuxbin_ubuntu2204:
 # - June 2023, we now have only M1 (arm64) runners:
 #     - goal remains universal2 binary: Issue #1655
 #     - for now, we use Rosetta2 to cross compile onto x86_64
-# - Aug 2021, based on https://github.com/danhper/asdf-python/issues/38 we used:
-#     - PYTHON_CONFIGURE_OPTS="--enable-framework" asdf install python $MACBIN_PY_VER
-#   Not sure what this was for but it broke in 2023-Jan (Issue #2478).  I tried:
-#   "--enable-framework=/Users/gitlab/.asdf/installs/Library/Frameworks" asdf ...
-#   Also "--enable-shared", but it seems to work without any of these things?
-# - macOS <= 10.14: older asdf, use `asdf local` not `asdf shell`
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
 macos15_universal_client:
   image: macos-15-xcode-16
@@ -777,8 +771,6 @@ macos15_universal_client:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
-    when: manual
-  allow_failure: true
   stage: packaging
   needs: []
   variables:
