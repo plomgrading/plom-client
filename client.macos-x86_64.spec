@@ -55,6 +55,6 @@ app = BUNDLE(
     bundle_identifier='org.plomgrading.PlomClient',
     version=__version__,
     info_plist={
-        "LSMinimumSystemVersion", "14",
+        "LSMinimumSystemVersion": "14",
     }
 )
