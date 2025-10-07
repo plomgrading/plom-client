@@ -396,8 +396,9 @@ class Chooser(QDialog):
                 msg = WarningQuestion(
                     self,
                     _("SSL error: cannot verify the identity of the server."),
-                    _(
-                        "Do you want to disable SSL certificate verification? Not recommended."
+                    question=_(
+                        "Do you want to disable SSL certificate verification?"
+                        " Not recommended."
                     ),
                     details=f"{e}",
                 )

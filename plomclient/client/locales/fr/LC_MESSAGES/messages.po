@@ -13,15 +13,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: chooser.py:249
+#: chooser.py:244
 msgid "Only Marker/Lead Marker can mark papers!"
 msgstr "Seul.e. s les Évaluateur.trice.s/Évaluateur.trice.s en Charge peuvent évalurt une fiche"
 
-#: chooser.py:268
+#: chooser.py:263
 msgid "Only Lead Marker should be identifying papers."
 msgstr "Seul.e.s les Evaluateur.trice.s en Charge devrait identifier les fiches."
 
-#: chooser.py:272
+#: chooser.py:267
 msgid ""
 "You may want to ask your Instructor/Manager to promote your account."
 " (In the future this might be enforced, but isn't as of Oct 2024.)"
@@ -29,56 +29,58 @@ msgstr ""
 "Il est possible que vous souhaitiez demander à votre Instructeur/Responsable de promouvoir votre compte."
 " (Dans le futur cela sera peut-être obligatoire.)"
 
-#: chooser.py:314
+#: chooser.py:309
 msgid "Cannot write config file:"
 msgstr "Impossible d'écrire le fichier de configuration:"
 
-#: chooser.py:317
+#: chooser.py:312
 msgid "Any settings will not be saved for future sessions."
 msgstr "Aucun paramètre ne sera sauvegardé pour les sessions futures"
 
-#: chooser.py:319
+#: chooser.py:314
 msgid "Error msg:"
 msgstr "Message d'erreur:"
 
-#: chooser.py:403
+#: chooser.py:398
 msgid "SSL error: cannot verify the identity of the server."
 msgstr "Erreur SSL: impossible de vérifier 'indentité du serveur."
 
-#: chooser.py:405
+#: chooser.py:400
 msgid "Do you want to disable SSL certificate verification? Not recommended."
-msgstr "Souhaitez-vous désactiver la vérification des certificats SSL? Non-recommandé."
+msgstr ""
+"Souhaitez-vous désactiver la vérification des certificats SSL? Non-"
+"recommandé."
 
-#: chooser.py:419
+#: chooser.py:415
 #, python-brace-format
 msgid "Could not connect to server &ldquo;{server_url}&rdquo;."
 msgstr "Échec de connexion au serveur « {server_url} »."
 
-#: chooser.py:423
+#: chooser.py:419
 msgid "Check the server address and your internet connection?"
 msgstr "Vérifiez l'adresse du serveur ainsi que votre connexion internet?"
 
-#: chooser.py:426
+#: chooser.py:422
 msgid "The precise error message was:"
 msgstr "Le message d'erreur exact était:"
 
-#: chooser.py:435
+#: chooser.py:431
 msgid "Caution: SSL exception granted."
 msgstr "Attention: exception SSL accordée."
 
-#: chooser.py:441
+#: chooser.py:437
 msgid "Using legacy messenger"
 msgstr "Ancienne messagerie en cours d'utilisation"
 
-#: chooser.py:449
+#: chooser.py:445
 msgid "Your client version"
 msgstr "Votre version du client"
 
-#: chooser.py:451
+#: chooser.py:447
 msgid "cannot connect to unsupported server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
-#: chooser.py:497
+#: chooser.py:493
 #, python-brace-format
 msgid ""
 "You have Plom Client {client_version} with API {client_api_version}\n"
@@ -90,7 +92,7 @@ msgstr ""
 "Serveur: {server_product}\n"
 "Version du serveur: {server_version}"
 
-#: chooser.py:510
+#: chooser.py:506
 #, python-brace-format
 msgid ""
 "<p>Your client version {client_version} is\n"
@@ -104,7 +106,7 @@ msgid ""
 "                        "
 msgstr ""
 
-#: chooser.py:527
+#: chooser.py:523
 #, python-brace-format
 msgid ""
 "<p>Your client version {client_version} is\n"
@@ -118,88 +120,88 @@ msgid ""
 "                        "
 msgstr ""
 
-#: chooser.py:565
+#: chooser.py:561
 msgid "You must specify a server address"
 msgstr "Vous devez spécifier une adresse de serveur"
 
-#: chooser.py:585 chooser.py:717
+#: chooser.py:581 chooser.py:713
 msgid "Could not connect to server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
-#: chooser.py:610
+#: chooser.py:606
 msgid "Authentication error during logout: "
 msgstr "Erreur d'authentification pendant la déconnexion: "
 
-#: chooser.py:614
+#: chooser.py:610
 msgid "logged out"
 msgstr "déconnecté.e"
 
-#: chooser.py:652
+#: chooser.py:648
 msgid "Could not authenticate due to API mismatch."
 msgstr "Impossible de s'authentifier à cause d'une discordance dans l'API."
 
-#: chooser.py:653
+#: chooser.py:649
 msgid "Client version is "
 msgstr "La version du client est "
 
-#: chooser.py:659
+#: chooser.py:655
 msgid "Could not authenticate: "
 msgstr "Impossible de s'authentifier: "
 
-#: chooser.py:665
+#: chooser.py:661
 msgid "You appear to be already logged in!"
 msgstr "Il semble que vous soyez déjà connecté.e.s!"
 
-#: chooser.py:668
+#: chooser.py:664
 msgid "Perhaps a previous session crashed?"
 msgstr "Peut-être qu'une session précédante s'est terminée brutalement?"
 
-#: chooser.py:671
+#: chooser.py:667
 msgid "Do you have another client running"
 msgstr "Avez-vous un autre client en marche"
 
-#: chooser.py:674
+#: chooser.py:670
 msgid "e.g., on another computer?"
 msgstr "ex., sur un autre ordinateur?"
 
-#: chooser.py:676
+#: chooser.py:672
 msgid "We can terminate your other session."
 msgstr "Nous pouvons fermer votre autre session."
 
-#: chooser.py:677
+#: chooser.py:673
 msgid "This will crash the other client, "
 msgstr "Cela terminera brutalement l'autre client,"
 
-#: chooser.py:678
+#: chooser.py:674
 msgid "but the current session will continue."
 msgstr "mais la présente session continuera."
 
-#: chooser.py:680
+#: chooser.py:676
 msgid "Proceed?"
 msgstr "Continuer?"
 
-#: chooser.py:695
+#: chooser.py:691
 msgid "Could not get authentication token."
 msgstr "Impossible d'obtenir le jeton d'identification."
 
-#: chooser.py:697
+#: chooser.py:693
 msgid "Unexpected error:"
 msgstr "Erreur innatendue:"
 
-#: chooser.py:708
+#: chooser.py:704
 msgid "Server does not yet have a spec, nothing to mark. "
 msgstr "Le serveur ne possède pas encore de description fixée, rien à évaluer. "
 
-#: chooser.py:710
+#: chooser.py:706
 msgid " Perhaps you need to login to the web-interface to configure the server."
 msgstr ""
 " Peut-être qu'il est nécessaire de vous connecter à l'interface web pour configurer le serveur."
 
-#: chooser.py:722
+#: chooser.py:718
 msgid "logged in as"
 msgstr "connecté.e en tant que"
 
-#: chooser.py:731
+#: chooser.py:727
 msgid "Choose a task for"
 msgstr "Choisissez une tâche pour"
 
