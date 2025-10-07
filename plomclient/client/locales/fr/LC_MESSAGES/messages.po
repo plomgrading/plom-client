@@ -85,7 +85,7 @@ msgid ""
 "Server: {server_product}\n"
 "Server version: {server_version}"
 msgstr ""
-"Vous avez la version du client Plom {client_version} avec la version de l'API {client_api_version\n"
+"Vous avez la version du client Plom {client_version} avec la version de l'API {client_api_version}\n"
 "Serveur: {server_product}\n"
 "Version du serveur: {server_version}"
 
