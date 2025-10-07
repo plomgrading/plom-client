@@ -77,11 +77,6 @@ cfgdir = platformdirs.user_config_path("plom", "PlomGrading.org")
 cfgfile = cfgdir / "plomConfig.toml"
 
 
-# future translation support
-def _(x: str) -> str:
-    return x
-
-
 def readLastTime() -> dict[str, Any]:
     """Read the login + server options that were used on the last run of the client."""
     lastTime: dict[str, Any] = {}
