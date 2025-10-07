@@ -47,8 +47,14 @@ exe = EXE(pyz,
           runtime_tmpdir=None,
           console=False )
 
-app = BUNDLE(exe,
-             name=f'PlomClient-{__version__}-x86_64.app',
-             icon=None,
-             bundle_identifier='org.plomgrading.PlomClient',
-             version=__version__)
+# Note: "14" here should be based on the actual build?
+app = BUNDLE(
+    exe,
+    name=f'PlomClient-{__version__}-x86_64.app',
+    icon=None,
+    bundle_identifier='org.plomgrading.PlomClient',
+    version=__version__,
+    info_plist={
+        "LSMinimumSystemVersion", "14",
+    }
+)
