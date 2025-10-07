@@ -27,7 +27,7 @@ msgid ""
 " (In the future this might be enforced, but isn't as of Oct 2024.)"
 msgstr ""
 "Il est possible que vous souhaitiez demander à votre Instructeur/Responsable de promouvoir votre compte."
-"(Dans le futur cela sera peut-être obligatoire.)"
+" (Dans le futur cela sera peut-être obligatoire.)"
 
 #: chooser.py:314
 msgid "Cannot write config file:"
