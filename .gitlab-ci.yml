@@ -837,7 +837,7 @@ macos15_universal_client:
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-universal2.app
-  - zip -r $ZIPNAME PlomClient-$VER.app
+  - zip -r $ZIPNAME PlomClient-$VER-universal2.app
   - popd
   - mv dist/$ZIPNAME $ZIPNAME
   - md5 $ZIPNAME > md5sum
