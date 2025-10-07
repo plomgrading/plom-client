@@ -815,6 +815,7 @@ macos15_universal_client:
   - which pip
   - which pip3
   - pip --version
+  - otool -l /usr/local/bin/python3 | grep LC_BUILD -A 4
   # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
   - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
   # /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
