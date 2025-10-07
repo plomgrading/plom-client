@@ -85,7 +85,8 @@ msgid ""
 "Server: {server_product}\n"
 "Server version: {server_version}"
 msgstr ""
-"Vous avez la version du client Plom {client_version} avec la version de l'API {client_api_version}\n"
+"Vous avez la version du client Plom {client_version} avec la version de "
+"l'API {client_api_version}\n"
 "Serveur: {server_product}\n"
 "Version du serveur: {server_version}"
 
@@ -126,8 +127,8 @@ msgid "Could not connect to server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
 #: chooser.py:610
-msgid "Authentication error during logout:"
-msgstr "Erreur d'authentification pendant la déconnexion:"
+msgid "Authentication error during logout: "
+msgstr "Erreur d'authentification pendant la déconnexion: "
 
 #: chooser.py:614
 msgid "logged out"
@@ -138,12 +139,12 @@ msgid "Could not authenticate due to API mismatch."
 msgstr "Impossible de s'authentifier à cause d'une discordance dans l'API."
 
 #: chooser.py:653
-msgid "Client version is"
-msgstr "La version du client est"
+msgid "Client version is "
+msgstr "La version du client est "
 
 #: chooser.py:659
-msgid "Could not authenticate:"
-msgstr "Impossible de s'authentifier:"
+msgid "Could not authenticate: "
+msgstr "Impossible de s'authentifier: "
 
 #: chooser.py:665
 msgid "You appear to be already logged in!"

@@ -607,7 +607,7 @@ class Chooser(QDialog):
             # Note: we requested exclusive token access on start-up, so revoke on logout
             self.messenger.closeUser(revoke_token=True)
         except PlomAuthenticationException as e:
-            log.info(_("Authentication error during logout:") + f"{e}")
+            log.info(_("Authentication error during logout: ") + f"{e}")
             pass
         self.messenger.stop()
         self.messenger = None
@@ -650,13 +650,13 @@ class Chooser(QDialog):
             WarnMsg(
                 self,
                 _("Could not authenticate due to API mismatch."),
-                info=_("Client version is") + f"{__version__}.  {e}",
+                info=_("Client version is ") + f"{__version__}.  {e}",
                 info_pre=False,
             ).exec()
             self.messenger = None
             return
         except PlomAuthenticationException as e:
-            InfoMsg(self, _("Could not authenticate:") + f" {e}").exec()
+            InfoMsg(self, _("Could not authenticate: ") + str(e)).exec()
             self.messenger = None
             return
         except PlomExistingLoginException:
