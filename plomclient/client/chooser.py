@@ -428,14 +428,16 @@ class Chooser(QDialog):
 
         self.ui.infoLabel.setText(server_ver_str)
         if _ssl_excused:
-            s = "\n" + _("Caution: SSL exception granted.")
-            self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
+            self.ui.infoLabel.setText(
+                self.ui.infoLabel.text() + "\n" + _("Caution: SSL exception granted.")
+            )
 
         # old servers (<0.14.0) don't have this API and will fail
         info = msgr.get_server_info()
         if "Legacy" in info["product_string"]:
-            s = "\n" + _("Using legacy messenger")
-            self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
+            self.ui.infoLabel.setText(
+                self.ui.infoLabel.text() + "\n" + _("Using legacy messenger")
+            )
 
         try:
             msgr._set_server_API_version(info["API_version"])
@@ -603,7 +605,7 @@ class Chooser(QDialog):
             # Note: we requested exclusive token access on start-up, so revoke on logout
             self.messenger.closeUser(revoke_token=True)
         except PlomAuthenticationException as e:
-            log.info(_("Authentication error during logout: ") + f"{e}")
+            log.info(_("Authentication error during logout: ") + str(e))
             pass
         self.messenger.stop()
         self.messenger = None

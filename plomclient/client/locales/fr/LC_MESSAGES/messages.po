@@ -64,23 +64,23 @@ msgstr "Vérifiez l'adresse du serveur ainsi que votre connexion internet?"
 msgid "The precise error message was:"
 msgstr "Le message d'erreur exact était:"
 
-#: chooser.py:431
+#: chooser.py:432
 msgid "Caution: SSL exception granted."
 msgstr "Attention: exception SSL accordée."
 
-#: chooser.py:437
+#: chooser.py:439
 msgid "Using legacy messenger"
 msgstr "Ancienne messagerie en cours d'utilisation"
 
-#: chooser.py:445
+#: chooser.py:447
 msgid "Your client version"
 msgstr "Votre version du client"
 
-#: chooser.py:447
+#: chooser.py:449
 msgid "cannot connect to unsupported server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
-#: chooser.py:493
+#: chooser.py:495
 #, python-brace-format
 msgid ""
 "You have Plom Client {client_version} with API {client_api_version}\n"
@@ -92,7 +92,7 @@ msgstr ""
 "Serveur: {server_product}\n"
 "Version du serveur: {server_version}"
 
-#: chooser.py:506
+#: chooser.py:508
 #, python-brace-format
 msgid ""
 "<p>Your client version {client_version} is\n"
@@ -106,7 +106,7 @@ msgid ""
 "                        "
 msgstr ""
 
-#: chooser.py:523
+#: chooser.py:525
 #, python-brace-format
 msgid ""
 "<p>Your client version {client_version} is\n"
@@ -120,88 +120,88 @@ msgid ""
 "                        "
 msgstr ""
 
-#: chooser.py:561
+#: chooser.py:563
 msgid "You must specify a server address"
 msgstr "Vous devez spécifier une adresse de serveur"
 
-#: chooser.py:581 chooser.py:713
+#: chooser.py:583 chooser.py:715
 msgid "Could not connect to server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
-#: chooser.py:606
+#: chooser.py:608
 msgid "Authentication error during logout: "
 msgstr "Erreur d'authentification pendant la déconnexion: "
 
-#: chooser.py:610
+#: chooser.py:612
 msgid "logged out"
 msgstr "déconnecté.e"
 
-#: chooser.py:648
+#: chooser.py:650
 msgid "Could not authenticate due to API mismatch."
 msgstr "Impossible de s'authentifier à cause d'une discordance dans l'API."
 
-#: chooser.py:649
+#: chooser.py:651
 msgid "Client version is "
 msgstr "La version du client est "
 
-#: chooser.py:655
+#: chooser.py:657
 msgid "Could not authenticate: "
 msgstr "Impossible de s'authentifier: "
 
-#: chooser.py:661
+#: chooser.py:663
 msgid "You appear to be already logged in!"
 msgstr "Il semble que vous soyez déjà connecté.e.s!"
 
-#: chooser.py:664
+#: chooser.py:666
 msgid "Perhaps a previous session crashed?"
 msgstr "Peut-être qu'une session précédante s'est terminée brutalement?"
 
-#: chooser.py:667
+#: chooser.py:669
 msgid "Do you have another client running"
 msgstr "Avez-vous un autre client en marche"
 
-#: chooser.py:670
+#: chooser.py:672
 msgid "e.g., on another computer?"
 msgstr "ex., sur un autre ordinateur?"
 
-#: chooser.py:672
+#: chooser.py:674
 msgid "We can terminate your other session."
 msgstr "Nous pouvons fermer votre autre session."
 
-#: chooser.py:673
+#: chooser.py:675
 msgid "This will crash the other client, "
 msgstr "Cela terminera brutalement l'autre client,"
 
-#: chooser.py:674
+#: chooser.py:676
 msgid "but the current session will continue."
 msgstr "mais la présente session continuera."
 
-#: chooser.py:676
+#: chooser.py:678
 msgid "Proceed?"
 msgstr "Continuer?"
 
-#: chooser.py:691
+#: chooser.py:693
 msgid "Could not get authentication token."
 msgstr "Impossible d'obtenir le jeton d'identification."
 
-#: chooser.py:693
+#: chooser.py:695
 msgid "Unexpected error:"
 msgstr "Erreur innatendue:"
 
-#: chooser.py:704
+#: chooser.py:706
 msgid "Server does not yet have a spec, nothing to mark. "
 msgstr "Le serveur ne possède pas encore de description fixée, rien à évaluer. "
 
-#: chooser.py:706
+#: chooser.py:708
 msgid " Perhaps you need to login to the web-interface to configure the server."
 msgstr ""
 " Peut-être qu'il est nécessaire de vous connecter à l'interface web pour configurer le serveur."
 
-#: chooser.py:718
+#: chooser.py:720
 msgid "logged in as"
 msgstr "connecté.e en tant que"
 
-#: chooser.py:727
+#: chooser.py:729
 msgid "Choose a task for"
 msgstr "Choisissez une tâche pour"
 
