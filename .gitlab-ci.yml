@@ -126,6 +126,20 @@ copyright_year:
   allow_failure: true
 
 
+# modules (__init__ and __main__) should show current year in copyright
+copyright_visible:
+  image: fedora:42
+  stage: static_analysis
+  script:
+    - YEAR=`date +"%Y"`
+    - echo $YEAR
+    - echo "Each new year, must bump some copyright notices"
+    - grep "&copy; 2018-${YEAR}" plomclient/client/about_dialog.py
+    - grep "__copyright__ = \"Copyright (C) 2018-${YEAR}" client/__init__.py
+    - grep "__copyright__ = \"Copyright (C) 2018-${YEAR}" client/__main__.py
+    - grep "__copyright__ = \"Copyright (C) 2020-${YEAR}" client/randoIDer.py
+    - grep "__copyright__ = \"Copyright (C) 2020-${YEAR}" client/randoMarker.py
+
 # to ensure the pypi job works, make sure we can package
 # TODO: we make these again during pypi push: better to use these artifacts?
 build-package:

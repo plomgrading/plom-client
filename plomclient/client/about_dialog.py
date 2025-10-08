@@ -23,7 +23,7 @@ def show_about_dialog(parent):
 
             <p><a href="https://plomgrading.org">https://plomgrading.org</a></p>
 
-            <p>Copyright &copy; 2018-2024 Andrew Rechnitzer,
+            <p>Copyright &copy; 2018-2025 Andrew Rechnitzer,
             Colin B. Macdonald, and other contributors.</p>
 
             <p>Plom is Free Software, available under the GNU Affero
