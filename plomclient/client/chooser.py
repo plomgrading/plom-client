@@ -703,9 +703,10 @@ class Chooser(QDialog):
         except PlomServerNotReady as e:
             WarnMsg(
                 self,
-                _("Server does not yet have a spec, nothing to mark. ")
-                + _(
-                    " Perhaps you need to login to the web-interface to configure the server."
+                _(
+                    "Server does not yet have a spec, nothing to mark."
+                    " Perhaps you need to login to the web-interface"
+                    " to configure the server."
                 ),
                 info=str(e),
             ).exec()

@@ -127,7 +127,7 @@ msgstr ""
 msgid "You must specify a server address"
 msgstr "Vous devez spécifier une adresse de serveur"
 
-#: chooser.py:583 chooser.py:715
+#: chooser.py:583 chooser.py:716
 msgid "Could not connect to server"
 msgstr "ne peux pas se connected au serveur non-supporté"
 
@@ -191,21 +191,20 @@ msgstr "Impossible d'obtenir le jeton d'identification."
 msgid "Unexpected error:"
 msgstr "Erreur innatendue:"
 
-#: chooser.py:706
-msgid "Server does not yet have a spec, nothing to mark. "
-msgstr "Le serveur ne possède pas encore de description fixée, rien à évaluer. "
-
-#: chooser.py:708
-msgid " Perhaps you need to login to the web-interface to configure the server."
+#: chooser.py:707
+msgid ""
+"Server does not yet have a spec, nothing to mark. Perhaps you need to "
+"login to the web-interface to configure the server."
 msgstr ""
+"Le serveur ne possède pas encore de description fixée, rien à évaluer."
 " Peut-être qu'il est nécessaire de vous connecter à l'interface web pour "
 "configurer le serveur."
 
-#: chooser.py:720
+#: chooser.py:721
 msgid "logged in as"
 msgstr "connecté.e en tant que"
 
-#: chooser.py:729
+#: chooser.py:730
 msgid "Choose a task for"
 msgstr "Choisissez une tâche pour"
 
