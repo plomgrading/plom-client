@@ -264,7 +264,9 @@ class Chooser(QDialog):
                     + "</p>"
                     + "<p>"
                     + _(
-                        "You may want to ask your Instructor/Manager to promote your account. (In the future this might be enforced, but isn't as of Oct 2024.)"
+                        "You may want to ask your Instructor/Manager to"
+                        " promote your account. (In the future this might"
+                        " be enforced.)"
                     )
                     + "</p>",
                 ).exec()
@@ -444,10 +446,10 @@ class Chooser(QDialog):
         except PlomAPIException as e:
             WarnMsg(
                 self,
-                _("Your client version")
-                + f" {__version__} "
-                + _("cannot connect to unsupported server")
-                + f" {info['version']}.",
+                _(
+                    "Your client version {client_version} "
+                    "cannot connect to unsupported server {server_version}."
+                ).format(client_version=__version__, server_version=info["version"]),
                 info=f"{e}",
             ).exec()
             return False
@@ -660,22 +662,18 @@ class Chooser(QDialog):
         except PlomExistingLoginException:
             msg = WarningQuestion(
                 self,
-                _("You appear to be already logged in!")
-                + "\n\n"
-                + "  * "
-                + _("Perhaps a previous session crashed?")
-                + "\n"
-                + "  * "
-                + _("Do you have another client running")
-                + ",\n"
-                + "    "
-                + _("e.g., on another computer?")
-                + "\n\n"
-                + _("We can terminate your other session.")
-                + _("This will crash the other client, ")
-                + _("but the current session will continue.")
-                + "\n"
-                + _("Proceed?"),
+                _(
+                    "<p>You appear to be already logged in!</p>"
+                    "<ul>"
+                    "<li>Perhaps a previous session crashed.</li>"
+                    "<li>Do you have another client running,"
+                    " e.g., on another computer?</li>"
+                    "</ul>"
+                    "<p>We can terminate your other session."
+                    " This will crash the other client,"
+                    " but the current session will continue.</p>"
+                ),
+                question=_("Proceed?"),
             )
             if msg.exec() == QMessageBox.StandardButton.Yes:
                 self.messenger.clearAuthorisation(user, pwd)
