@@ -221,6 +221,14 @@ msgstr ""
 msgid "View another paper..."
 msgstr ""
 
+#: annotator.py:203 annotator.py:836
+msgid "Save && Next"
+msgstr ""
+
+#: annotator.py:816
+msgid "Next"
+msgstr ""
+
 #~ msgid "is on the server's reject list:"
 #~ msgstr "est sur la liste noire du serveur:"
 

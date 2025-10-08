@@ -79,6 +79,7 @@ from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
 from .useful_classes import SimpleQuestion, SimpleQuestionCheckBox
 from .useful_classes import _json_path_to_str
+from .translations import translate as _
 
 
 log = logging.getLogger("annotr")
@@ -199,7 +200,7 @@ class Annotator(QWidget):
         # add in another save/next button bottom-right
         self._bottom_toolbar = QFrame()
         snb_l = QHBoxLayout()
-        self.another_save_next_button = QPushButton("Save && Next")
+        self.another_save_next_button = QPushButton(_("Save && Next"))
         snb_l.addStretch()
         snb_l.addWidget(self.another_save_next_button)
         self._bottom_toolbar.setLayout(snb_l)
@@ -812,7 +813,7 @@ class Annotator(QWidget):
             # self.rubric_widget.syncB.setVisible(False)
         # self.ui.frameTools.setVisible(False)
         self.ui.helpButton.setText("?")
-        self.ui.saveNextButton.setText("Next")
+        self.ui.saveNextButton.setText(_("Next"))
         # self.ui.arrangePagesButton.setText("\N{PAGES}")
         self.ui.arrangePagesButton.setText("")
         self.setIcon(self.ui.arrangePagesButton, "Rearrange pages", "extra_page.svg")
@@ -832,7 +833,7 @@ class Annotator(QWidget):
             self.rubric_widget.syncB.setVisible(True)
         # self.ui.frameTools.setVisible(True)
         self.ui.helpButton.setText("Key help")
-        self.ui.saveNextButton.setText("Save && Next")
+        self.ui.saveNextButton.setText(_("Save && Next"))
         self.ui.arrangePagesButton.setText("Adjust pages")
         self.ui.arrangePagesButton.setIcon(QIcon())
 
