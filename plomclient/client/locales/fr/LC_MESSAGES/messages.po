@@ -196,6 +196,31 @@ msgstr "connecté.e en tant que « {username} »"
 msgid "Choose a task for “{assessment_name}”"
 msgstr "Choisissez une tâche pour « {assessment_name} »"
 
+#: marker.py:350
+#, python-brace-format
+msgid "{what_task} of {assessment_name}"
+msgstr "{what_task} de {assessment_name}"
+
+#: marker.py:516
+msgid "Reset selected task"
+msgstr ""
+
+#: marker.py:517
+msgid "Reassign selected task to me"
+msgstr ""
+
+#: marker.py:518
+msgid "Reassign selected task..."
+msgstr ""
+
+#: marker.py:529 marker.py:558
+msgid "Refresh task list"
+msgstr ""
+
+#: marker.py:559
+msgid "View another paper..."
+msgstr ""
+
 #~ msgid "is on the server's reject list:"
 #~ msgstr "est sur la liste noire du serveur:"
 

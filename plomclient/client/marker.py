@@ -100,6 +100,7 @@ from .tagging_range_dialog import TaggingAndRangeOptions
 from .quota_dialogs import ExplainQuotaDialog, ReachedQuotaLimitDialog
 from .task_model import MarkerExamModel, ProxyModel
 from .uploader import BackgroundUploader, synchronous_upload
+from .translations import translate as _
 from . import ui_files
 
 if platform.system() == "Darwin":
@@ -344,12 +345,15 @@ class MarkerClient(QWidget):
 
         task = self.get_current_task_id_or_none()
         if not ((task or question_label) and assessment_name):
-            window_title = "Plom"
+            task_title_str = ""
         else:
-            window_title = "{what} of {assessment_name} \N{EM DASH} Plom".format(
-                what=(task if task else question_label),
+            task_title_str = _("{what_task} of {assessment_name}").format(
+                what_task=(task if task else question_label),
                 assessment_name=assessment_name,
             )
+        window_title = "Plom"
+        if task_title_str:
+            window_title = task_title_str + " \N{EM DASH} " + window_title
         # note this [*] is used by Qt to know here to put an * to indicate unsaved results
         self.setWindowTitle("[*]" + window_title)
 
@@ -509,9 +513,9 @@ class MarkerClient(QWidget):
         m.addAction("Claim by paper number...", self.claim_task_interactive)
         m.addAction("Preferences for claiming tasks...", self.change_tag_range_options)
         m.addSeparator()
-        m.addAction("Reset selected task", self.reset_task)
-        m.addAction("Reassign selected task to me", self.reassign_task_to_me)
-        m.addAction("Reassign selected task...", self.reassign_task)
+        m.addAction(_("Reset selected task"), self.reset_task)
+        m.addAction(_("Reassign selected task to me"), self.reassign_task_to_me)
+        m.addAction(_("Reassign selected task..."), self.reassign_task)
         # self.ui.task_overflow_button.setText("\N{VERTICAL ELLIPSIS}")
         self.ui.task_overflow_button.setMenu(m)
         self.ui.task_overflow_button.setPopupMode(
@@ -522,7 +526,7 @@ class MarkerClient(QWidget):
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
         self.ui.refreshTaskListButton.setText("\N{CLOCKWISE OPEN CIRCLE ARROW}")
-        self.ui.refreshTaskListButton.setToolTip("Refresh task list")
+        self.ui.refreshTaskListButton.setToolTip(_("Refresh task list"))
         self.ui.tagButton.clicked.connect(self.manage_tags)
         self.ui.filterLE.returnPressed.connect(self.setFilter)
         self.ui.filterLE.textEdited.connect(self.setFilter)
@@ -551,8 +555,8 @@ class MarkerClient(QWidget):
         m = QMenu()
 
         # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
-        m.addAction("Refresh task list", self.refresh_server_data)
-        m.addAction("View another paper...", self.choose_and_view_other)
+        m.addAction(_("Refresh task list"), self.refresh_server_data)
+        m.addAction(_("View another paper..."), self.choose_and_view_other)
 
         m.addSeparator()
 
