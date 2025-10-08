@@ -716,7 +716,9 @@ class Chooser(QDialog):
             return
         if spec:
             self._set_restrictions_from_spec(spec)
-        self.ui.loginInfoLabel.setText(_("logged in as") + f' "{user}"')
+        self.ui.loginInfoLabel.setText(
+            _("logged in as “{username}”").format(username=user)
+        )
         self.ui.logoutButton.setVisible(True)
         self.ui.userLE.setEnabled(False)
         self.ui.passwordLE.setEnabled(False)
@@ -725,7 +727,11 @@ class Chooser(QDialog):
         self.ui.loginButton.setEnabled(False)
 
     def _set_restrictions_from_spec(self, spec: dict[str, Any]) -> None:
-        self.ui.markGBox.setTitle(_("Choose a task for") + " “{}”".format(spec["name"]))
+        self.ui.markGBox.setTitle(
+            _("Choose a task for “{assessment_name}”").format(
+                assessment_name=spec["name"]
+            )
+        )
         question = self.getQuestion()
         v = self.getv()
         self.ui.pgSB.setVisible(False)

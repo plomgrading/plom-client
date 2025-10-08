@@ -186,13 +186,15 @@ msgstr ""
 "Peut-être qu'il est nécessaire de vous connecter à l'interface web pour "
 "configurer le serveur."
 
-#: chooser.py:719
-msgid "logged in as"
-msgstr "connecté.e en tant que"
+#: chooser.py:720
+#, python-brace-format
+msgid "logged in as “{username}”"
+msgstr "connecté.e en tant que « {username} »"
 
-#: chooser.py:728
-msgid "Choose a task for"
-msgstr "Choisissez une tâche pour"
+#: chooser.py:731
+#, python-brace-format
+msgid "Choose a task for “{assessment_name}”"
+msgstr "Choisissez une tâche pour « {assessment_name} »"
 
 #~ msgid "is on the server's reject list:"
 #~ msgstr "est sur la liste noire du serveur:"
