@@ -15,7 +15,9 @@ msgstr ""
 
 #: chooser.py:244
 msgid "Only Marker/Lead Marker can mark papers!"
-msgstr "Seul.e. s les Évaluateur.trice.s/Évaluateur.trice.s en Charge peuvent évalurt une fiche"
+msgstr ""
+"Seul.e. s les Évaluateur.trice.s/Évaluateur.trice.s en Charge peuvent "
+"évalurt une fiche"
 
 #: chooser.py:263
 msgid "Only Lead Marker should be identifying papers."
@@ -26,8 +28,9 @@ msgid ""
 "You may want to ask your Instructor/Manager to promote your account."
 " (In the future this might be enforced, but isn't as of Oct 2024.)"
 msgstr ""
-"Il est possible que vous souhaitiez demander à votre Instructeur/Responsable de promouvoir votre compte."
-" (Dans le futur cela sera peut-être obligatoire.)"
+"Il est possible que vous souhaitiez demander à votre "
+"Instructeur/Responsable de promouvoir votre compte. (Dans le futur cela "
+"sera peut-être obligatoire.)"
 
 #: chooser.py:309
 msgid "Cannot write config file:"
@@ -195,7 +198,8 @@ msgstr "Le serveur ne possède pas encore de description fixée, rien à évalue
 #: chooser.py:708
 msgid " Perhaps you need to login to the web-interface to configure the server."
 msgstr ""
-" Peut-être qu'il est nécessaire de vous connecter à l'interface web pour configurer le serveur."
+" Peut-être qu'il est nécessaire de vous connecter à l'interface web pour "
+"configurer le serveur."
 
 #: chooser.py:720
 msgid "logged in as"
