@@ -258,7 +258,16 @@ class SolutionViewer(QWidget):
 
     Current, this is QWidget instantiated w/o parent.  That seems like a bad
     idea: like it should be a QMainWindow or a QDialog?  A QDialog will
-    possibly mean it has no separate icon in the task bar.
+    possibly mean it has no separate icon in the task bar.  Further notes
+    on this::
+
+       1. If this a subclass of QDialog, and we call `super().__init__(parent)`
+          below, then the modeless dialog is still always on top of the Marker
+          window (at least on Gnome Wayland).  On a small screen that's unlikely
+          what people want.
+
+       2. If this class is a QWidget, it should not be parented with
+          `super().__init__(parent)`: else it is not a top-level window.
 
     The "parent" (not real Qt parent) must be an Annotator, or otherwise
     have a method ``refreshSolutionImage`` that behaves like Annotator.
