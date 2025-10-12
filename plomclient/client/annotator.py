@@ -69,7 +69,7 @@ from .key_wrangler import get_key_bindings
 from .key_help import KeyHelp
 
 from .pagerearranger import RearrangementViewer
-from .viewers import SolutionViewer, WholeTestView, PreviousPaperViewer
+from .viewers import WholeTestView, PreviousPaperViewer
 from .pagescene import PageScene
 from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
@@ -130,9 +130,6 @@ class Annotator(QWidget):
 
         # a key-value store for local config, including "don't ask me again"
         self._config: Dict[str, Any] = {}
-
-        # a solution view / previous annotation pop-up window - initially set to None
-        self.solutionView = None
 
         self.testName = None
         self.paperDir = None
@@ -405,7 +402,8 @@ class Annotator(QWidget):
         m.addSeparator()
         (key,) = keydata["show-solutions"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"View solutions\t{key}", self.viewSolutions)
+        # shortcut key handled in Marker, but keep this menu entry for now?
+        m.addAction(f"View solutions\t{key}", self.parentMarkerUI.view_solutions)
         (key,) = keydata["tag-paper"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Tag paper...\t{key}", self.tag_paper)
@@ -1315,7 +1313,6 @@ class Annotator(QWidget):
             ("toggle-wide-narrow", self.toggle_compact),
             ("help", self.keyPopUp),
             ("show-whole-paper", self.viewWholePaper),
-            ("show-solutions", self.viewSolutions),
             ("main-menu", self.ui.hamMenuButton.animateClick),
             ("tag-paper", self.tag_paper),
             ("zoom-in", self.view.zoomIn),
@@ -1882,12 +1879,6 @@ class Annotator(QWidget):
         """
         log.debug("========CLOSE EVENT======: {}".format(self))
 
-        log.debug("Clean up any lingering solution-views etc")
-        if self.solutionView:
-            log.debug("Cleaning a solution-view")
-            self.solutionView.close()
-            self.solutionView = None
-
         self.saveTabStateToServer(self.rubric_widget.get_tab_rubric_lists())
 
         # Save the current window settings for next time annotator is launched
@@ -2153,23 +2144,6 @@ class Annotator(QWidget):
             rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
         )
 
-    def viewSolutions(self):
-        solutionFile = self.parentMarkerUI.getSolutionImage()
-        if solutionFile is None:
-            InfoMsg(self, "No solution has been uploaded").exec()
-            return
-
-        if self.solutionView is None:
-            self.solutionView = SolutionViewer(self, solutionFile)
-        self.solutionView.show()
-        # Issue #5090: get it back it back to the top
-        # On Gnome, `activateWindow` works with shortcut key but
-        # clicking with the mouse requires `raise` as well, except
-        # TODO: it doesn't work, perhaps b/c they do not share a parent
-        self.solutionView.activateWindow()
-        self.solutionView.raise_()
-        # TODO: test on other desktops and OSes
-
     def tags_changed(self, task: str, tags: list[str]) -> None:
         """React to possible tag change signals."""
         if task == self.task:
@@ -2188,10 +2162,6 @@ class Annotator(QWidget):
         if not dialog_parent:
             dialog_parent = self
         self.parentMarkerUI.manage_task_tags(task, parent=dialog_parent)
-
-    def refreshSolutionImage(self):
-        log.debug("force a refresh")
-        return self.parentMarkerUI.refreshSolutionImage()
 
     def show_previous(self):
         log.debug(
