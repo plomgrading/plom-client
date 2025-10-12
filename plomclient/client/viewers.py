@@ -254,7 +254,7 @@ class SolutionViewer(QWidget):
     reference, this is a new top-level window (not formally parented
     by the Annotator or Marker windows).  At least in the Gnome
     environment, that means it does not stay on top of the Annotator
-    window (unlike for example `QVHistogram` in Manager).
+    window.
 
     The parent must be an Annotator, or otherwise have a method
     ``refreshSolutionImage`` that behaves like Annotator.
