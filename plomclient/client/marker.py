@@ -2386,7 +2386,7 @@ class MarkerClient(QWidget):
                     if event:
                         event.ignore()
                     return
-            self._exit_annotate_mode()
+            self._annotator.close()
 
         while not self.Qapp.downloader.stop(500):
             if (
