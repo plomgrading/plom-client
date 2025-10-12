@@ -129,7 +129,7 @@ class QuestionViewDialog(GroupView):
         """If we have a marker parent then use it to manage tags."""
         if self.marker:
             task = f"{self.papernum:04}g{self.question_index}"
-            self.marker.manage_task_tags(task, parent=self)
+            self.marker.manage_tags(task, parent=self)
 
 
 class WholeTestView(QDialog):

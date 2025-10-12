@@ -566,6 +566,14 @@ class MarkerClient(QWidget):
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"View solutions\t{key}", cmd)
 
+        (key,) = keydata["tag-paper"]["keys"]
+        cmd = self.manage_tags
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(cmd)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Tag paper...\t{key}", cmd)
+
         m.addSeparator()
 
         x = m.addAction("Show technical debugging info")
@@ -2631,24 +2639,14 @@ class MarkerClient(QWidget):
         task_id_str = self.prxM.getPrefix(pr)
         return task_id_str
 
-    def manage_tags(self, task: str | None = None):
-        """Manage the tags of the a task, or the currently selected task.
+    def manage_tags(
+        self, task: str | None = None, *, parent: QWidget | None = None
+    ) -> None:
+        """Manage the tags of a task, or the currently selected task.
 
         Args:
-            task: a string like `"0123g5"` or try to use the current
-                selection if None or omitted.
-        """
-        if not task:
-            task = self.get_current_task_id_or_none()
-        if not task:
-            return
-        self.manage_task_tags(task)
-
-    def manage_task_tags(self, task: str, parent: QWidget | None = None) -> None:
-        """Manage the tags of a task.
-
-        Args:
-            task: A string like "q0003g2" for paper 3 question 2.
+            task: A string like `"0003g2"` for paper 3 question 2 or try
+                to use the current selection if None or omitted.
 
         Keyword Args:
             parent: Which window should be dialog's parent?
@@ -2660,6 +2658,11 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
+        if not task:
+            task = self.get_current_task_id_or_none()
+        if not task:
+            return
+
         if not parent:
             parent = self
 

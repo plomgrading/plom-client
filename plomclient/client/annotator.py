@@ -405,6 +405,7 @@ class Annotator(QWidget):
         # shortcut key handled in Marker, but keep this menu entry for now?
         m.addAction(f"View solutions\t{key}", self.parentMarkerUI.view_solutions)
         (key,) = keydata["tag-paper"]["keys"]
+        # shortcut key handled in Marker, but keep this menu entry for now?
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Tag paper...\t{key}", self.tag_paper)
         m.addSeparator()
@@ -1314,7 +1315,6 @@ class Annotator(QWidget):
             ("help", self.keyPopUp),
             ("show-whole-paper", self.viewWholePaper),
             ("main-menu", self.ui.hamMenuButton.animateClick),
-            ("tag-paper", self.tag_paper),
             ("zoom-in", self.view.zoomIn),
             ("zoom-out", self.view.zoomOut),
             ("next-paper", self.saveAndGetNext),
@@ -2161,7 +2161,7 @@ class Annotator(QWidget):
             task = self.task
         if not dialog_parent:
             dialog_parent = self
-        self.parentMarkerUI.manage_task_tags(task, parent=dialog_parent)
+        self.parentMarkerUI.manage_tags(task, parent=dialog_parent)
 
     def show_previous(self):
         log.debug(
