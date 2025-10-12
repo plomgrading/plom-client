@@ -256,8 +256,12 @@ class SolutionViewer(QWidget):
     environment, that means it does not stay on top of the Annotator
     window.
 
-    The parent must be an Annotator, or otherwise have a method
-    ``refreshSolutionImage`` that behaves like Annotator.
+    Current, this is QWidget instantiated w/o parent.  That seems like a bad
+    idea: like it should be a QMainWindow or a QDialog?  A QDialog will
+    possibly mean it has no separate icon in the task bar.
+
+    The "parent" (not real Qt parent) must be an Annotator, or otherwise
+    have a method ``refreshSolutionImage`` that behaves like Annotator.
     """
 
     def __init__(self, parent: QWidget, fname: Path) -> None:

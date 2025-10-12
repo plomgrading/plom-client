@@ -2167,7 +2167,11 @@ class Annotator(QWidget):
             self.solutionView = SolutionViewer(self, solutionFile)
         self.solutionView.show()
         # Issue #5090: get it back it back to the top
-        self.solutionView.activateWindow()  # tested on Gnome
+        # On Gnome, `activateWindow` works with shortcut key but
+        # clicking with the mouse requires `raise` as well, except
+        # TODO: it doesn't work, perhaps b/c they do not share a parent
+        self.solutionView.activateWindow()
+        self.solutionView.raise_()
         # TODO: test on other desktops and OSes
 
     def tags_changed(self, task: str, tags: list[str]) -> None:
