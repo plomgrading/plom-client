@@ -269,6 +269,12 @@ class SolutionViewer(QWidget):
        2. If this class is a QWidget, it should not be parented with
           `super().__init__(parent)`: else it is not a top-level window.
 
+       3. It remains to try `QMainWindow`, but this requires some reworking
+          elsewhere, for example, I just noticed that Marker is not a
+          `QMainWindow` either!  We need both these things to be top-level
+          windows, equal under a common QApplication.  Its possible that
+          requires some reworking on Chooser as well.
+
     The "parent" (not real Qt parent) must be an Annotator, or otherwise
     have a method ``refreshSolutionImage`` that behaves like Annotator.
     """
