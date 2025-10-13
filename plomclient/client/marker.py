@@ -137,7 +137,7 @@ class MarkerClient(QWidget):
         """Initialize a new MarkerClient.
 
         Args:
-            Qapp(QApplication): Main client application
+            Qapp (QApplication): Main client application
 
         Keyword Args:
             tmpdir (pathlib.Path/None): a temporary directory for
