@@ -550,12 +550,9 @@ class IDClient(QWidget):
         lay = self.ui.predictionBox1.layout()
         for i in reversed(range(lay.count())):
             # print(f"deleting i={i}")
-            item = lay.itemAt(i)
-            w = item.widget()
-            # print((item, w))
+            w = lay.itemAt(i).widget()
             if w:
                 w.deleteLater()
-            del item
             del w
         del lay
         self.ui.predictionBox1.hide()
