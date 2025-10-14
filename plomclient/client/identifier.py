@@ -616,6 +616,14 @@ class IDClient(QWidget):
 
             else:
                 warn = False
+
+                # so meta, so annoying!
+                def _func_factory(zelf, sid, name):
+                    def f():
+                        zelf.accept_prediction(sid, name)
+
+                    return f
+
                 for i, p in enumerate(all_predictions):
                     sid = p["student_id"]
                     name = get_name_from_id(sid)
@@ -627,7 +635,8 @@ class IDClient(QWidget):
                     q = QPushButton(f"Accept {sid}")
                     q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
                     if name:
-                        q.clicked.connect(lambda: self.accept_prediction(sid, name))
+                        f = _func_factory(self, sid, name)
+                        q.clicked.connect(f)
                     else:
                         q.setEnabled(False)
                     lay = self.ui.predictionBox1.layout()
@@ -760,9 +769,10 @@ class IDClient(QWidget):
     def acceptPrediction0(self):
         sname = self.ui.pNameLabel0.text()
         sid = self.ui.pSIDLabel0.text()
-        self.acceptPrediction(sid, sname)
+        self.accept_prediction(sid, sname)
 
     def accept_prediction(self, sid: str, sname: str) -> None:
+        log.info("Accepting id=%s, name='%s' from prediction...", sid, sname)
         # first check currently selected paper is unidentified - else do nothing
         index = self.ui.tableView.selectedIndexes()
         status = self.exM.data(index[1])
@@ -783,22 +793,30 @@ class IDClient(QWidget):
             self.updateProgress()
 
     def identifyStudent(
-        self, index, sid, sname, blank=False, no_id=False
-    ) -> Union[bool, None]:
+        self,
+        index,
+        sid: str | None,
+        sname: str,
+        *,
+        blank: bool = False,
+        no_id: bool = False,
+    ) -> bool | None:
         """Push identification of a paper to the server and misc UI table.
 
         User ID's the student of the current paper. Some care around whether
         or not the paper was ID'd previously. Not called directly - instead
-        is called by "enterID" or "acceptPrediction" when user hits return on the line-edit.
+        is called by "enterID" or "accept_prediction" when user hits return on the line-edit.
 
         Args:
             index: an index into the UI table of the currently
                 highlighted row.
-            sname (str): The student name or special placeholder.
-                - note that this should always be non-trivial string.
-            sid (str/None): The student ID or None.
+            sid: The student ID or None.
                 - note that this is either 'None' (but only if blank or no_id is true), or
                 should have passed the 'is_valid_id' test.
+            sname: The student name or special placeholder.
+                - note that this should always be non-trivial string.
+
+        Keyword Args:
             blank (bool): the paper was blank: `sid` must be None and
                 `sname` must be `"Blank paper"`.
             no_id (bool): paper is not blank but student did not fill-in
@@ -808,6 +826,13 @@ class IDClient(QWidget):
         Returns:
             True/False/None: True on success, False/None on failure.
         """
+        log.info(
+            "Identifying id=%s, name='%s', blank=%s, no_id=%s...",
+            sid,
+            sname,
+            blank,
+            no_id,
+        )
         # do some sanity checks on inputs.
         assert isinstance(sname, str), "Student must be a string"
         assert len(sname) > 0, "Student name cannot be empty"
@@ -831,6 +856,14 @@ class IDClient(QWidget):
         self.exM.identifyStudent(index, sid, sname)
         code = self.exM.data(index[0])
         # Return paper to server with the code, ID, name.
+        log.info(
+            "Sending identity to server for code=%s: id=%s, name='%s', blank=%s, no_id=%s",
+            code,
+            sid,
+            sname,
+            blank,
+            no_id,
+        )
         try:
             self.msgr.IDreturnIDdTask(code, sid, sname)
         except PlomConflict as err:
