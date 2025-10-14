@@ -575,7 +575,7 @@ class MarkerClient(QWidget):
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Disconnect\t{key}", command)
+        m.addAction(f"Change question or server\t{key}", command)
 
         key = "ctrl+q"
         command = self.close
