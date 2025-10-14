@@ -572,11 +572,14 @@ class IDClient(QWidget):
 
             self.ui.explainButton0.show()
             self.ui.predictionBox0.show()
-            if predicted_name:
-                self.ui.predButton0.show()
 
             self.ui.pSIDLabel0.setText(pred["student_id"])
-            self.ui.pNameLabel0.setText(predicted_name)
+            if predicted_name:
+                self.ui.pNameLabel0.setText(predicted_name)
+                self.ui.predButton0.show()
+            else:
+                self.ui.pNameLabel0.setText("<b>[" + _("Not in classlist!") + "]</b>")
+                self.ui.predButton0.hide()
 
             self.ui.predictionBox0.setTitle(
                 "Prenamed paper: is it signed?  if not signed, is it blank?"
@@ -587,13 +590,16 @@ class IDClient(QWidget):
         else:
             pred0 = all_predictions[0]
             if all(p["student_id"] == pred0["student_id"] for p in all_predictions):
-                # show just one bar
                 self.ui.predictionBox0.show()
-                self.ui.predButton0.show()
                 self.ui.pSIDLabel0.setText(pred0["student_id"])
                 predicted_name = get_name_from_id(pred0["student_id"])
-                self.ui.pNameLabel0.setText(predicted_name)
-                if not predicted_name:
+                if predicted_name:
+                    self.ui.pNameLabel0.setText(predicted_name)
+                    self.ui.predButton0.show()
+                else:
+                    self.ui.pNameLabel0.setText(
+                        "<b>[" + _("Not in classlist!") + "]</b>"
+                    )
                     self.ui.predButton0.hide()
                 self.ui.predictionBox0.setTitle(
                     "All predictions agree: "
@@ -614,17 +620,19 @@ class IDClient(QWidget):
             else:
                 warn = False
                 for i, p in enumerate(all_predictions):
-                    print(p)
                     sid = p["student_id"]
                     name = get_name_from_id(sid)
                     if not name:
-                        disp_name = "<strong>[" + _("Not in class list!") + "]</strong>"
+                        disp_name = "<b>[" + _("Not in classlist!") + "]</b>"
                         warn = True
                     else:
                         disp_name = "<em>" + name + "</em>"
                     q = QPushButton(f"Accept {sid}")
-                    q.setToolTip(f"Identify this paper as {sid}, {name}")
-                    q.clicked.connect(lambda: self.accept_prediction(sid, name))
+                    q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
+                    if name:
+                        q.clicked.connect(lambda: self.accept_prediction(sid, name))
+                    else:
+                        q.setEnabled(False)
                     lay = self.ui.predictionBox1.layout()
                     label = QLabel(
                         f"{sid} {disp_name} w/ certainty {round(p['certainty'], 3)} by {p['predictor']}"
