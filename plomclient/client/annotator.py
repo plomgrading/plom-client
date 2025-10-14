@@ -11,10 +11,6 @@
 
 from __future__ import annotations
 
-__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
-__credits__ = "The Plom Project Developers"
-__license__ = "AGPL-3.0-or-later"
-
 import html
 import json
 import logging

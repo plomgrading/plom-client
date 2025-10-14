@@ -6,10 +6,10 @@ from textwrap import dedent
 
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
 from PyQt6.QtWidgets import QMessageBox
+from requests import __version__ as requests_version
 
 from . import __version__
 
-# TODO: requests version
 # TODO: use resources to important contributors list?
 
 
@@ -23,7 +23,7 @@ def show_about_dialog(parent):
 
             <p><a href="https://plomgrading.org">https://plomgrading.org</a></p>
 
-            <p>Copyright &copy; 2018-2024 Andrew Rechnitzer,
+            <p>Copyright &copy; 2018-2025 Andrew Rechnitzer,
             Colin B. Macdonald, and other contributors.</p>
 
             <p>Plom is Free Software, available under the GNU Affero
@@ -39,6 +39,7 @@ def show_about_dialog(parent):
             <h3>System info</h3>
             <p>
             PyQt {PYQT_VERSION_STR} (Qt {QT_VERSION_STR})<br />
+            Requests {requests_version}<br />
             Python {platform.python_version()}<br />
             {platform.platform()}</p>
             """
