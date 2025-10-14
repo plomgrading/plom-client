@@ -13,7 +13,6 @@ import logging
 from pathlib import Path
 import sys
 import tempfile
-from typing import Union
 
 if sys.version_info >= (3, 9):
     from importlib import resources
