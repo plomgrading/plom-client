@@ -33,9 +33,12 @@ from PyQt6.QtCore import (
 from PyQt6.QtWidgets import (
     QCompleter,
     QDialog,
+    QMenu,
     QMessageBox,
+    QToolButton,
     QWidget,
 )
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from plomclient.plom_exceptions import (
     PlomBenignException,
@@ -48,6 +51,7 @@ from plomclient.rules import isValidStudentID
 from plomclient.rules import censorStudentName as censorName
 
 from . import ui_files
+from .about_dialog import show_about_dialog
 from .image_view_widget import ImageViewWidget
 from .useful_classes import (
     BlankIDBox,
@@ -222,6 +226,11 @@ class IDClient(QWidget):
         self.workdir = Path(tmpdir)
         self.msgr = None
 
+        self._store_QShortcuts = []
+
+        # controls default behaviour on titlebar close button
+        self._hack_prevent_shutdown = True
+
     def setup(self, messenger):
         """Performs setup procedure for the IDClient.
 
@@ -243,7 +252,16 @@ class IDClient(QWidget):
         self.testImg = ImageViewWidget(self)
         self.ui.rightPaneLayout.addWidget(self.testImg, 10)
 
-        self.ui.closeButton.clicked.connect(self.close)
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
+        self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        self.ui.hamMenuButton.setToolTip("Menu (F10)")
+        self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+        sc = QShortcut(QKeySequence("F10"), self)
+        sc.activated.connect(self.ui.hamMenuButton.animateClick)
+        self._store_QShortcuts.append(sc)
+
+        self.ui.closeButton.clicked.connect(self._close_but_dont_quit)
 
         # Get the classlist from server for name/ID completion.
         try:
@@ -290,6 +308,47 @@ class IDClient(QWidget):
         # Create variable to store ID/Name conf window position
         # Initially set to top-left corner of window
         self.msgGeometry = None
+
+    def build_hamburger(self):
+        m = QMenu()
+
+        # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
+        # m.addAction("Refresh task list", self.refresh_server_data)
+        m.addAction("View whole paper...", self.viewWholePaper)
+        m.addSeparator()
+
+        # m.addAction("Help", self.show_help)
+        m.addAction("About Plom", lambda: show_about_dialog(self))
+
+        m.addSeparator()
+
+        key = "ctrl+w"
+        command = self._close_but_dont_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Change task or server\t{key}", command)
+
+        key = "ctrl+q"
+        command = self._close_and_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Quit\t{key}", command)
+
+        return m
+
+    def _close_but_dont_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = True
+        self.close()
+
+    def _close_and_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = False
+        self.close()
 
     def skipOnClick(self):
         """Skip the current, moving to the next or loading a new one."""
@@ -370,7 +429,9 @@ class IDClient(QWidget):
         log.debug("Something has triggered a shutdown event")
         log.debug("Revoking login token")
         self.msgr.closeUser(revoke_token=True)
-        self.my_shutdown_signal.emit(1)
+        log.debug("Emitting Identifier shutdown signal")
+        retval = 2 if self._hack_prevent_shutdown else 1
+        self.my_shutdown_signal.emit(retval)
         if event:
             event.accept()
         log.debug("Identifier: goodbye!")

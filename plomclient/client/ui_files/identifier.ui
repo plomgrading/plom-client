@@ -227,6 +227,13 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QToolButton" name="hamMenuButton">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>
