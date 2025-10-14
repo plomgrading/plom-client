@@ -242,8 +242,7 @@ class IDClient(QWidget):
         self.msgr = messenger
         # List of papers we have to ID.
         self.paperList = []
-        # Paste username into the GUI (TODO: but why?)
-        self.ui.userLabel.setText(self.msgr.username)
+        self.ui.userLabel.setText("logged in as " + self.msgr.username)
         # Exam model for the table of papers - associate to table in GUI.
         self.exM = ExamModel()
         self.ui.tableView.setModel(self.exM)
