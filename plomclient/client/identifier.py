@@ -650,6 +650,8 @@ class IDClient(QWidget):
 
                 sorted_sids = sorted(preds_dup_dict.keys())
                 sorted_sids.reverse()
+                lay = self.ui.predictionBox1.layout()
+                lay.setSpacing(12)
                 for i, sid in enumerate(sorted_sids):
                     predlist = preds_dup_dict[sid]
                     name = get_name_from_id(sid)
@@ -667,7 +669,6 @@ class IDClient(QWidget):
                         q.clicked.connect(f)
                     else:
                         q.setEnabled(False)
-                    lay = self.ui.predictionBox1.layout()
                     predstr = "; ".join(
                         f"{p['predictor']} ({round(p['certainty'], 3)})"
                         for p in predlist
