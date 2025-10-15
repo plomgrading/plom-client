@@ -628,6 +628,7 @@ class IDClient(QWidget):
 
             else:
                 warn = False
+                serious_warn = False
 
                 # so meta, so annoying!
                 def _func_factory(zelf, sid, name):
@@ -656,6 +657,15 @@ class IDClient(QWidget):
                 # discard the counts
                 preds_hist = [pl for (count, pl) in preds_hist]
 
+                if (
+                    len(preds_hist) == 2
+                    and len(preds_hist[1]) == 1
+                    and preds_hist[1][0]["predictor"].casefold() == "mlbestguess"
+                ):
+                    log.debug("Prediction: Only 'MLBestGuess' disagrees so don't warn")
+                else:
+                    warn = True
+
                 for i, predlist in enumerate(preds_hist):
                     sid = predlist[0]["student_id"]
                     name = get_name_from_id(sid)
@@ -664,7 +674,15 @@ class IDClient(QWidget):
                     if not name:
                         disp_name = "[" + _("Not in classlist!") + "]"
                         in_classlist = False
-                        warn = True
+                        if (
+                            len(predlist) == 1
+                            and predlist[0]["predictor"].casefold() == "mlbestguess"
+                        ):
+                            # MLBestGuess doesn't consider the classlist so it often a bit wrong
+                            pass
+                        else:
+                            # but in other cases, we consider this to be a serious problem
+                            serious_warn = True
 
                     predstr = "; ".join(
                         f"{p['predictor']} ({round(p['certainty'], 3)})"
@@ -697,9 +715,9 @@ class IDClient(QWidget):
                 )
                 self.ui.predictionBox1.show()
                 if warn:
-                    self.ui.predictionBox1.setStyleSheet(angry_orange_style)
-                else:
                     self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
+                if serious_warn:
+                    self.ui.predictionBox1.setStyleSheet(angry_orange_style)
 
         # now update the snid entry line-edit.
         # if test is already identified then populate the ID-lineedit accordingly
