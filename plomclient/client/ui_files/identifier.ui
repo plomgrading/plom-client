@@ -215,7 +215,32 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frame1">
+        <widget class="QFrame" name="frame3">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="predictionsLabel">
+            <property name="text">
+             <string>Predictions:</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame4">
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <property name="leftMargin">
            <number>0</number>
@@ -232,7 +257,7 @@
           <item>
            <widget class="QLabel" name="progressLabel">
             <property name="text">
-             <string>Progress:</string>
+             <string>Confirmed:</string>
             </property>
            </widget>
           </item>

@@ -394,6 +394,13 @@ class IDClient(QWidget):
     def getPredictions(self):
         """Send request for prediction list to server."""
         self.predictions = self.msgr.IDgetPredictions()
+        self.ui.predictionsLabel.setText(
+            _(
+                "Server provided {num_predictions} predictions".format(
+                    num_predictions=len(self.predictions)
+                )
+            )
+        )
 
     def setCompleters(self):
         """Set up the studentname + studentID line-edit completers.
@@ -755,7 +762,7 @@ class IDClient(QWidget):
             self.ui.idProgressBar.setVisible(False)
             InfoMsg(self, _("No papers to identify.")).exec()
         else:
-            self.ui.progressLabel.setText(_("Progress:"))
+            self.ui.progressLabel.setText(_("Confirmed:"))
             self.ui.idProgressBar.setVisible(True)
         self.ui.idProgressBar.setMaximum(m)
         self.ui.idProgressBar.setValue(v)
