@@ -635,14 +635,27 @@ class IDClient(QWidget):
 
                     return f
 
+                preds_dup_dict = {}
                 for i, p in enumerate(all_predictions):
                     sid = p["student_id"]
+                    if sid in preds_dup_dict.keys():
+                        continue
+                    preds_dup_dict[sid] = []
+                    for j, q in enumerate(all_predictions):
+                        if j < i:
+                            continue
+                        if q["student_id"] == sid:
+                            preds_dup_dict[sid].append(q)
+
+                for i, (sid, predlist) in enumerate(preds_dup_dict.items()):
                     name = get_name_from_id(sid)
+                    in_classlist = True
+                    disp_name = name
                     if not name:
-                        disp_name = "<b>[" + _("Not in classlist!") + "]</b>"
+                        disp_name = "[" + _("Not in classlist!") + "]"
+                        in_classlist = False
                         warn = True
-                    else:
-                        disp_name = "<em>" + name + "</em>"
+
                     q = QPushButton(f"Accept {sid}")
                     q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
                     if name:
@@ -651,9 +664,11 @@ class IDClient(QWidget):
                     else:
                         q.setEnabled(False)
                     lay = self.ui.predictionBox1.layout()
-                    label = QLabel(
-                        f"{sid} {disp_name} w/ certainty {round(p['certainty'], 3)} by {p['predictor']}"
+                    predstr = "; ".join(
+                        f"{p['predictor']} ({round(p['certainty'], 3)})"
+                        for p in predlist
                     )
+                    label = QLabel(f"{predstr}: {sid} <em>{disp_name}</em>")
                     lay.addItem(
                         QSpacerItem(
                             32,
@@ -664,8 +679,10 @@ class IDClient(QWidget):
                         i,
                         0,
                     )
-                    lay.addWidget(label, i, 1)
-                    lay.addWidget(q, i, 2)
+                    lay.addWidget(QLabel("<b>*</b>" if not in_classlist else ""), i, 1)
+                    lay.addWidget(label, i, 2)
+                    if in_classlist:
+                        lay.addWidget(q, i, 3)
 
                 # TODO: "and at least one not in class"?
                 self.ui.predictionBox1.setTitle(
