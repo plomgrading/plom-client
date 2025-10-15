@@ -215,8 +215,6 @@ class IDClient(QWidget):
         uic.loadUi(resources.files(ui_files) / "identifier.ui", self)
         # TODO: temporary workaround
         self.ui = self
-        self.ui.explainButton0.setText("FAQ:\nwhy confirm\nprenames?")
-        self.ui.explainButton0.clicked.connect(self.prenamed_help)
 
         # instance vars that get initialized later
         # Save the local temp directory for image files and the class list.
@@ -570,7 +568,15 @@ class IDClient(QWidget):
             (pred,) = all_predictions
             predicted_name = get_name_from_id(pred["student_id"])
 
+            try:
+                self.ui.explainButton0.clicked.disconnect()
+            except TypeError:
+                pass
+            self.ui.explainButton0.clicked.connect(self.confirm_prenamed_help)
+            # TRANSLATOR: multiple-line text for this large button
+            self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\nprenames?"))
             self.ui.explainButton0.show()
+
             self.ui.predictionBox0.show()
 
             self.ui.pSIDLabel0.setText(pred["student_id"])
@@ -610,6 +616,16 @@ class IDClient(QWidget):
                         ]
                     )
                 )
+
+                try:
+                    self.ui.explainButton0.clicked.disconnect()
+                except TypeError:
+                    pass
+                self.ui.explainButton0.clicked.connect(self.confirm_prediction_help)
+                # TRANSLATOR: multiple-line text for this large button
+                self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\npredictions?"))
+                self.ui.explainButton0.show()
+
                 # only single option shown, so keep alt-a shortcut
                 self.ui.predButton0.setText("&Accept\nPrediction")
                 if all(p["certainty"] >= 0.3 for p in all_predictions):
@@ -1091,16 +1107,40 @@ class IDClient(QWidget):
             self.updateProgress()
         return
 
-    def prenamed_help(self) -> None:
+    def confirm_prenamed_help(self) -> None:
         InfoMsg(
             self,
-            "<p>It might seem unnecessary to confirm the prenamed papers "
-            "but there are several situations to watch out for:</p>"
-            "<ul>"
-            "<li>Student X wrote paper N: they likely scratched out the "
-            "name and substituted their own.</li>"
-            "<li>Student X did not sit the assessment, but the prenamed "
-            "paper was accidentally scanned: it will be "
-            "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
-            "</ul>",
+            _(
+                "<p>It might seem unnecessary to confirm the prenamed papers "
+                "but there are several situations to watch out for:</p>"
+                "<ul>"
+                "<li>Student X wrote paper N: they likely scratched out the "
+                "name and substituted their own.</li>"
+                "<li>Student X did not sit the assessment, but the prenamed "
+                "paper was accidentally scanned: it will be "
+                "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
+                "</ul>",
+            ),
+        ).exec()
+
+    def confirm_prediction_help(self) -> None:
+        InfoMsg(
+            self,
+            _(
+                "<p><b>Why should a human confirm the computer predictions?</b></p>"
+                "<p>The computer vision algorithms to recognize "
+                "handwritten digits are <em>not</em> foolproof.</p>"
+                "<p>It is incredibly unprofessional to return someone "
+                "else's work to a student.</p>"
+                "<hr>"
+                "<p>Pages could be torn or folded, affecting the results.<p>"
+                "<p>Most of the predictions are made by "
+                "comparing to the classlist. "
+                # " (by solving a Linear Assignment Problem). "
+                "Perhaps a student who is not on your classlist has "
+                "written this assesssment; the predictors will still "
+                "pick someone!</p>"
+                "<p>The ID pages are presented in reverse order of "
+                "confidence; we suggest going slow at first.</p>"
+            ),
         ).exec()
