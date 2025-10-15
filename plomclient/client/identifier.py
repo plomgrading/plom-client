@@ -557,17 +557,18 @@ class IDClient(QWidget):
         self.ui.predictionBox1.hide()
         self.ui.explainButton0.hide()
 
-        if len(all_predictions) >= 1:
-            from random import random
-
-            if random() > 0.7:
-                all_predictions[0]["student_id"] = "12345678"
-            if len(all_predictions) > 1:
-                if random() > 0.7:
-                    all_predictions[1]["student_id"] = "12345678"
-            if len(all_predictions) > 2:
-                if random() > 0.7:
-                    all_predictions[2]["student_id"] = "12345678"
+        # # Debugging
+        # if len(all_predictions) >= 1:
+        #     from random import random
+        #
+        #     if random() > 0.7:
+        #         all_predictions[0]["student_id"] = "12345678"
+        #     if len(all_predictions) > 1:
+        #         if random() > 0.7:
+        #             all_predictions[1]["student_id"] = "12345678"
+        #     if len(all_predictions) > 2:
+        #         if random() > 0.7:
+        #             all_predictions[2]["student_id"] = "12345678"
 
         if not all_predictions:
             pass
