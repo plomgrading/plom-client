@@ -39,7 +39,7 @@ variables:
   MACBIN_PY_MAJOR_MINOR_VER: "3.12"
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
-  PYINSTALLER_VER: 6.14.2
+  PYINSTALLER_VER: 6.16.0
 
 stages:
   - static_analysis
@@ -581,6 +581,10 @@ binary_upload:
       Please see [plomgrading.org](https://plomgrading.org).
       If you're here looking for Clients, see "Plom Client" packages above.
 
+      #### macOS versions
+
+      We build binaries for macOS using macOS 14.  They might also work on macOS 13.
+      Users of older versions of macOS will need to upgrade their OS.
 
       #### Changes in this release
 
@@ -777,6 +781,7 @@ macos14_universal_client:
     HOMEBREW_NO_AUTO_UPDATE: 1
     HOMEBREW_NO_INSTALL_CLEANUP: 1
     HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+    MINIMUM_MACOS_VER: 14
   script:
   - pwd
   - sw_vers
@@ -849,6 +854,9 @@ macos14_arm64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    # Maybe it works on macOS 13...?
+    MINIMUM_MACOS_VER: 13
   script:
   - pwd
   - sw_vers
@@ -901,6 +909,9 @@ macos14_x86_64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    # 2025-10-07: Colin tested on x86_64 macOS 13.7.4.
+    MINIMUM_MACOS_VER: 13
   script:
   - pwd
   - sw_vers
@@ -959,6 +970,8 @@ macos15_arm64_client:
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
   stage: packaging
+  variables:
+    MINIMUM_MACOS_VER: 15
   script:
   - pwd
   - sw_vers

@@ -3,7 +3,9 @@
 # Copyright (C) 2020-2025 Colin B. Macdonald
 # Copyright (C) 2024 Bryan Tanady
 
+import os
 from pathlib import Path
+
 import spellchecker
 from plomclient.client import __version__
 
@@ -48,8 +50,14 @@ exe = EXE(pyz,
           runtime_tmpdir=None,
           console=False )
 
-app = BUNDLE(exe,
-             name=f'PlomClient-{__version__}-universal2.app',
-             icon=None,
-             bundle_identifier='org.plomgrading.PlomClient',
-             version=__version__)
+app = BUNDLE(
+    exe,
+    name=f'PlomClient-{__version__}-universal2.app',
+    icon=None,
+    bundle_identifier='org.plomgrading.PlomClient',
+    version=__version__,
+    info_plist={
+        # prevent the binary from launching on old OSes
+        "LSMinimumSystemVersion": os.environ.get("MINIMUM_MACOS_VER", "12"),
+   }
+)
