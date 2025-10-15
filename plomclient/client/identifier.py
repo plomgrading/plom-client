@@ -636,6 +636,10 @@ class IDClient(QWidget):
 
                     return f
 
+                lay = self.ui.predictionBox1.layout()
+                lay.setSpacing(12)
+
+                # messy proprocessing to get histgram-like representation of duplicate predictions
                 preds_dup_dict = {}
                 for i, p in enumerate(all_predictions):
                     sid = p["student_id"]
@@ -647,13 +651,13 @@ class IDClient(QWidget):
                             continue
                         if q["student_id"] == sid:
                             preds_dup_dict[sid].append(q)
+                preds_hist = [(len(pl), pl) for k, pl in preds_dup_dict.items()]
+                preds_hist.sort(reverse=True, key=lambda x: x[0])
+                # discard the counts
+                preds_hist = [pl for (count, pl) in preds_hist]
 
-                sorted_sids = sorted(preds_dup_dict.keys())
-                sorted_sids.reverse()
-                lay = self.ui.predictionBox1.layout()
-                lay.setSpacing(12)
-                for i, sid in enumerate(sorted_sids):
-                    predlist = preds_dup_dict[sid]
+                for i, predlist in enumerate(preds_hist):
+                    sid = predlist[0]["student_id"]
                     name = get_name_from_id(sid)
                     in_classlist = True
                     disp_name = name
@@ -662,13 +666,6 @@ class IDClient(QWidget):
                         in_classlist = False
                         warn = True
 
-                    q = QPushButton(f"Accept {sid}")
-                    q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
-                    if name:
-                        f = _func_factory(self, sid, name)
-                        q.clicked.connect(f)
-                    else:
-                        q.setEnabled(False)
                     predstr = "; ".join(
                         f"{p['predictor']} ({round(p['certainty'], 3)})"
                         for p in predlist
@@ -688,6 +685,10 @@ class IDClient(QWidget):
                     lay.addWidget(QLabel(sid), i, 3)
                     lay.addWidget(QLabel(f"<em>{disp_name}</em>"), i, 4)
                     if in_classlist:
+                        q = QPushButton(f"Accept {sid}")
+                        q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
+                        f = _func_factory(self, sid, name)
+                        q.clicked.connect(f)
                         lay.addWidget(q, i, 5)
 
                 # TODO: "and at least one not in class"?
