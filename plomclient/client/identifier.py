@@ -747,16 +747,21 @@ class IDClient(QWidget):
             self.updateImage(r)
 
     def updateProgress(self):
-        # update progressbars
+        """Update progressbars by calling the server and asking about progress."""
         v, m = self.msgr.IDprogressCount()
         if m == 0:
-            v, m = (0, 1)  # avoid (0, 0) indeterminate animation
-            self.ui.idProgressBar.setFormat("No papers to identify")
-            InfoMsg(self, "No papers to identify.").exec()
+            # v, m = (0, 1)  # avoid (0, 0) indeterminate animation
+            self.ui.progressLabel.setText(_("No papers to identify"))
+            self.ui.idProgressBar.setVisible(False)
+            InfoMsg(self, _("No papers to identify.")).exec()
         else:
-            self.ui.idProgressBar.resetFormat()
+            self.ui.progressLabel.setText(_("Progress:"))
+            self.ui.idProgressBar.setVisible(True)
         self.ui.idProgressBar.setMaximum(m)
         self.ui.idProgressBar.setValue(v)
+        self.ui.idProgressBar.setToolTip(
+            _("{done} of {total} confirmed by a human").format(done=v, total=m)
+        )
 
     def requestNext(self):
         """Ask the server for an unID'd paper, get file, add to list, update image."""
