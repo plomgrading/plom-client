@@ -394,13 +394,19 @@ class IDClient(QWidget):
     def getPredictions(self):
         """Send request for prediction list to server."""
         self.predictions = self.msgr.IDgetPredictions()
-        self.ui.predictionsLabel.setText(
-            _(
-                "Server provided {num_predictions} predictions".format(
-                    num_predictions=len(self.predictions)
+        if not self.predictions:
+            self.ui.predictionsLabel.setWordWrap(True)
+            self.ui.predictionsLabel.setText(
+                _("Server did not provide any predictions: have you run the AutoIDer?")
+            )
+        else:
+            self.ui.predictionsLabel.setText(
+                _(
+                    "Server provided {num_predictions} predictions".format(
+                        num_predictions=len(self.predictions)
+                    )
                 )
             )
-        )
 
     def setCompleters(self):
         """Set up the studentname + studentID line-edit completers.
