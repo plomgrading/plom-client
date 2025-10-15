@@ -647,7 +647,10 @@ class IDClient(QWidget):
                         if q["student_id"] == sid:
                             preds_dup_dict[sid].append(q)
 
-                for i, (sid, predlist) in enumerate(preds_dup_dict.items()):
+                sorted_sids = sorted(preds_dup_dict.keys())
+                sorted_sids.reverse()
+                for i, sid in enumerate(sorted_sids):
+                    predlist = preds_dup_dict[sid]
                     name = get_name_from_id(sid)
                     in_classlist = True
                     disp_name = name
@@ -668,7 +671,6 @@ class IDClient(QWidget):
                         f"{p['predictor']} ({round(p['certainty'], 3)})"
                         for p in predlist
                     )
-                    label = QLabel(f"{predstr}: {sid} <em>{disp_name}</em>")
                     lay.addItem(
                         QSpacerItem(
                             32,
@@ -680,9 +682,11 @@ class IDClient(QWidget):
                         0,
                     )
                     lay.addWidget(QLabel("<b>*</b>" if not in_classlist else ""), i, 1)
-                    lay.addWidget(label, i, 2)
+                    lay.addWidget(QLabel(predstr), i, 2)
+                    lay.addWidget(QLabel(sid), i, 3)
+                    lay.addWidget(QLabel(f"<em>{disp_name}</em>"), i, 4)
                     if in_classlist:
-                        lay.addWidget(q, i, 3)
+                        lay.addWidget(q, i, 5)
 
                 # TODO: "and at least one not in class"?
                 self.ui.predictionBox1.setTitle(
