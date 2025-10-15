@@ -128,11 +128,10 @@ class ExamModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self, parent)
         # Data stored in this ordered list.
         self.paperList = []
-        # Headers.
-        self.header = ["Test", "Status", "ID", "Name"]
+        self.header = ["Papernum", "Status", "ID", "Name"]
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Columns are [code, status, ID and Name]
+        # Columns are [papernum, status, ID and Name]
         # Put data in appropriate box when setting.
         if role != Qt.ItemDataRole.EditRole:
             return False
