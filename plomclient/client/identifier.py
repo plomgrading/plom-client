@@ -83,18 +83,24 @@ def _(x: str) -> str:
 
 
 class Paper:
-    """A simple container for storing a test's idgroup code (tgv) and associated filename for the image.
+    """A container for storing information about a paper.
 
+    Includes and associated filename for the ID image, etc.
     Once identified also store the studentName and ID-number.
     """
 
     def __init__(
-        self, test, fname=None, *, orientation=0, stat="unidentified", id="", name=""
-    ):
-        # tgv = t0000p00v0
-        # ... = 0123456789
+        self,
+        papernum: int,
+        fname=None,
+        *,
+        orientation=0,
+        stat="unidentified",
+        id="",
+        name="",
+    ) -> None:
         # The test number
-        self.test = test
+        self.test = papernum
         # Set status as unid'd
         self.status = stat
         # no name or id-number yet.
@@ -105,20 +111,6 @@ class Paper:
 
     def setStatus(self, st):
         self.status = st
-
-    def setReverted(self):
-        # reset the test as unidentified and no ID or name.
-        self.status = "unidentified"
-        self.sid = ""
-        self.sname = ""
-
-    def setID(self, sid, sname):
-        # tgv = t0000p00v0
-        # ... = 0123456789
-        # Set the test as ID'd and store name / number.
-        self.status = "identified"
-        self.sid = sid
-        self.sname = sname
 
 
 class ExamModel(QAbstractTableModel):
