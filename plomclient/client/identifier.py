@@ -708,6 +708,9 @@ class IDClient(QWidget):
                         q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
                         f = _func_factory(self, sid, name)
                         q.clicked.connect(f)
+                        fnt = self.font()
+                        fnt.setPointSizeF(fnt.pointSize() * 1.5)
+                        q.setFont(fnt)
                         lay.addWidget(q, i, 5)
 
                 # TODO: "and at least one not in class"?
