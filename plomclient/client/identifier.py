@@ -698,7 +698,8 @@ class IDClient(QWidget):
                         i,
                         0,
                     )
-                    lay.addWidget(QLabel("<b>*</b>" if not in_classlist else ""), i, 1)
+                    if not in_classlist:
+                        lay.addWidget(QLabel("<b>*</b>"), i, 1)
                     lay.addWidget(QLabel(predstr), i, 2)
                     lay.addWidget(QLabel(sid), i, 3)
                     lay.addWidget(QLabel(f"<em>{disp_name}</em>"), i, 4)
