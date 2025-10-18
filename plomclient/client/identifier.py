@@ -657,6 +657,9 @@ class IDClient(QWidget):
                 # discard the counts
                 preds_hist = [pl for (count, pl) in preds_hist]
 
+                # The plan was not to have the client care too much about "predictors"
+                # but we are experimenting with some of this fragile messy logic
+                # Try not to make too much more of it please!
                 if (
                     len(preds_hist) == 2
                     and len(preds_hist[1]) == 1
@@ -679,6 +682,7 @@ class IDClient(QWidget):
                             and predlist[0]["predictor"].casefold() == "mlbestguess"
                         ):
                             # MLBestGuess doesn't consider the classlist so it often a bit wrong
+                            # (see comments above about fragile messy logic)
                             pass
                         else:
                             # but in other cases, we consider this to be a serious problem
