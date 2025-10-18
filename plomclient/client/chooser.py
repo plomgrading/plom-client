@@ -772,12 +772,14 @@ class Chooser(QDialog):
 
     @pyqtSlot(int)
     def on_identify_window_close(self, value: int) -> None:
-        # `value` is always 1, no real meaning yet
+        # `value` is 1 or 2, 2 means stay in the chooser dialog, 1 means quit
         self.show()
         self.setEnabled(True)
         # TODO: wall-paper for Issue #2903
         if not self.is_logged_in():
             self.logout()
+        if value == 1:
+            self.close()
 
     @pyqtSlot(int, list)
     def on_marker_window_close(self, value: int, stuff: list[Any] | None) -> None:

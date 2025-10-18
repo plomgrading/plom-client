@@ -264,7 +264,7 @@ class Annotator(QWidget):
         assert h is not None
         h.setEnabled(False)
 
-        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
         # heaven == hamburger? works for me!
         self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         self.ui.hamMenuButton.setToolTip("Menu (F10)")
@@ -379,7 +379,7 @@ class Annotator(QWidget):
         """
         self.parentMarkerUI.Qapp.processEvents()
 
-    def buildHamburger(self):
+    def build_hamburger(self):
         # TODO: use QAction, share with other UI?
         keydata = self.get_key_bindings()
 

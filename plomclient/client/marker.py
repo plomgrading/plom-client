@@ -528,7 +528,7 @@ class MarkerClient(QWidget):
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
 
-        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
         self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         # self.ui.hamMenuButton.setToolTip("Menu (F10)")
         self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -541,7 +541,7 @@ class MarkerClient(QWidget):
         self.ui.viewModeMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         self.ui.viewModeMenuButton.setMenu(m)
 
-    def buildHamburger(self):
+    def build_hamburger(self):
         # keydata = self.get_key_bindings()
 
         m = QMenu()
