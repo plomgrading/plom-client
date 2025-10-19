@@ -235,8 +235,7 @@ class Annotator(QWidget):
             self.load_new_question(*initialData)
             self.rubric_widget.setInitialRubrics()
 
-        # Grab window settings from parent
-        self.loadWindowSettings()
+        self._load_window_settings_early()
 
         # no initial keybindings - get from the marker if non-default
         self.keybinding_name = self.parentMarkerUI.annotatorSettings["keybinding_name"]
@@ -271,6 +270,7 @@ class Annotator(QWidget):
         self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.setToolShortCuts()
         self.setMinorShortCuts()
+        self._load_window_settings_late()
 
     def update_attn_bar(
         self, *, tags: list[str] = [], msg: str = "", show: bool = False
@@ -1512,13 +1512,14 @@ class Annotator(QWidget):
         """
         self.setToolMode("rubric", rubric=rubric)
 
-    def loadWindowSettings(self):
-        """Loads the window settings."""
+    def _load_window_settings_early(self):
+        """Load the window settings, early stuff."""
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
         if self.parentMarkerUI.annotatorSettings.get("_config"):
             self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
 
+        # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
         # if zoom-state is none, set it to index 1 (fit page) - but delay.
         if self.parentMarkerUI.annotatorSettings["zoomState"] is None:
             QTimer.singleShot(100, lambda: self.ui.zoomCB.setCurrentIndex(1))
@@ -1542,9 +1543,12 @@ class Annotator(QWidget):
                     self.parentMarkerUI.annotatorSettings["zoomState"]
                 ),
             )
+
+    def _load_window_settings_late(self):
+        """Load the window settings, later stuff."""
         # wide vs compact
         if self.parentMarkerUI.annotatorSettings["compact"] is True:
-            log.debug("compacting UI (b/c of last use setting")
+            log.debug("compacting UI (b/c of last use setting)")
             self.toggle_compact()
 
     def saveWindowSettings(self):
