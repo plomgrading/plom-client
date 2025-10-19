@@ -32,6 +32,9 @@ class MockMarker(QWidget):
     def saveTabStateToServer(self, foo):
         pass
 
+    def view_solutions(self):
+        pass
+
 
 def test_annotr_open(qtbot) -> None:
     a = Annotator("some_user", MockMarker())

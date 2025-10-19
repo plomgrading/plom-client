@@ -129,7 +129,7 @@ class QuestionViewDialog(GroupView):
         """If we have a marker parent then use it to manage tags."""
         if self.marker:
             task = f"{self.papernum:04}g{self.question_index}"
-            self.marker.manage_task_tags(task, parent=self)
+            self.marker.manage_tags(task, parent=self)
 
 
 class WholeTestView(QDialog):
@@ -275,13 +275,13 @@ class SolutionViewer(QWidget):
           windows, equal under a common QApplication.  Its possible that
           requires some reworking on Chooser as well.
 
-    The "parent" (not real Qt parent) must be an Annotator, or otherwise
-    have a method ``refreshSolutionImage`` that behaves like Annotator.
+    The parent must be an Marker, or otherwise have a method
+    ``refreshSolutionImage``.
     """
 
     def __init__(self, parent: QWidget, fname: Path) -> None:
         super().__init__()
-        self._annotr = parent
+        self._marker = parent
         grid = QVBoxLayout()
         self.sv = ImageViewWidget(self, fname)
         refreshButton = QPushButton("&Refresh")
@@ -302,7 +302,7 @@ class SolutionViewer(QWidget):
 
     def refresh(self):
         """Re-download the solution image from the server."""
-        fname = self._annotr.refreshSolutionImage()
+        fname = self._marker.refreshSolutionImage()
         self.sv.updateImage(fname)
         if fname is None:
             WarnMsg(self, "Server no longer has a solution.  Try again later?").exec()

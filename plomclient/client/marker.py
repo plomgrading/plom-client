@@ -88,7 +88,8 @@ from .question_labels import (
 from .about_dialog import show_about_dialog
 from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
-from .viewers import QuestionViewDialog, SelectPaperQuestion
+from .key_wrangler import get_key_bindings
+from .viewers import QuestionViewDialog, SelectPaperQuestion, SolutionViewer
 from .tagging import AddRemoveTagDialog
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, SimpleQuestion
 from .useful_classes import _json_path_to_str
@@ -97,6 +98,7 @@ from .quota_dialogs import ExplainQuotaDialog, ReachedQuotaLimitDialog
 from .task_model import MarkerExamModel, ProxyModel
 from .uploader import BackgroundUploader, synchronous_upload
 from . import ui_files
+
 
 if platform.system() == "Darwin":
     # apparently needed for shortcuts under macOS
@@ -135,7 +137,7 @@ class MarkerClient(QWidget):
         """Initialize a new MarkerClient.
 
         Args:
-            Qapp(QApplication): Main client application
+            Qapp (QApplication): Main client application
 
         Keyword Args:
             tmpdir (pathlib.Path/None): a temporary directory for
@@ -154,6 +156,8 @@ class MarkerClient(QWidget):
         self.ui = self
 
         self._annotator = None
+
+        self.solutionView = None
 
         # Save the local temp directory for image files and the class list.
         if not tmpdir:
@@ -542,13 +546,33 @@ class MarkerClient(QWidget):
         self.ui.viewModeMenuButton.setMenu(m)
 
     def build_hamburger(self):
-        # keydata = self.get_key_bindings()
+        # TODO: no customizable keys are needed outside of Annotator
+        # TODO: but later we should store the keybinding here no in Ann
+        keydata = get_key_bindings("default")
+
+        self._store_QShortcuts = []
 
         m = QMenu()
 
         # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
         m.addAction("Refresh task list", self.refresh_server_data)
         m.addAction("View another paper...", self.choose_and_view_other)
+
+        (key,) = keydata["show-solutions"]["keys"]
+        cmd = self.view_solutions
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(cmd)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"View solutions\t{key}", cmd)
+
+        (key,) = keydata["tag-paper"]["keys"]
+        cmd = self.manage_tags
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(cmd)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Tag paper...\t{key}", cmd)
 
         m.addSeparator()
 
@@ -562,8 +586,6 @@ class MarkerClient(QWidget):
         m.addAction("About Plom", lambda: show_about_dialog(self))
 
         m.addSeparator()
-
-        self._store_QShortcuts = []
 
         key = "ctrl+w"
         command = self._close_but_dont_quit
@@ -2017,7 +2039,7 @@ class MarkerClient(QWidget):
             rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
         )
 
-    def getSolutionImage(self) -> Path | None:
+    def _getSolutionImage(self) -> Path | None:
         """Get the file from disc if it exists, else grab from server."""
         f = self.workingDirectory / f"solution.{self.question_idx}.{self.version}.png"
         if f.is_file():
@@ -2040,6 +2062,23 @@ class MarkerClient(QWidget):
             except FileNotFoundError:
                 pass
             return None
+
+    def view_solutions(self):
+        solutionFile = self._getSolutionImage()
+        if solutionFile is None:
+            InfoMsg(self, "No solution has been uploaded").exec()
+            return
+
+        if self.solutionView is None:
+            self.solutionView = SolutionViewer(self, solutionFile)
+        self.solutionView.show()
+        # Issue #5090: get it back it back to the top
+        # On Gnome, `activateWindow` works with shortcut key but
+        # clicking with the mouse requires `raise` as well, except
+        # TODO: it doesn't work, perhaps b/c they do not share a parent
+        self.solutionView.activateWindow()
+        self.solutionView.raise_()
+        # TODO: test on other desktops and OSes
 
     def saveTabStateToServer(self, tab_state):
         """Upload a tab state to the server."""
@@ -2384,6 +2423,12 @@ class MarkerClient(QWidget):
                     return
             self._annotator.close()
 
+        log.debug("Clean up any lingering solution-views etc")
+        if self.solutionView:
+            log.debug("Cleaning a solution-view")
+            self.solutionView.close()
+            self.solutionView = None
+
         while not self.Qapp.downloader.stop(500):
             if (
                 SimpleQuestion(
@@ -2594,24 +2639,14 @@ class MarkerClient(QWidget):
         task_id_str = self.prxM.getPrefix(pr)
         return task_id_str
 
-    def manage_tags(self, task: str | None = None):
-        """Manage the tags of the a task, or the currently selected task.
+    def manage_tags(
+        self, task: str | None = None, *, parent: QWidget | None = None
+    ) -> None:
+        """Manage the tags of a task, or the currently selected task.
 
         Args:
-            task: a string like `"0123g5"` or try to use the current
-                selection if None or omitted.
-        """
-        if not task:
-            task = self.get_current_task_id_or_none()
-        if not task:
-            return
-        self.manage_task_tags(task)
-
-    def manage_task_tags(self, task: str, parent: QWidget | None = None) -> None:
-        """Manage the tags of a task.
-
-        Args:
-            task: A string like "q0003g2" for paper 3 question 2.
+            task: A string like `"0003g2"` for paper 3 question 2 or try
+                to use the current selection if None or omitted.
 
         Keyword Args:
             parent: Which window should be dialog's parent?
@@ -2623,6 +2658,11 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
+        if not task:
+            task = self.get_current_task_id_or_none()
+        if not task:
+            return
+
         if not parent:
             parent = self
 
