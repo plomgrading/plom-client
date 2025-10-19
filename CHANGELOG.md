@@ -13,9 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* Marker: renamed "disconnect" to "change question or server" to clarify why someone might want to click it.
+* Identifier: improved display of progress to clarify we are confirming predictions.
+* Identifier: display info about predictions.
 
 ### Fixed
-
+* Identifier: fix crash when server has no "MLLAP" prediction.
 
 
 

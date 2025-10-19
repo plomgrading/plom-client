@@ -83,18 +83,24 @@ def _(x: str) -> str:
 
 
 class Paper:
-    """A simple container for storing a test's idgroup code (tgv) and associated filename for the image.
+    """A container for storing information about a paper.
 
+    Includes and associated filename for the ID image, etc.
     Once identified also store the studentName and ID-number.
     """
 
     def __init__(
-        self, test, fname=None, *, orientation=0, stat="unidentified", id="", name=""
-    ):
-        # tgv = t0000p00v0
-        # ... = 0123456789
+        self,
+        papernum: int,
+        fname=None,
+        *,
+        orientation=0,
+        stat="unidentified",
+        id="",
+        name="",
+    ) -> None:
         # The test number
-        self.test = test
+        self.test = papernum
         # Set status as unid'd
         self.status = stat
         # no name or id-number yet.
@@ -106,20 +112,6 @@ class Paper:
     def setStatus(self, st):
         self.status = st
 
-    def setReverted(self):
-        # reset the test as unidentified and no ID or name.
-        self.status = "unidentified"
-        self.sid = ""
-        self.sname = ""
-
-    def setID(self, sid, sname):
-        # tgv = t0000p00v0
-        # ... = 0123456789
-        # Set the test as ID'd and store name / number.
-        self.status = "identified"
-        self.sid = sid
-        self.sname = sname
-
 
 class ExamModel(QAbstractTableModel):
     """A tablemodel for handling the test-ID-ing data."""
@@ -128,11 +120,10 @@ class ExamModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self, parent)
         # Data stored in this ordered list.
         self.paperList = []
-        # Headers.
-        self.header = ["Test", "Status", "ID", "Name"]
+        self.header = ["Papernum", "Status", "ID", "Name"]
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Columns are [code, status, ID and Name]
+        # Columns are [papernum, status, ID and Name]
         # Put data in appropriate box when setting.
         if role != Qt.ItemDataRole.EditRole:
             return False
@@ -224,8 +215,6 @@ class IDClient(QWidget):
         uic.loadUi(resources.files(ui_files) / "identifier.ui", self)
         # TODO: temporary workaround
         self.ui = self
-        self.ui.explainButton0.setText("FAQ:\nwhy confirm\nprenames?")
-        self.ui.explainButton0.clicked.connect(self.prenamed_help)
 
         # instance vars that get initialized later
         # Save the local temp directory for image files and the class list.
@@ -405,6 +394,19 @@ class IDClient(QWidget):
     def getPredictions(self):
         """Send request for prediction list to server."""
         self.predictions = self.msgr.IDgetPredictions()
+        if not self.predictions:
+            self.ui.predictionsLabel.setWordWrap(True)
+            self.ui.predictionsLabel.setText(
+                _("Server did not provide any predictions: have you run the AutoIDer?")
+            )
+        else:
+            self.ui.predictionsLabel.setText(
+                _(
+                    "Server provided {num_predictions} predictions".format(
+                        num_predictions=len(self.predictions)
+                    )
+                )
+            )
 
     def setCompleters(self):
         """Set up the studentname + studentID line-edit completers.
@@ -579,7 +581,15 @@ class IDClient(QWidget):
             (pred,) = all_predictions
             predicted_name = get_name_from_id(pred["student_id"])
 
+            try:
+                self.ui.explainButton0.clicked.disconnect()
+            except TypeError:
+                pass
+            self.ui.explainButton0.clicked.connect(self.confirm_prenamed_help)
+            # TRANSLATOR: multiple-line text for this large button
+            self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\nprenames?"))
             self.ui.explainButton0.show()
+
             self.ui.predictionBox0.show()
 
             self.ui.pSIDLabel0.setText(pred["student_id"])
@@ -619,6 +629,16 @@ class IDClient(QWidget):
                         ]
                     )
                 )
+
+                try:
+                    self.ui.explainButton0.clicked.disconnect()
+                except TypeError:
+                    pass
+                self.ui.explainButton0.clicked.connect(self.confirm_prediction_help)
+                # TRANSLATOR: multiple-line text for this large button
+                self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\npredictions?"))
+                self.ui.explainButton0.show()
+
                 # only single option shown, so keep alt-a shortcut
                 self.ui.predButton0.setText("&Accept\nPrediction")
                 if all(p["certainty"] >= 0.3 for p in all_predictions):
@@ -748,16 +768,21 @@ class IDClient(QWidget):
             self.updateImage(r)
 
     def updateProgress(self):
-        # update progressbars
+        """Update progressbars by calling the server and asking about progress."""
         v, m = self.msgr.IDprogressCount()
         if m == 0:
-            v, m = (0, 1)  # avoid (0, 0) indeterminate animation
-            self.ui.idProgressBar.setFormat("No papers to identify")
-            InfoMsg(self, "No papers to identify.").exec()
+            # v, m = (0, 1)  # avoid (0, 0) indeterminate animation
+            self.ui.progressLabel.setText(_("No papers to identify"))
+            self.ui.idProgressBar.setVisible(False)
+            InfoMsg(self, _("No papers to identify.")).exec()
         else:
-            self.ui.idProgressBar.resetFormat()
+            self.ui.progressLabel.setText(_("Confirmed:"))
+            self.ui.idProgressBar.setVisible(True)
         self.ui.idProgressBar.setMaximum(m)
         self.ui.idProgressBar.setValue(v)
+        self.ui.idProgressBar.setToolTip(
+            _("{done} of {total} confirmed by a human").format(done=v, total=m)
+        )
 
     def requestNext(self):
         """Ask the server for an unID'd paper, get file, add to list, update image."""
@@ -1108,16 +1133,40 @@ class IDClient(QWidget):
             self.updateProgress()
         return
 
-    def prenamed_help(self) -> None:
+    def confirm_prenamed_help(self) -> None:
         InfoMsg(
             self,
-            "<p>It might seem unnecessary to confirm the prenamed papers "
-            "but there are several situations to watch out for:</p>"
-            "<ul>"
-            "<li>Student X wrote paper N: they likely scratched out the "
-            "name and substituted their own.</li>"
-            "<li>Student X did not sit the assessment, but the prenamed "
-            "paper was accidentally scanned: it will be "
-            "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
-            "</ul>",
+            _(
+                "<p>It might seem unnecessary to confirm the prenamed papers "
+                "but there are several situations to watch out for:</p>"
+                "<ul>"
+                "<li>Student X wrote paper N: they likely scratched out the "
+                "name and substituted their own.</li>"
+                "<li>Student X did not sit the assessment, but the prenamed "
+                "paper was accidentally scanned: it will be "
+                "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
+                "</ul>",
+            ),
+        ).exec()
+
+    def confirm_prediction_help(self) -> None:
+        InfoMsg(
+            self,
+            _(
+                "<p><b>Why should a human confirm the computer predictions?</b></p>"
+                "<p>The computer vision algorithms to recognize "
+                "handwritten digits are <em>not</em> foolproof.</p>"
+                "<p>It is incredibly unprofessional to return someone "
+                "else's work to a student.</p>"
+                "<hr>"
+                "<p>Pages could be torn or folded, affecting the results.<p>"
+                "<p>Most of the predictions are made by "
+                "comparing to the classlist. "
+                # " (by solving a Linear Assignment Problem). "
+                "Perhaps a student who is not on your classlist has "
+                "written this assesssment; the predictors will still "
+                "pick someone!</p>"
+                "<p>The ID pages are presented in reverse order of "
+                "confidence; we suggest going slow at first.</p>"
+            ),
         ).exec()
