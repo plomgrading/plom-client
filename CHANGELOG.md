@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Identifier: fix crash when server has no "MLLAP" prediction.
+* Fix crash when user leaves and re-enters edit mode, with "compact UI" enabled.
 
 
 
