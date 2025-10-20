@@ -1776,7 +1776,7 @@ class MarkerClient(QWidget):
                 if msg.exec() != QMessageBox.StandardButton.Yes:
                     return
             if self.examModel.getStatusByTask(task) == "To Do":
-                # drop out of edit mode automatically
+                # leave edit mode automatically (we already asked user about saving)
                 log.debug("Leaving edit mode to look at 'To Do' task %s", task)
                 self.leave_annotate_mode_wo_saving()
             if self.examModel.getStatusByTask(task) == "Complete":
