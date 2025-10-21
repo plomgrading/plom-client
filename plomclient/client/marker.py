@@ -1930,7 +1930,20 @@ class MarkerClient(QWidget):
             if not msg.exec() == QMessageBox.StandardButton.Yes:
                 return None
         if status.casefold() in ("complete", "marked", "uploading...", "failed upload"):
+            # If it was our task, we probably already have an plom file (and annotated image, etc)
             oldpname = self.examModel.getPlomFileByTask(task)
+            if str(oldpname) == ".":
+                # Probably it was complete but belonged to another user; if we
+                # recently reassigned it to us (for example) then it doesn't yet
+                # have this data.  Try to download it now...
+                if not self.get_files_for_previously_annotated(task):
+                    # failed, not sure what to do?
+                    return None
+                oldpname = self.examModel.getPlomFileByTask(task)
+                if str(oldpname) == ".":
+                    # still not here?  give up!
+                    return None
+
             with open(oldpname, "r") as fh:
                 pdict = json.load(fh)
 
