@@ -751,12 +751,12 @@ class MarkerClient(QWidget):
             self.marking_history.append(x[0])
 
     def get_files_for_previously_annotated(self, task: str) -> bool:
-        """Loads the annotated image, the plom file, and the original source images.
+        """Downloads the annotated image, the plom file, and the original source images.
 
         TODO: maybe it could not aggressively download the src images: sometimes
         people just want to look at the annotated image.
 
-        Note that the local source image data will be replaced by data
+        Note that any local source image data will be replaced by data
         extracted from the Plom file.
 
         Args:
@@ -765,7 +765,7 @@ class MarkerClient(QWidget):
 
         Returns:
             True if the src_img_data, and the annotation files exist,
-            False if not.  User will have seen an error message if
+            False if not.  User may have seen an error message if
             False is returned.
 
         Raises:
@@ -1717,12 +1717,12 @@ class MarkerClient(QWidget):
             return
         self.refresh_server_data()
 
-    def startTheAnnotator(self, initialData) -> None:
+    def startTheAnnotator(self, initialData: list | tuple) -> None:
         """This fires up the annotation widget for user annotation + marking.
 
         Args:
-            initialData (list): containing things documented elsewhere
-                in :method:`getDataForAnnotator`
+            initialData: containing things documented elsewhere
+                in :method:`get_data_for_annotator`
                 and :func:`plom.client.annotator.Annotator.__init__`.
 
         Returns:
@@ -1848,7 +1848,7 @@ class MarkerClient(QWidget):
                     return
                 self.reassign_task_to_me(task)
 
-        inidata = self.getDataForAnnotator(task)
+        inidata = self.get_data_for_annotator(task)
         if inidata is None:
             return
 
@@ -1884,7 +1884,7 @@ class MarkerClient(QWidget):
             self.updateProgress()
         return self._user_reached_quota_limit
 
-    def getDataForAnnotator(self, task: str) -> tuple | None:
+    def get_data_for_annotator(self, task: str) -> tuple | None:
         """Get the data the Annotator will need for a particular task.
 
         Args:
@@ -1915,9 +1915,8 @@ class MarkerClient(QWidget):
         assert not task.startswith("q")
         paperdir = Path(tempfile.mkdtemp(prefix=task + "_", dir=self.workingDirectory))
         log.debug("create paperdir %s for annotating", paperdir)
-        Gtask = "G" + task
         # note no extension yet
-        aname = paperdir / Gtask
+        aname = paperdir / ("G" + task)
         pdict = None
 
         # TODO: prevent reannotating when its still uploading?
@@ -2217,7 +2216,7 @@ class MarkerClient(QWidget):
 
         Returns:
             The data for the annotator or None as described in
-            :method:`getDataForAnnotator`.
+            :method:`get_data_for_annotator`.
         """
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
@@ -2227,7 +2226,7 @@ class MarkerClient(QWidget):
         task_id_str = self.get_current_task_id_or_none()
         if not task_id_str:
             return None
-        data = self.getDataForAnnotator(task_id_str)
+        data = self.get_data_for_annotator(task_id_str)
         if data is None:
             return None
 
