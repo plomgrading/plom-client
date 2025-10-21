@@ -1892,6 +1892,10 @@ class MarkerClient(QWidget):
     def get_data_for_annotator(self, task: str) -> tuple | None:
         """Get the data the Annotator will need for a particular task.
 
+        Tries to download whatever data is needed, including previous annotations.
+        Not entirely sure at the moment what happens if those downloads take a long
+        time, or fail etc.
+
         Args:
             task: the task id.  If original XXXXgYY, then annotated
                 filenames are GXXXXgYY (G=graded).
@@ -1899,6 +1903,7 @@ class MarkerClient(QWidget):
         Returns:
             A tuple of data or None.  In the case of None, the user has already
             been shown a dialog, or parhaps choose a course of action already.
+            Maybe they this doesn't show dialogs in all unexpected error cases.
         """
         if not self.examModel.is_our_task(task, self.msgr.username):
             InfoMsg(
