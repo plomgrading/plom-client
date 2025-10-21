@@ -1868,6 +1868,7 @@ class MarkerClient(QWidget):
             self._annotator.load_new_question(*inidata)
         else:
             self.startTheAnnotator(inidata)
+        self.moveSelectionToTask(task)
 
     def marker_has_reached_task_limit(self, *, use_cached: bool = True) -> bool:
         """Check whether a marker has reached their task limit if applicable.

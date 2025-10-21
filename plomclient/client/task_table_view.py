@@ -36,6 +36,7 @@ class TaskTableView(QTableView):
     reassignSignal = pyqtSignal(str)
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
+    # Caller (Marker) should update the selection upon receiving these
     want_to_change_task = pyqtSignal(str)
     want_to_annotate_task = pyqtSignal(str)
     refresh_task_list = pyqtSignal()
