@@ -381,8 +381,8 @@ class MarkerClient(QWidget):
         # downloader placeholder support first (?)
         # Note: clicked events occur AFTER the selection has already changed
         # self.ui.tableView.clicked.connect(self.annotate_task)
-        # TODO: currently not firing?  Proabbly b/c of mouseEvent hackery
-        self.ui.tableView.doubleClicked.connect(self.annotate_task)
+        # TODO: currently not firing?  Probably b/c of mouseEvent hackery
+        # self.ui.tableView.doubleClicked.connect(self.annotate_task)
         self.ui.tableView.annotateSignal.connect(self.annotate_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
