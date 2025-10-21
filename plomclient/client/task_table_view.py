@@ -74,12 +74,10 @@ class TaskTableView(QTableView):
                 # the rows change size b/w clicks (!).  But possibly more mundane
                 # things like imprecise dblclicks.
                 log.warn(
-                    f"dblclick on row {r} task {task} "
-                    f"but previous click was on {self._prev_clicked_task}... "
-                    "CONTINUING FOR DEBUGGING BUT SHOULD FILTER!"
+                    f"filtering dblclick on row {r} task {task} "
+                    f"b/c previous click was on {self._prev_clicked_task}!"
                 )
-                # TODO: change to return, comment out print or log instead
-                # return
+                return
             log.debug(f"dblclick on row {r}, emitting want_to_annotate({task})...")
             self.want_to_annotate_task.emit(task)
         super().mouseDoubleClickEvent(event)
