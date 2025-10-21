@@ -284,8 +284,11 @@ class MarkerClient(QWidget):
         self._requestNext(enter_annotate_mode_if_possible=True)
         # reset the view so whole exam shown.
         self.testImg.resetView()
-        # resize the table too.
-        QTimer.singleShot(100, self.ui.tableView.resizeRowsToContents)
+
+        # Careful: disabled for Issue #5098, but it might make the table more
+        # more compact (but should be responsibility of task_table_view.py)
+        # QTimer.singleShot(2000, self.ui.tableView.resizeRowsToContents)
+
         log.debug("Marker main thread: " + str(threading.get_ident()))
 
         if self.allowBackgroundOps:
@@ -1228,9 +1231,6 @@ class MarkerClient(QWidget):
         # this might redraw it twice: oh well this is not common operation
         # TODO: not sure, it may be more common now...
         self._updateCurrentlySelectedRow()
-        # Clean up the table
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1423,6 +1423,10 @@ class MarkerClient(QWidget):
                 self.download_task_list()
 
         # TODO: re-queue any failed uploads, Issue #3497
+
+        # Note: Issue #5098, we had problems with this happening between dblclicks,
+        # but calling after an explicit server refresh probably ok... (?)
+        # self.ui.tableView.resizeRowsToContents
 
         self.updateProgress()
 
@@ -2746,8 +2750,6 @@ class MarkerClient(QWidget):
         except ValueError:
             # we might not own the task for which we've have been managing tags
             pass
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def setFilter(self):
         """Sets a filter tag."""

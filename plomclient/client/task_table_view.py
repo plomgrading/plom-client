@@ -47,8 +47,8 @@ class TaskTableView(QTableView):
         self.setSortingEnabled(True)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        # Resize to fit the contents
-        self.resizeRowsToContents()
+        # Issue #5098: was sneaking in the midst of a dblclick: disable for now
+        # self.resizeRowsToContents()
         self.horizontalHeader().setStretchLastSection(True)
         self._prev_clicked_task = None
 
