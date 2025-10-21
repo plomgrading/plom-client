@@ -1818,7 +1818,7 @@ class MarkerClient(QWidget):
         self._annotate_task(task)
 
     def _annotate_task(self, task: str | None = None) -> None:
-        """Lower-level non-interactive start/switch Annotator.
+        """Lower-level somewhat non-interactive start/switch Annotator.
 
         If the task is "To Do", try to claim it.
 
