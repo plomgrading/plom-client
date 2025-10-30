@@ -335,7 +335,7 @@ coverage:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.10.5
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.11.0
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -369,8 +369,8 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     # These are pinned at 3.x.*: should be manually bumped sometimes
-    - pip install --break-system-packages astroid~=3.3.11  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=3.3.8
+    - pip install --break-system-packages astroid~=4.0.1  # codespell:ignore astroid
+    - pip install --break-system-packages pylint~=4.0.2
   script:
     - pylint plomclient
   allow_failure: true
@@ -431,7 +431,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.404
+    - pip install --break-system-packages pyright~=1.1.407
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
