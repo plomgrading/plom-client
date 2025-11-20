@@ -28,10 +28,10 @@
 #       when: never
 #     - if: '$CI_COMMIT_BRANCH'
 
-image: docker:28.5.1
+image: docker:28.5.2
 
 services:
-  - docker:28.5.1-dind
+  - docker:28.5.2-dind
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -335,7 +335,7 @@ coverage:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.11.0
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.12.0
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -368,9 +368,8 @@ pylint:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    # These are pinned at 3.x.*: should be manually bumped sometimes
-    - pip install --break-system-packages astroid~=4.0.1  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=4.0.2
+    - pip install --break-system-packages astroid~=4.0.2  # codespell:ignore astroid
+    - pip install --break-system-packages pylint~=4.0.3
   script:
     - pylint plomclient
   allow_failure: true
