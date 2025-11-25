@@ -1667,6 +1667,8 @@ class RubricWidget(QWidget):
         w = self.RTW.currentWidget()
         if w.is_group_tab():
             self._new_or_edit_rubric(None, add_to_group=w.shortname)
+        elif w.is_user_tab():
+            self._new_or_edit_rubric(None, add_to_user_tab=w.shortname)
         else:
             self._new_or_edit_rubric(None)
 
@@ -1773,6 +1775,7 @@ class RubricWidget(QWidget):
         edit: bool = False,
         index: int | None = None,
         add_to_group: str | None = None,
+        add_to_user_tab: str | None = None,
     ) -> None:
         """Open a dialog to edit a comment or make a new one.
 
@@ -1790,6 +1793,9 @@ class RubricWidget(QWidget):
                 to a group with this name.  For example, a UI could pre-select
                 that option.  Mutually exclusive with `edit`, `index`, or
                 at least ill-defined what happens if you pass those as well.
+            add_to_user_tab: if set to a string, the user might be adding
+                to a custom tab.  This is a bit different from `add_to_group`
+                because currently currently custom tabs are a different feature.
 
         Returns:
             None, does its work through side effects on the comment list.
@@ -1881,6 +1887,11 @@ class RubricWidget(QWidget):
                 return
             self.rubrics.append(new_rubric)
 
+        if add_to_user_tab:
+            # User originally wanted to add this to a custom tab
+            for tab in self.get_user_tabs():
+                if tab.shortname == add_to_user_tab:
+                    tab.append_by_rid(new_rubric["rid"])
         self.setRubricTabsFromState(self.get_tab_rubric_lists())
 
     def get_tab_rubric_lists(self) -> dict[str, list[Any]]:

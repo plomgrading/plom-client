@@ -125,6 +125,8 @@ class Chooser(QDialog):
         )
         # Default to INFO log level
         logging.getLogger().setLevel(self.lastTime.get("LogLevel", "Info").upper())
+        # Disable PyQt6.uic debugging, its a bit much
+        logging.getLogger("PyQt6").setLevel("INFO")
 
         s = f"Plom Client {__version__} (communicates with api {self.APIVersion})"
         log.info(s)

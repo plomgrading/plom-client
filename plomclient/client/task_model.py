@@ -428,11 +428,11 @@ class MarkerExamModel(QStandardItemModel):
         return self._get_marking_time(r)
 
     def getAnnotatedFileByTask(self, task: str) -> Path:
-        """Returns the filename of the annotated image."""
+        """Returns the filename of the annotated image or `Path(".")` if we don't have one."""
         return Path(self._getDataByTask(task, _idx_annotated_file))
 
     def getPlomFileByTask(self, task: str) -> Path:
-        """Returns the filename of the plom json data."""
+        """Returns the filename of the plom json data or `Path(".")` if we don't have one."""
         return Path(self._getDataByTask(task, _idx_plom_file))
 
     def getPaperDirByTask(self, task: str) -> str:
