@@ -13,8 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* Adding a rubric while a custom tab is select automatically adds the rubric to that tab.
+* Automatically move between edit and view mode in more cases, and only when possible.
+* Generally, double-clicking a task indicates "I want to mark this one" and single click means "I want to look at this".
 
 ### Fixed
+* Fixes rare crashes involving double-click events over two tasks.
+* Don't auto resize the task list so much, as that was jarring in the middle of a double-click, for example.
 
 
 
