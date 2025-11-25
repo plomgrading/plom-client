@@ -284,8 +284,11 @@ class MarkerClient(QWidget):
         self._requestNext(enter_annotate_mode_if_possible=True)
         # reset the view so whole exam shown.
         self.testImg.resetView()
-        # resize the table too.
-        QTimer.singleShot(100, self.ui.tableView.resizeRowsToContents)
+
+        # Careful: disabled for Issue #5098, but it might make the table more
+        # more compact (but should be responsibility of task_table_view.py)
+        # QTimer.singleShot(2000, self.ui.tableView.resizeRowsToContents)
+
         log.debug("Marker main thread: " + str(threading.get_ident()))
 
         if self.allowBackgroundOps:
@@ -381,8 +384,8 @@ class MarkerClient(QWidget):
         # downloader placeholder support first (?)
         # Note: clicked events occur AFTER the selection has already changed
         # self.ui.tableView.clicked.connect(self.annotate_task)
-        # TODO: currently not firing?  Proabbly b/c of mouseEvent hackery
-        self.ui.tableView.doubleClicked.connect(self.annotate_task)
+        # TODO: currently not firing?  Probably b/c of mouseEvent hackery
+        # self.ui.tableView.doubleClicked.connect(self.annotate_task)
         self.ui.tableView.annotateSignal.connect(self.annotate_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
@@ -655,13 +658,23 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    def _exit_annotate_mode(self):
+    def _react_to_annotator_close(self) -> None:
         # Careful with this: its currently more "in reaction to annotr closing"
         # rather than "tell/force the annotator to close".
         self._annotator = None
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
+
+    def leave_annotate_mode_wo_saving(self) -> None:
+        """Tell/force annotator to close (without asking the user about saving work).
+
+        If there is no Annotator, this does nothing.
+        """
+        if not self._annotator:
+            return
+        self._annotator.close_current_task()
+        self._annotator.close()
 
     def change_tag_range_options(self):
         all_tags = [tag for key, tag in self.msgr.get_all_tags()]
@@ -741,12 +754,12 @@ class MarkerClient(QWidget):
             self.marking_history.append(x[0])
 
     def get_files_for_previously_annotated(self, task: str) -> bool:
-        """Loads the annotated image, the plom file, and the original source images.
+        """Downloads the annotated image, the plom file, and the original source images.
 
         TODO: maybe it could not aggressively download the src images: sometimes
         people just want to look at the annotated image.
 
-        Note that the local source image data will be replaced by data
+        Note that any local source image data will be replaced by data
         extracted from the Plom file.
 
         Args:
@@ -755,7 +768,7 @@ class MarkerClient(QWidget):
 
         Returns:
             True if the src_img_data, and the annotation files exist,
-            False if not.  User will have seen an error message if
+            False if not.  User may have seen an error message if
             False is returned.
 
         Raises:
@@ -1218,9 +1231,6 @@ class MarkerClient(QWidget):
         # this might redraw it twice: oh well this is not common operation
         # TODO: not sure, it may be more common now...
         self._updateCurrentlySelectedRow()
-        # Clean up the table
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1413,6 +1423,10 @@ class MarkerClient(QWidget):
                 self.download_task_list()
 
         # TODO: re-queue any failed uploads, Issue #3497
+
+        # Note: Issue #5098, we had problems with this happening between dblclicks,
+        # but calling after an explicit server refresh probably ok... (?)
+        # self.ui.tableView.resizeRowsToContents
 
         self.updateProgress()
 
@@ -1707,12 +1721,12 @@ class MarkerClient(QWidget):
             return
         self.refresh_server_data()
 
-    def startTheAnnotator(self, initialData) -> None:
+    def startTheAnnotator(self, initialData: list | tuple) -> None:
         """This fires up the annotation widget for user annotation + marking.
 
         Args:
-            initialData (list): containing things documented elsewhere
-                in :method:`getDataForAnnotator`
+            initialData: containing things documented elsewhere
+                in :method:`get_data_for_annotator`
                 and :func:`plom.client.annotator.Annotator.__init__`.
 
         Returns:
@@ -1766,29 +1780,19 @@ class MarkerClient(QWidget):
                 if msg.exec() != QMessageBox.StandardButton.Yes:
                     return
             if self.examModel.getStatusByTask(task) == "To Do":
-                InfoMsg(
-                    self,
-                    f"Task {task} may not be assigned to you. "
-                    "If you want to look at it, close the annotator "
-                    'and change to read-only "view-mode".  '
-                    "If you want to mark this paper, you can try to claim it.",
-                ).exec()
-                # TODO: QoL says put a "claim" button in the dialog
-                # TODO: or easier yes/no: "Do you want to claim it?"
-                return
+                # leave edit mode automatically (we already asked user about saving)
+                log.debug("Leaving edit mode to look at 'To Do' task %s", task)
+                self.leave_annotate_mode_wo_saving()
             if self.examModel.getStatusByTask(task) == "Complete":
                 if not self.examModel.is_our_task(task, self.msgr.username):
-                    InfoMsg(
-                        self,
-                        # TODO: useful to say what username here
-                        f"Task {task} is not our task. "
-                        "If you want to look at it, close the annotator "
-                        'and change to read-only "view-mode".  '
-                        "(If you want to edit this task, you'll need to "
-                        "reassign the task to yourself).",
-                    ).exec()
-                    return
-            self._annotator.close_current_task()
+                    log.debug(
+                        "Leaving edit mode to look at someone's 'Complete' task %s",
+                        task,
+                    )
+                    self.leave_annotate_mode_wo_saving()
+
+            if self._annotator:
+                self._annotator.close_current_task()
         self.moveSelectionToTask(task)
 
     def annotate_task(self, task: str | None = None) -> None:
@@ -1818,23 +1822,37 @@ class MarkerClient(QWidget):
         self._annotate_task(task)
 
     def _annotate_task(self, task: str | None = None) -> None:
-        """Lower-level non-interactive start/switch Annotator."""
+        """Lower-level somewhat non-interactive start/switch Annotator.
+
+        If the task is "To Do", try to claim it.
+
+        If the task belongs to someone else, ask the user before
+        reassigning to ourselves, b/c users otherwise might be unaware
+        they are taking tasks from others.
+        """
         if not task:
             task = self.get_current_task_id_or_none()
         if not task:
             return
 
-        if self.examModel.getStatusByTask(task) == "To Do":
-            log.warn("Ignored attempt to annotate 'To Do' task %s", task)
-            return
-        if self.examModel.getStatusByTask(task) == "Complete":
+        status = self.examModel.getStatusByTask(task).casefold()
+        if status == "to do":
+            self.claim_task(task)
+            log.info("Claiming 'To Do' task %s so we can annotate it...", task)
+        elif status == "complete":
             if not self.examModel.is_our_task(task, self.msgr.username):
-                log.warn(
-                    "Ignored attempt to annotate 'Complete' task %s, not our's", task
+                user = self.examModel.get_username_by_task(task)
+                msg = SimpleQuestion(
+                    self,
+                    f"Task {task} belongs to {user}.  If you want "
+                    "to edit it, you can try to take it for yourself.",
+                    question="Do you want to reassign the task to yourself?",
                 )
-                return
+                if msg.exec() == QMessageBox.StandardButton.No:
+                    return
+                self.reassign_task_to_me(task)
 
-        inidata = self.getDataForAnnotator(task)
+        inidata = self.get_data_for_annotator(task)
         if inidata is None:
             return
 
@@ -1854,6 +1872,7 @@ class MarkerClient(QWidget):
             self._annotator.load_new_question(*inidata)
         else:
             self.startTheAnnotator(inidata)
+        self.moveSelectionToTask(task)
 
     def marker_has_reached_task_limit(self, *, use_cached: bool = True) -> bool:
         """Check whether a marker has reached their task limit if applicable.
@@ -1870,8 +1889,12 @@ class MarkerClient(QWidget):
             self.updateProgress()
         return self._user_reached_quota_limit
 
-    def getDataForAnnotator(self, task: str) -> tuple | None:
+    def get_data_for_annotator(self, task: str) -> tuple | None:
         """Get the data the Annotator will need for a particular task.
+
+        Tries to download whatever data is needed, including previous annotations.
+        Not entirely sure at the moment what happens if those downloads take a long
+        time, or fail etc.
 
         Args:
             task: the task id.  If original XXXXgYY, then annotated
@@ -1880,6 +1903,7 @@ class MarkerClient(QWidget):
         Returns:
             A tuple of data or None.  In the case of None, the user has already
             been shown a dialog, or parhaps choose a course of action already.
+            Maybe they this doesn't show dialogs in all unexpected error cases.
         """
         if not self.examModel.is_our_task(task, self.msgr.username):
             InfoMsg(
@@ -1901,9 +1925,8 @@ class MarkerClient(QWidget):
         assert not task.startswith("q")
         paperdir = Path(tempfile.mkdtemp(prefix=task + "_", dir=self.workingDirectory))
         log.debug("create paperdir %s for annotating", paperdir)
-        Gtask = "G" + task
         # note no extension yet
-        aname = paperdir / Gtask
+        aname = paperdir / ("G" + task)
         pdict = None
 
         # TODO: prevent reannotating when its still uploading?
@@ -1916,7 +1939,20 @@ class MarkerClient(QWidget):
             if not msg.exec() == QMessageBox.StandardButton.Yes:
                 return None
         if status.casefold() in ("complete", "marked", "uploading...", "failed upload"):
+            # If it was our task, we probably already have an plom file (and annotated image, etc)
             oldpname = self.examModel.getPlomFileByTask(task)
+            if str(oldpname) == ".":
+                # Probably it was complete but belonged to another user; if we
+                # recently reassigned it to us (for example) then it doesn't yet
+                # have this data.  Try to download it now...
+                if not self.get_files_for_previously_annotated(task):
+                    # failed, not sure what to do?
+                    return None
+                oldpname = self.examModel.getPlomFileByTask(task)
+                if str(oldpname) == ".":
+                    # still not here?  give up!
+                    return None
+
             with open(oldpname, "r") as fh:
                 pdict = json.load(fh)
 
@@ -2103,7 +2139,7 @@ class MarkerClient(QWidget):
         """
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self._exit_annotate_mode()
+        self._react_to_annotator_close()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
@@ -2203,7 +2239,7 @@ class MarkerClient(QWidget):
 
         Returns:
             The data for the annotator or None as described in
-            :method:`getDataForAnnotator`.
+            :method:`get_data_for_annotator`.
         """
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
@@ -2213,7 +2249,7 @@ class MarkerClient(QWidget):
         task_id_str = self.get_current_task_id_or_none()
         if not task_id_str:
             return None
-        data = self.getDataForAnnotator(task_id_str)
+        data = self.get_data_for_annotator(task_id_str)
         if data is None:
             return None
 
@@ -2421,7 +2457,10 @@ class MarkerClient(QWidget):
                     if event:
                         event.ignore()
                     return
-            self._annotator.close()
+
+            # Maybe this is better than just .close, to avoid asking user twice
+            self.leave_annotate_mode_wo_saving()
+            # self.close()
 
         log.debug("Clean up any lingering solution-views etc")
         if self.solutionView:
@@ -2716,8 +2755,6 @@ class MarkerClient(QWidget):
         except ValueError:
             # we might not own the task for which we've have been managing tags
             pass
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def setFilter(self):
         """Sets a filter tag."""

@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QContextMenuEvent, QCursor, QMouseEvent
 from PyQt6.QtWidgets import (
@@ -12,6 +14,9 @@ from PyQt6.QtWidgets import (
     QMenu,
     QTableView,
 )
+
+
+log = logging.getLogger("tasklist")
 
 
 class TaskTableView(QTableView):
@@ -31,6 +36,7 @@ class TaskTableView(QTableView):
     reassignSignal = pyqtSignal(str)
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
+    # Caller (Marker) should update the selection upon receiving these
     want_to_change_task = pyqtSignal(str)
     want_to_annotate_task = pyqtSignal(str)
     refresh_task_list = pyqtSignal()
@@ -41,9 +47,10 @@ class TaskTableView(QTableView):
         self.setSortingEnabled(True)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        # Resize to fit the contents
-        self.resizeRowsToContents()
+        # Issue #5098: was sneaking in the midst of a dblclick: disable for now
+        # self.resizeRowsToContents()
         self.horizontalHeader().setStretchLastSection(True)
+        self._prev_clicked_task = None
 
     def keyPressEvent(self, event):
         """Emit the annotateSignal on Return/Enter key, else pass the event onwards."""
@@ -61,7 +68,17 @@ class TaskTableView(QTableView):
             r = clicked_idx.row()
             # TODO: here we muck around in the model, which we're probably not supposed to
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
-            # print(f"DEBUG: have dblclick on row {r}, task {task}, emitting annotate...")
+            if self._prev_clicked_task != task:
+                # B/c we do the filtering ourselves (bad!) we have worry about
+                # the two clicks being on different rows, e.g., Issue #5098, where
+                # the rows change size b/w clicks (!).  But possibly more mundane
+                # things like imprecise dblclicks.
+                log.warn(
+                    f"filtering dblclick on row {r} task {task} "
+                    f"b/c previous click was on {self._prev_clicked_task}!"
+                )
+                return
+            log.debug(f"dblclick on row {r}, emitting want_to_annotate({task})...")
             self.want_to_annotate_task.emit(task)
         super().mouseDoubleClickEvent(event)
 
@@ -84,12 +101,11 @@ class TaskTableView(QTableView):
         clicked_idx = self.indexAt(event.pos())
         if clicked_idx.isValid():
             r = clicked_idx.row()
-            # print(f"DEBUG: we have a click on a value index, row {r}")
             # TODO: here we muck around in the model, which we're probably not supposed to
             task = self.model().getPrefix(r)  # type: ignore[union-attr]
-            # print(f"DEBUG: this is task {task}")
+            self._prev_clicked_task = task
             if event.button() == Qt.MouseButton.LeftButton:
-                # print(f"DEBUG: leftclick so emitting `want_to_change_task({task})`")
+                log.debug(f"leftclick so emitting `want_to_change_task({task})`")
                 self.want_to_change_task.emit(task)
                 # print("delaying 1 seconds")
                 # for __ in range(10):
