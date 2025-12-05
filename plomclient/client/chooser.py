@@ -256,16 +256,6 @@ class Chooser(QDialog):
             # store ref in Qapp to avoid garbase collection
             self.Qapp.marker = markerwin
         elif which_subapp == "Identifier":
-            if len(role) and role != "lead_marker":
-                InfoMsg(
-                    self,
-                    "<p>Only lead marker should be identifying papers.</p>"
-                    "<p>You may want to ask your instructor/manager to"
-                    " promote your account.  (In the future this might be"
-                    " enforced, but isn't as of Oct 2024.)</p>",
-                ).exec()
-                # TODO: maybe this should be enforced serverside?
-                # return
             self.setEnabled(False)
             self.hide()
             idwin = IDClient(self.Qapp, tmpdir=self._workdir)
