@@ -1261,6 +1261,9 @@ class AddRubricDialog(QDialog):
                 "parameters": params,
             }
         )
+        # TODO: once we drop support for legacy, there is no need (and
+        # probably undesirable) to send the display delta.
+        # rubric.pop("display_delta", None)
         if not self.is_edit():
             rubric.update(
                 {
