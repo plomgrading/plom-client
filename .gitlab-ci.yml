@@ -369,7 +369,7 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages astroid~=4.0.2  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=4.0.3
+    - pip install --break-system-packages pylint~=4.0.4
   script:
     - pylint plomclient
   allow_failure: true
