@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+
+### Fixed
+
+
+
+
+## [0.19.4] - 2025-12-09
+
+### Changed
 * Adding a rubric while a custom tab is select automatically adds the rubric to that tab.
 * Automatically move between edit and view mode in more cases, and only when possible.
 * Generally, double-clicking a task indicates "I want to mark this one" and single click means "I want to look at this".
@@ -134,7 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.19.3...main
+[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.19.4...main
+[0.19.4]: https://gitlab.com/plom/plom-client/-/compare/v0.19.3...v0.19.4
 [0.19.3]: https://gitlab.com/plom/plom-client/-/compare/v0.19.2...v0.19.3
 [0.19.2]: https://gitlab.com/plom/plom-client/-/compare/v0.19.1...v0.19.2
 [0.19.1]: https://gitlab.com/plom/plom-client/-/compare/v0.19.0...v0.19.1
