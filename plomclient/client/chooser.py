@@ -240,9 +240,6 @@ class Chooser(QDialog):
             role = ""
 
         if which_subapp == "Marker":
-            if len(role) and role not in ["marker", "lead_marker"]:
-                WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
-                return
             question = self.getQuestion()
             v = self.getv()
             assert question is not None

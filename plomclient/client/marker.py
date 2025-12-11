@@ -1122,6 +1122,9 @@ class MarkerClient(QWidget):
             except PlomTakenException as err:
                 log.info("will keep trying as task already taken: {}".format(err))
                 continue
+            except PlomNoPermission as err:
+                WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
+                return
         if update_select:
             self.moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
@@ -1182,6 +1185,7 @@ class MarkerClient(QWidget):
             None
 
         Raises:
+            PlomNoPermission
             PlomTakenException
             PlomVersionMismatchException
         """
@@ -1616,6 +1620,7 @@ class MarkerClient(QWidget):
         try:
             self.claim_task_and_trigger_downloads(task)
         except (
+            PlomNoPermission,
             PlomTakenException,
             PlomRangeException,
             PlomVersionMismatchException,
