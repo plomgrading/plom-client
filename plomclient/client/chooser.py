@@ -234,18 +234,16 @@ class Chooser(QDialog):
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
         self.Qapp.downloader = Downloader(img_cache_dir, msgr=self.messenger)
+        try:
+            roles = self.messenger.get_user_roles()
+        except PlomNoServerSupportException:
+            # yucky hacks for legacy, not around much longer!
+            roles = ["marker", "identifier"]
 
         if which_subapp == "Marker":
-            if self.messenger.is_server_api_less_than(116):
-                try:
-                    role = self.messenger.get_user_role()
-                except PlomNoServerSupportException:
-                    role = ""
-                # TODO: delete this special-casing once we drop support for v0.19.x servers
-                if len(role) and role not in ["marker", "lead_marker"]:
-                    WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
-                    return
-
+            if "marker" not in roles:
+                WarnMsg(self, 'Only "marker" accounts can mark papers!').exec()
+                return
             question = self.getQuestion()
             v = self.getv()
             assert question is not None
@@ -259,6 +257,20 @@ class Chooser(QDialog):
             # store ref in Qapp to avoid garbase collection
             self.Qapp.marker = markerwin
         elif which_subapp == "Identifier":
+            if "identifier" not in roles:
+                if self.messenger.is_server_api_less_than(116):
+                    InfoMsg(
+                        self,
+                        '<p>Only "identifier" or "lead marker" accounts should '
+                        " be used for identifying papers.</p>"
+                        "<p>(This is an older server: the rule is not enforced.)</p>",
+                    ).exec()
+                    # return
+                else:
+                    WarnMsg(
+                        self, 'Only "identifier" accounts can identify papers!'
+                    ).exec()
+                    return
             self.setEnabled(False)
             self.hide()
             idwin = IDClient(self.Qapp, tmpdir=self._workdir)
