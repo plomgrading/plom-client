@@ -234,12 +234,18 @@ class Chooser(QDialog):
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
         self.Qapp.downloader = Downloader(img_cache_dir, msgr=self.messenger)
-        try:
-            role = self.messenger.get_user_role()
-        except PlomNoServerSupportException:
-            role = ""
 
         if which_subapp == "Marker":
+            if self.messenger.is_server_api_less_than(116):
+                try:
+                    role = self.messenger.get_user_role()
+                except PlomNoServerSupportException:
+                    role = ""
+                # TODO: delete this special-casing once we drop support for v0.19.x servers
+                if len(role) and role not in ["marker", "lead_marker"]:
+                    WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
+                    return
+
             question = self.getQuestion()
             v = self.getv()
             assert question is not None
