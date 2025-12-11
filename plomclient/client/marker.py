@@ -1407,7 +1407,7 @@ class MarkerClient(QWidget):
             # Not "you are lead marker" but "you can view all tasks".
             # To my mind, "lead_marker" etc is some server detail that
             # could stay on the server.
-            if self.msgr.get_user_role() == "lead_marker":
+            if "lead_marker" in self.msgr.get_user_roles():
                 self.annotatorSettings["user_can_view_all_tasks"] = True
             else:
                 self.annotatorSettings["user_can_view_all_tasks"] = False
