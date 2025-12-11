@@ -971,6 +971,11 @@ class IDClient(QWidget):
             WarnMsg(self, str(err), info=hints, info_pre=False).exec()
             self.exM.revertStudent(index)
             return False
+        except PlomTakenException as err:
+            log.error("Not allowed to submit ID for %s: %s", code, err)
+            WarnMsg(self, f'Not allowed to submit ID for {code}:\n"{err}"').exec()
+            self.exM.revertStudent(index)
+            return False
         except PlomBenignException as err:
             log.error("Somewhat unexpected error when returning %s: %s", code, err)
             WarnMsg(self, f'Unexpected but benign exception:\n"{err}"').exec()
