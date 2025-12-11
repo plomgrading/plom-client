@@ -1122,6 +1122,9 @@ class MarkerClient(QWidget):
             except PlomTakenException as err:
                 log.info("will keep trying as task already taken: {}".format(err))
                 continue
+            except PlomNoPermission as err:
+                WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
+                return
         if update_select:
             self.moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
@@ -1182,6 +1185,7 @@ class MarkerClient(QWidget):
             None
 
         Raises:
+            PlomNoPermission
             PlomTakenException
             PlomVersionMismatchException
         """
@@ -1403,7 +1407,7 @@ class MarkerClient(QWidget):
             # Not "you are lead marker" but "you can view all tasks".
             # To my mind, "lead_marker" etc is some server detail that
             # could stay on the server.
-            if self.msgr.get_user_role() == "lead_marker":
+            if "lead_marker" in self.msgr.get_user_roles():
                 self.annotatorSettings["user_can_view_all_tasks"] = True
             else:
                 self.annotatorSettings["user_can_view_all_tasks"] = False
@@ -1616,6 +1620,7 @@ class MarkerClient(QWidget):
         try:
             self.claim_task_and_trigger_downloads(task)
         except (
+            PlomNoPermission,
             PlomTakenException,
             PlomRangeException,
             PlomVersionMismatchException,
