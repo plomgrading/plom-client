@@ -53,7 +53,6 @@ from plomclient.plom_exceptions import (
     PlomExistingLoginException,
     PlomServerNotReady,
     PlomSSLError,
-    PlomNoServerSupportException,
 )
 from . import __version__
 from . import MarkerClient, IDClient
