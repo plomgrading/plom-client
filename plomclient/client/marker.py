@@ -255,9 +255,6 @@ class MarkerClient(QWidget):
             ErrorMsg(self, str(err)).exec()
             return
 
-        if not self.msgr.is_legacy_server():
-            assert self.msgr.username
-            self.annotatorSettings["nextTaskPreferTagged"] = "@" + self.msgr.username
         self.update_get_next_button()
 
         self.refresh_server_data()
@@ -1370,15 +1367,12 @@ class MarkerClient(QWidget):
         self.annotatorSettings["feedback_rules"] = info.get(
             "feedback_rules", static_feedback_rules_data
         )
-        if not self.msgr.is_legacy_server():
-            # TODO: in future, I think I prefer a rules-based framework
-            # Not "you are lead marker" but "you can view all tasks".
-            # To my mind, "lead_marker" etc is some server detail that
-            # could stay on the server.
-            if "lead_marker" in self.msgr.get_user_roles():
-                self.annotatorSettings["user_can_view_all_tasks"] = True
-            else:
-                self.annotatorSettings["user_can_view_all_tasks"] = False
+        # TODO: in future, I think I prefer a rules-based framework
+        # Not "you are lead marker" but "you can view all tasks".
+        # To my mind, "lead_marker" etc is some server detail that
+        # could stay on the server.
+        if "lead_marker" in self.msgr.get_user_roles():
+            self.annotatorSettings["user_can_view_all_tasks"] = True
         else:
             self.annotatorSettings["user_can_view_all_tasks"] = False
         if not self.annotatorSettings["user_can_view_all_tasks"]:
@@ -1386,13 +1380,11 @@ class MarkerClient(QWidget):
             self.ui.tasksComboBox.setCurrentIndex(0)
             self._show_only_my_tasks()
 
-        # legacy does it own thing earlier in the workflow
-        if not self.msgr.is_legacy_server():
-            if self.ui.tasksComboBox.currentIndex() == 0:
-                assert self.msgr.username is not None
-                self.download_task_list(username=self.msgr.username)
-            else:
-                self.download_task_list()
+        if self.ui.tasksComboBox.currentIndex() == 0:
+            assert self.msgr.username is not None
+            self.download_task_list(username=self.msgr.username)
+        else:
+            self.download_task_list()
 
         # TODO: re-queue any failed uploads, Issue #3497
 
@@ -2252,10 +2244,7 @@ class MarkerClient(QWidget):
         stat = self.examModel.getStatusByTask(task)
         # maybe it changed while we waited for the upload
         if stat == "uploading...":
-            if self.msgr.is_legacy_server():
-                self.examModel.setStatusByTask(task, "marked")
-            else:
-                self.examModel.setStatusByTask(task, "Complete")
+            self.examModel.setStatusByTask(task, "Complete")
         self.updateProgress(info=progress_info)
 
     def backgroundUploadFailed(

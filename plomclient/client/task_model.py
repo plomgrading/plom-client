@@ -53,7 +53,6 @@ _idx_integrity = 10
 # TODO: "reassigned"?
 local_possible_statuses = (
     "untouched",
-    "marked",  # deprecated, legacy still uses
     "complete",
     "uploading...",
     "failed upload",

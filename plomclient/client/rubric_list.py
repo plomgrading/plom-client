@@ -1715,15 +1715,6 @@ class RubricWidget(QWidget):
                 "let you modify it.</p>"
             )
             edit_button = False
-        elif self._parent.parentMarkerUI.msgr.is_legacy_server():
-            # TODO: don't like "drilling up": maybe Annotator should know legacy or not
-            msg = (
-                "<p>You did not create this rubric "
-                f"(it was created by &ldquo;{com['username']}&rdquo;).  "
-                "You are connected to a legacy server which does not "
-                " support modification of other user's rubrics.</p>"
-            )
-            edit_button = False
         else:
             # TODO: Displays username instead of preferred name, Issue #3048
             # TODO: would be nice if this dialog *knew* about the server settings
