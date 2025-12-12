@@ -260,9 +260,6 @@ class MarkerClient(QWidget):
             self.annotatorSettings["nextTaskPreferTagged"] = "@" + self.msgr.username
         self.update_get_next_button()
 
-        # Get list of papers already marked and add to table.
-        if self.msgr.is_legacy_server():
-            self.loadMarkedList()
         self.refresh_server_data()
 
         # Connect the view **after** list updated.
@@ -723,35 +720,6 @@ class MarkerClient(QWidget):
             button_text += " (!)"
         self.getMoreButton.setText(button_text)
         self.getMoreButton.setToolTip("\n".join(tips))
-
-    def loadMarkedList(self):
-        """Loads the list of previously marked papers into self.examModel.
-
-        Returns:
-            None
-
-        Deprecated: only called on legacy servers.
-
-        Note: this tries to update the history between sessions; we don't
-        try to do that on the new server, partially b/c the ordering seems
-        fragile and I'm not sure its necessary.
-        """
-        # Ask server for list of previously marked papers
-        markedList = self.msgr.MrequestDoneTasks(self.question_idx, self.version)
-        self.marking_history = []
-        for x in markedList:
-            # TODO: might not the "markedList" have some other statuses?
-            self.examModel.add_task(
-                x[0],
-                src_img_data=[],
-                status="marked",
-                mark=x[1],
-                marking_time=x[2],
-                tags=x[3],
-                integrity_check=x[4],
-                username=self.msgr.username,
-            )
-            self.marking_history.append(x[0])
 
     def get_files_for_previously_annotated(self, task: str) -> bool:
         """Downloads the annotated image, the plom file, and the original source images.
