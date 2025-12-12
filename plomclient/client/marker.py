@@ -860,8 +860,7 @@ class MarkerClient(QWidget):
         status = self.prxM.getStatus(pr)
 
         # next we try to download annotated image for certain hardcoded states
-        if status.casefold() in ("complete", "marked"):
-            # Note: "marked" is only on legacy servers
+        if status.casefold() == "complete":
             r = self.get_files_for_previously_annotated(task)
             if not r:
                 return
