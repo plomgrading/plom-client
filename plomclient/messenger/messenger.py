@@ -141,11 +141,9 @@ class Messenger(BaseMessenger):
         """
         with self.SRmutex:
             try:
-                response = self.put(
+                response = self.put_auth(
                     f"/ID/tasks/{task}",
                     json={
-                        "user": self.user,
-                        "token": self.token,
                         "sid": studentID,
                         "sname": studentName,
                     },
@@ -604,11 +602,9 @@ class Messenger(BaseMessenger):
         """
         self.SRmutex.acquire()
         try:
-            response = self.put(
+            response = self.put_auth(
                 f"/MK/user/{self.user}/{question}",
                 json={
-                    "user": self.user,
-                    "token": self.token,
                     "question": question,
                     "rubric_config": tab_config,
                 },
