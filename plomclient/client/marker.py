@@ -612,6 +612,25 @@ class MarkerClient(QWidget):
 
         m.addSeparator()
 
+        # TODO: WIP, needs to ask to save if necessary (and does not right now?)
+        key = "pgup"
+        command = self._prev_paper
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Previous Paper\t{key}", command)
+
+        key = "pgdown"
+        command = self._next_paper
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Next Paper\t{key}", command)
+
+        m.addSeparator()
+
         x = m.addAction("Show technical debugging info")
         x.setCheckable(True)
         x.triggered.connect(self.show_hide_technical)
@@ -648,6 +667,28 @@ class MarkerClient(QWidget):
         m.addAction(f"Quit\t{key}", command)
 
         return m
+
+    def _prev_paper(self) -> None:
+        print("--prev--paper--")
+        prIndex = self.ui.tableView.selectedIndexes()
+        if len(prIndex) == 0:
+            return
+        new_row = prIndex[0].row() - 1
+        if new_row < 0:
+            return
+        task_id_str = self.prxM.getPrefix(new_row)
+        self.moveSelectionToTask(task_id_str)
+
+    def _next_paper(self) -> None:
+        print("--next--paper--")
+        prIndex = self.ui.tableView.selectedIndexes()
+        if len(prIndex) == 0:
+            return
+        new_row = prIndex[0].row() + 1
+        if new_row >= self.prxM.rowCount():
+            return
+        task_id_str = self.prxM.getPrefix(new_row)
+        self.moveSelectionToTask(task_id_str)
 
     def _close_but_dont_quit(self):
         # unpleasant hackery but gets job done
