@@ -56,7 +56,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
 )
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QKeySequence, QPixmap, QShortcut
 
 from . import __version__
 from plomclient.misc_utils import unpack_task_code
@@ -97,7 +97,7 @@ from .tagging_range_dialog import TaggingAndRangeOptions
 from .quota_dialogs import ExplainQuotaDialog, ReachedQuotaLimitDialog
 from .task_model import MarkerExamModel, ProxyModel
 from .uploader import BackgroundUploader, synchronous_upload
-from . import ui_files
+from . import icons, ui_files
 
 
 if platform.system() == "Darwin":
@@ -128,10 +128,13 @@ class MarkerClient(QWidget):
             as after an explicit server refresh or some other event. The
             arguments are the task code (e.g., "0123g2") and a list,
             possibly empty, of the current tags.
+        experimental_setting_signal: emitted when the user enables or
+            disables the optional experimental features toggle.
     """
 
     my_shutdown_signal = pyqtSignal(int, list)
     tags_changed_signal = pyqtSignal(str, list)
+    experimental_setting_signal = pyqtSignal(bool)
 
     def __init__(self, Qapp, *, tmpdir=None):
         """Initialize a new MarkerClient.
@@ -315,17 +318,53 @@ class MarkerClient(QWidget):
         if lastTime.get("FOREGROUND", False):
             self.allowBackgroundOps = False
 
-    def is_experimental(self):
+    def is_experimental(self) -> bool:
         return self.annotatorSettings["experimental"]
 
-    def set_experimental(self, x):
+    def set_experimental(self, x: bool) -> None:
         # TODO: maybe signals/slots should be used to watch for changes
         if x:
             log.info("Experimental/advanced mode enabled")
             self.annotatorSettings["experimental"] = True
+            self.experimental_setting_signal.emit(True)
         else:
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
+            self.experimental_setting_signal.emit(False)
+
+    def toggle_experimental(self, checked: bool) -> None:
+        if not checked:
+            self.set_experimental(False)
+            return
+
+        txt = """<p>Enable experimental and/or advanced options?</p>
+            <p>If you are part of a large marking team, you should
+            probably discuss with your manager before enabling.</p>
+        """
+        # features = (
+        #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
+        # )
+        features = (
+            "Spelling checking in rubric creation.",
+            "Persistent held region between papers.",
+        )
+        info = f"""
+            <h4>Current experimental features</h4>
+            <ul>
+              {" ".join("<li>" + x + "</li>" for x in features)}
+            </ul>
+        """
+        # Image by liftarn, public domain, https://freesvg.org/put-your-fingers-in-the-gears
+        res = resources.files(icons) / "fingers_in_gears.svg"
+        pix = QPixmap()
+        pix.loadFromData(res.read_bytes())
+        pix = pix.scaledToHeight(256, Qt.TransformationMode.SmoothTransformation)
+        msg = SimpleQuestion(self, txt, question=info)
+        msg.setIconPixmap(pix)
+        if msg.exec() == QMessageBox.StandardButton.No:
+            self._experimental_mode_checkbox.setChecked(False)
+            return
+        self.set_experimental(True)
 
     # TODO: does it matter if we connect to selectionChanged that sends new/old?
     @pyqtSlot()
@@ -577,6 +616,14 @@ class MarkerClient(QWidget):
         x.setCheckable(True)
         x.triggered.connect(self.show_hide_technical)
         self._show_hide_technical_action = x
+
+        x = m.addAction("Experimental features")
+        x.setCheckable(True)
+        if self.is_experimental():
+            x.setChecked(True)
+        x.triggered.connect(self.toggle_experimental)
+        self._experimental_mode_checkbox = x
+
         m.addSeparator()
 
         m.addAction("Help", self.show_help)
