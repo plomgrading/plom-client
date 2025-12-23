@@ -632,7 +632,7 @@ class Annotator(QWidget):
         else:
             # if there is a held crop rectangle, then use it.
             if self.held_crop_rectangle_data:
-                self.scene.crop_from_plomfile(self.held_crop_rectangle_data)
+                self.scene.crop_from_proportions(self.held_crop_rectangle_data)
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1921,7 +1921,7 @@ class Annotator(QWidget):
         lst.reverse()  # so newest items last
         # get the crop-rect as proportions of underlying image
         # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rect_data = self.scene.current_crop_rectangle_as_proportions()
+        crop_rectangle_data = self.scene.current_crop_rectangle_as_proportions()
         # TODO: consider saving colour only if not red?
         plomData = {
             "base_images": self.scene.get_src_img_data(only_visible=True),
@@ -1930,7 +1930,7 @@ class Annotator(QWidget):
             "currentMark": self.getScore(),
             "sceneScale": self.scene.get_scale_factor(),
             "annotationColor": self.scene.ink.color().getRgb()[:3],
-            "crop_rectangle_data": crop_rect_data,
+            "crop_rectangle_data": crop_rectangle_data,
             "sceneItems": lst,
         }
         plomfile = self.saveName.with_suffix(".plom")
@@ -1961,10 +1961,10 @@ class Annotator(QWidget):
         # set crop rectangle from plom file contains if present
         # else, if use held-crop rectangle if present
         if plomData.get("crop_rectangle_data", None):
-            self.scene.crop_from_plomfile(plomData["crop_rectangle_data"])
+            self.scene.crop_from_proportions(plomData["crop_rectangle_data"])
         else:
             if self.held_crop_rectangle_data:  # if a crop is being held, use it.
-                self.scene.crop_from_plomfile(self.held_crop_rectangle_data)
+                self.scene.crop_from_proportions(self.held_crop_rectangle_data)
         self.view.setHidden(False)
 
     def setZoomComboBox(self) -> None:

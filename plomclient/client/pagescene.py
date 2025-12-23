@@ -2058,7 +2058,9 @@ class PageScene(QGraphicsScene):
         )
         return rect_as_proportions
 
-    def crop_from_plomfile(self, crop_dat):
+    def crop_from_proportions(
+        self, crop_dat: tuple[float, float, float, float]
+    ) -> None:
         # crop dat = (x,y,w,h) as proportions of full image, so scale by underlying image width/height
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
