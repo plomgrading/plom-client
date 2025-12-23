@@ -2073,14 +2073,19 @@ class PageScene(QGraphicsScene):
         self.trigger_crop(crop_rect)
 
     def uncrop_underlying_images(self):
-        self.trigger_crop(self.overMask.get_original_inner_rect())
+        self.trigger_crop(self.overMask.get_original_inner_rect(), _remove_crop=True)
 
-    def trigger_crop(self, crop_rect):
+    def trigger_crop(self, crop_rect, *, _remove_crop: bool = False):
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
         # pass new crop rect, as well as current one (for undo)
         command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
         self.undoStack.push(command)
+        if not _remove_crop:
+            # yuck, I don't like it when things access other objects instance vars...
+            _parent = self.parent()
+            assert _parent is not None
+            _parent._crop_rectangle_data = self.current_crop_rectangle_as_proportions()
         # now set mode to move.
         self.parent().toMoveMode()

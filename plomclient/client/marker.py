@@ -344,10 +344,7 @@ class MarkerClient(QWidget):
         # features = (
         #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
         # )
-        features = (
-            "Spelling checking in rubric creation.",
-            "Persistent held region between papers.",
-        )
+        features = ("Spelling checking in rubric creation.",)
         info = f"""
             <h4>Current experimental features</h4>
             <ul>

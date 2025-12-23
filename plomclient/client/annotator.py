@@ -218,8 +218,8 @@ class Annotator(QWidget):
         self.setAllIcons()
         # Set up cursors
         self.loadCursors()
-        # set up held_crop_rectangle - if none, then not holding.
-        self.held_crop_rectangle_data = None
+
+        self._crop_rectangle_data = None
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -312,25 +312,10 @@ class Annotator(QWidget):
     def getScore(self):
         return self.scene.getScore()
 
-    def toggle_hold_crop(self, checked):
-        if checked:
-            if not self.scene:
-                # unfort. backref instance var: if no scene, prevent checking
-                self._hold_crop_checkbox.setChecked(False)
-                return
-            self.held_crop_rectangle_data = (
-                self.scene.current_crop_rectangle_as_proportions()
-            )
-            log.debug(f"Hold crop for upcoming pages = {self.held_crop_rectangle_data}")
-        else:
-            log.debug("Released crop")
-            self.held_crop_rectangle_data = None
-
     def toggle_experimental(self, checked: bool) -> None:
-        if not checked:
-            self._hold_crop_checkbox.setVisible(False)
-        else:
-            self._hold_crop_checkbox.setVisible(True)
+        """Whenever the Marker changes the experimental setting, we'll get a call."""
+        # currently just a stub
+        pass
 
     def is_experimental(self) -> bool:
         return self.parentMarkerUI.is_experimental()
@@ -381,16 +366,12 @@ class Annotator(QWidget):
         m.addAction(f"Adjust pages\t{key}", self.arrangePages)
         (key,) = keydata["crop-in"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Crop to region\t{key}", self.to_crop_mode)
+        m.addAction(f"Crop\t{key}", self.crop_region)
         (key,) = keydata["crop-out"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Uncrop\t{key}", self.uncrop_region)
-        hold_crop = m.addAction("Hold crop between papers")
-        hold_crop.setCheckable(True)
-        hold_crop.triggered.connect(self.toggle_hold_crop)
-        self._hold_crop_checkbox = hold_crop
-        if not self.is_experimental():
-            self._hold_crop_checkbox.setVisible(False)
+        m.addAction("Choose new crop region", self.to_crop_mode)
+
         m.addSeparator()
         subm = m.addMenu("Tools")
         # to make these actions checkable, they need to belong to self.
@@ -631,8 +612,8 @@ class Annotator(QWidget):
             self.scene.reset_dirty()
         else:
             # if there is a held crop rectangle, then use it.
-            if self.held_crop_rectangle_data:
-                self.scene.crop_from_proportions(self.held_crop_rectangle_data)
+            if self._crop_rectangle_data:
+                self.scene.crop_from_proportions(self._crop_rectangle_data)
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1289,7 +1270,7 @@ class Annotator(QWidget):
             ("quick-show-prev-paper", self.show_previous),
             ("increase-annotation-scale", lambda: self.change_annot_scale(1.1)),
             ("decrease-annotation-scale", lambda: self.change_annot_scale(1 / 1.1)),
-            ("crop-in", self.to_crop_mode),
+            ("crop-in", self.crop_region),
             ("crop-out", self.uncrop_region),
         )
         self._store_QShortcuts_minor = []
@@ -1318,27 +1299,31 @@ class Annotator(QWidget):
         self.sekritShortCut = QShortcut(QKeySequence("Ctrl+Shift+o"), self)
         self.sekritShortCut.activated.connect(self.experimental_cycle)
 
-    def to_crop_mode(self):
-        # can't re-crop if the crop is being held
-        if self.held_crop_rectangle_data:
-            WarnMsg(
-                self,
-                "You cannot re-crop while a crop is being held.",
-                info="Unselect 'hold crop' from the menu and then try again.",
-            ).exec()
-        else:
-            self.setToolMode("crop")
+    def to_crop_mode(self) -> None:
+        """Change to crop tool for user to choose a crop, or choose a new crop."""
+        self.setToolMode("crop")
 
-    def uncrop_region(self):
-        if self.held_crop_rectangle_data:
-            WarnMsg(
-                self,
-                "You cannot un-crop while a crop is being held.",
-                info="Unselect 'hold crop' from the menu and then try again.",
-            ).exec()
-            return
+    def toggle_crop_region(self, checked: bool) -> None:
+        if checked:
+            self.crop_region()
+        else:
+            self.uncrop_region()
+
+    def crop_region(self) -> None:
+        """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
+        if not self._crop_rectangle_data:
+            log.debug("enabling crop, no existing data, entering interactive crop mode")
+            self.to_crop_mode()
+            return
+        log.debug(f"enabling existing crop: {self._crop_rectangle_data}")
+        self.scene.crop_from_proportions(self._crop_rectangle_data)
+
+    def uncrop_region(self) -> None:
+        if not self.scene:
+            return
+        log.debug("disabling crop")
         self.scene.uncrop_underlying_images()
 
     def toUndo(self):
@@ -1475,6 +1460,10 @@ class Annotator(QWidget):
         if self.parentMarkerUI.annotatorSettings.get("_config"):
             self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
 
+        self._crop_rectangle_data = self.parentMarkerUI.annotatorSettings.get(
+            "crop_rectangle_data", None
+        )
+
         # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
         # if zoom-state is none, set it to index 1 (fit page) - but delay.
         if self.parentMarkerUI.annotatorSettings["zoomState"] is None:
@@ -1520,10 +1509,10 @@ class Annotator(QWidget):
         self.parentMarkerUI.annotatorSettings["zoomState"] = (
             self.ui.zoomCB.currentIndex()
         )
-        if self.is_ui_compact():
-            self.parentMarkerUI.annotatorSettings["compact"] = True
-        else:
-            self.parentMarkerUI.annotatorSettings["compact"] = False
+        self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
+        self.parentMarkerUI.annotatorSettings["crop_rectangle_data"] = (
+            self._crop_rectangle_data
+        )
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -1963,8 +1952,10 @@ class Annotator(QWidget):
         if plomData.get("crop_rectangle_data", None):
             self.scene.crop_from_proportions(plomData["crop_rectangle_data"])
         else:
-            if self.held_crop_rectangle_data:  # if a crop is being held, use it.
-                self.scene.crop_from_proportions(self.held_crop_rectangle_data)
+            if self._crop_rectangle_data:  # if a crop is being held, use it.
+                # TODO: if the number of pages has changed, consider NOT doing this (i.e.,
+                # there is an extra page), but ideally it would stay on for the NEXT task
+                self.scene.crop_from_proportions(self._crop_rectangle_data)
         self.view.setHidden(False)
 
     def setZoomComboBox(self) -> None:
