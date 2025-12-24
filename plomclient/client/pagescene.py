@@ -283,7 +283,7 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.right_bar.setPen(QPen(Qt.PenStyle.NoPen))
         self.dotted_boundary.setPen(dotted_pen)
         # now set the size correctly
-        self.set_bars()
+        self._set_bars()
         self.addToGroup(self.top_bar)
         self.addToGroup(self.bottom_bar)
         self.addToGroup(self.left_bar)
@@ -293,13 +293,13 @@ class MaskingOverlay(QGraphicsItemGroup):
 
     def crop_to_focus(self, crop_rect):
         self.inner_rect = crop_rect
-        self.set_bars()
+        self._set_bars()
         self.update()
 
     def get_original_inner_rect(self):
         return self.original_inner_rect
 
-    def set_bars(self):
+    def _set_bars(self):
         # reset the dotted boundary rectangle
         self.dotted_boundary.setRect(self.inner_rect)
         # set rectangles using rectangle defined by top-left and bottom-right points.
@@ -495,10 +495,6 @@ class PageScene(QGraphicsScene):
         self.scoreBox.setZValue(10)
         self.addItem(self.scoreBox)
 
-        # make a box around the scorebox where mouse-press-event won't work.
-        # make it fairly wide so that items pasted are not obscured when
-        # scorebox updated and becomes wider
-        self.avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
         # holds the path images uploaded from annotator
         self.tempImagePath = None
 
@@ -531,7 +527,11 @@ class PageScene(QGraphicsScene):
         if self.active_drawer:
             return self.active_drawer.mouse_press(event)
 
-        if self.avoidBox.contains(event.scenePos()):
+        # make a box around the scorebox where mouse-press-event won't work.
+        # make it fairly wide so that items pasted are not obscured when
+        # scorebox updated and becomes wider
+        avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
+        if avoidBox.contains(event.scenePos()):
             return
 
         if self.mode == "line":
@@ -2038,7 +2038,6 @@ class PageScene(QGraphicsScene):
         # this is called by the actual command-redo.
         self.overMask.crop_to_focus(crop_rect)
         self.scoreBox.setPos(crop_rect.topLeft())
-        self.avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
         # set zoom to "fit-page"
         self.views()[0].zoomFitPage(update=True)
 
