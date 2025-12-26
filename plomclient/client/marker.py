@@ -255,14 +255,8 @@ class MarkerClient(QWidget):
             ErrorMsg(self, str(err)).exec()
             return
 
-        if not self.msgr.is_legacy_server():
-            assert self.msgr.username
-            self.annotatorSettings["nextTaskPreferTagged"] = "@" + self.msgr.username
         self.update_get_next_button()
 
-        # Get list of papers already marked and add to table.
-        if self.msgr.is_legacy_server():
-            self.loadMarkedList()
         self.refresh_server_data()
 
         # Connect the view **after** list updated.
@@ -724,35 +718,6 @@ class MarkerClient(QWidget):
         self.getMoreButton.setText(button_text)
         self.getMoreButton.setToolTip("\n".join(tips))
 
-    def loadMarkedList(self):
-        """Loads the list of previously marked papers into self.examModel.
-
-        Returns:
-            None
-
-        Deprecated: only called on legacy servers.
-
-        Note: this tries to update the history between sessions; we don't
-        try to do that on the new server, partially b/c the ordering seems
-        fragile and I'm not sure its necessary.
-        """
-        # Ask server for list of previously marked papers
-        markedList = self.msgr.MrequestDoneTasks(self.question_idx, self.version)
-        self.marking_history = []
-        for x in markedList:
-            # TODO: might not the "markedList" have some other statuses?
-            self.examModel.add_task(
-                x[0],
-                src_img_data=[],
-                status="marked",
-                mark=x[1],
-                marking_time=x[2],
-                tags=x[3],
-                integrity_check=x[4],
-                username=self.msgr.username,
-            )
-            self.marking_history.append(x[0])
-
     def get_files_for_previously_annotated(self, task: str) -> bool:
         """Downloads the annotated image, the plom file, and the original source images.
 
@@ -895,8 +860,7 @@ class MarkerClient(QWidget):
         status = self.prxM.getStatus(pr)
 
         # next we try to download annotated image for certain hardcoded states
-        if status.casefold() in ("complete", "marked"):
-            # Note: "marked" is only on legacy servers
+        if status.casefold() == "complete":
             r = self.get_files_for_previously_annotated(task)
             if not r:
                 return
@@ -1402,15 +1366,12 @@ class MarkerClient(QWidget):
         self.annotatorSettings["feedback_rules"] = info.get(
             "feedback_rules", static_feedback_rules_data
         )
-        if not self.msgr.is_legacy_server():
-            # TODO: in future, I think I prefer a rules-based framework
-            # Not "you are lead marker" but "you can view all tasks".
-            # To my mind, "lead_marker" etc is some server detail that
-            # could stay on the server.
-            if "lead_marker" in self.msgr.get_user_roles():
-                self.annotatorSettings["user_can_view_all_tasks"] = True
-            else:
-                self.annotatorSettings["user_can_view_all_tasks"] = False
+        # TODO: in future, I think I prefer a rules-based framework
+        # Not "you are lead marker" but "you can view all tasks".
+        # To my mind, "lead_marker" etc is some server detail that
+        # could stay on the server.
+        if "lead_marker" in self.msgr.get_user_roles():
+            self.annotatorSettings["user_can_view_all_tasks"] = True
         else:
             self.annotatorSettings["user_can_view_all_tasks"] = False
         if not self.annotatorSettings["user_can_view_all_tasks"]:
@@ -1418,13 +1379,11 @@ class MarkerClient(QWidget):
             self.ui.tasksComboBox.setCurrentIndex(0)
             self._show_only_my_tasks()
 
-        # legacy does it own thing earlier in the workflow
-        if not self.msgr.is_legacy_server():
-            if self.ui.tasksComboBox.currentIndex() == 0:
-                assert self.msgr.username is not None
-                self.download_task_list(username=self.msgr.username)
-            else:
-                self.download_task_list()
+        if self.ui.tasksComboBox.currentIndex() == 0:
+            assert self.msgr.username is not None
+            self.download_task_list(username=self.msgr.username)
+        else:
+            self.download_task_list()
 
         # TODO: re-queue any failed uploads, Issue #3497
 
@@ -2284,10 +2243,7 @@ class MarkerClient(QWidget):
         stat = self.examModel.getStatusByTask(task)
         # maybe it changed while we waited for the upload
         if stat == "uploading...":
-            if self.msgr.is_legacy_server():
-                self.examModel.setStatusByTask(task, "marked")
-            else:
-                self.examModel.setStatusByTask(task, "Complete")
+            self.examModel.setStatusByTask(task, "Complete")
         self.updateProgress(info=progress_info)
 
     def backgroundUploadFailed(

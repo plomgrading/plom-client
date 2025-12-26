@@ -53,7 +53,6 @@ from plomclient.plom_exceptions import (
     PlomExistingLoginException,
     PlomServerNotReady,
     PlomSSLError,
-    PlomNoServerSupportException,
 )
 from . import __version__
 from . import MarkerClient, IDClient
@@ -221,24 +220,13 @@ class Chooser(QDialog):
                 return
 
         assert self.messenger is not None
-        if self.messenger.is_legacy_server() and self.messenger.username == "manager":
-            InfoMsg(
-                self,
-                "<p>You are not allowed to mark or ID papers while "
-                "logged-in as &ldquo;manager&rdquo;.</p>",
-            ).exec()
-            return
 
         self.saveDetails()
 
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
         self.Qapp.downloader = Downloader(img_cache_dir, msgr=self.messenger)
-        try:
-            roles = self.messenger.get_user_roles()
-        except PlomNoServerSupportException:
-            # yucky hacks for legacy, not around much longer!
-            roles = ["marker", "identifier"]
+        roles = self.messenger.get_user_roles()
 
         if which_subapp == "Marker":
             if "marker" not in roles:
@@ -384,8 +372,7 @@ class Chooser(QDialog):
         #
         # Side effects:
         #    The `msgr` itself will be modified, e.g., if user excepted
-        #    SSL verification.   It also figures out if we're talking to
-        #    a legacy or new server (and stores that info).
+        #    SSL verification.
         _ssl_excused = False
         try:
             try:
@@ -419,11 +406,7 @@ class Chooser(QDialog):
             s = "\nCaution: SSL exception granted."
             self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
-        # old servers (<0.14.0) don't have this API and will fail
         info = msgr.get_server_info()
-        if "Legacy" in info["product_string"]:
-            s = "\nUsing legacy messenger"
-            self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
         try:
             msgr._set_server_API_version(info["API_version"])
