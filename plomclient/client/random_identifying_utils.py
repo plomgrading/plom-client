@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2022 Andrew Rechnitzer
-# Copyright (C) 2020-2024 Colin B. Macdonald
+# Copyright (C) 2020-2025 Colin B. Macdonald
 
 """Randomly ID papers for testing purposes."""
 
@@ -56,7 +56,7 @@ def do_rando_identifying_backend(
             break
         try:
             print("Identifying task ", task)
-            messenger.IDclaimThisTask(task)
+            messenger.claim_id_task(task)
         except PlomTakenException:
             # task already taken.
             continue

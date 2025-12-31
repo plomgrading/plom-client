@@ -1135,10 +1135,6 @@ class Annotator(QWidget):
                for each tool.  If needed you could override this.
                (currently unused, semi-deprecated).
 
-        Notes:
-            TODO: this does various other mucking around for legacy
-            reasons: could probably still use some refactoring.
-
         Returns:
             None but modifies self.
         """

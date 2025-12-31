@@ -53,7 +53,6 @@ from plomclient.plom_exceptions import (
     PlomExistingLoginException,
     PlomServerNotReady,
     PlomSSLError,
-    PlomNoServerSupportException,
 )
 from . import __version__
 from . import MarkerClient, IDClient
@@ -221,27 +220,17 @@ class Chooser(QDialog):
                 return
 
         assert self.messenger is not None
-        if self.messenger.is_legacy_server() and self.messenger.username == "manager":
-            InfoMsg(
-                self,
-                "<p>You are not allowed to mark or ID papers while "
-                "logged-in as &ldquo;manager&rdquo;.</p>",
-            ).exec()
-            return
 
         self.saveDetails()
 
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
         self.Qapp.downloader = Downloader(img_cache_dir, msgr=self.messenger)
-        try:
-            role = self.messenger.get_user_role()
-        except PlomNoServerSupportException:
-            role = ""
+        roles = self.messenger.get_user_roles()
 
         if which_subapp == "Marker":
-            if len(role) and role not in ["marker", "lead_marker"]:
-                WarnMsg(self, "Only marker/lead marker can mark papers!").exec()
+            if "marker" not in roles:
+                WarnMsg(self, 'Only "marker" accounts can mark papers!').exec()
                 return
             question = self.getQuestion()
             v = self.getv()
@@ -256,16 +245,20 @@ class Chooser(QDialog):
             # store ref in Qapp to avoid garbase collection
             self.Qapp.marker = markerwin
         elif which_subapp == "Identifier":
-            if len(role) and role != "lead_marker":
-                InfoMsg(
-                    self,
-                    "<p>Only lead marker should be identifying papers.</p>"
-                    "<p>You may want to ask your instructor/manager to"
-                    " promote your account.  (In the future this might be"
-                    " enforced, but isn't as of Oct 2024.)</p>",
-                ).exec()
-                # TODO: maybe this should be enforced serverside?
-                # return
+            if "identifier" not in roles:
+                if self.messenger.is_server_api_less_than(116):
+                    InfoMsg(
+                        self,
+                        '<p>Only "identifier" or "lead marker" accounts should '
+                        " be used for identifying papers.</p>"
+                        "<p>(This is an older server: the rule is not enforced.)</p>",
+                    ).exec()
+                    # return
+                else:
+                    WarnMsg(
+                        self, 'Only "identifier" accounts can identify papers!'
+                    ).exec()
+                    return
             self.setEnabled(False)
             self.hide()
             idwin = IDClient(self.Qapp, tmpdir=self._workdir)
@@ -379,8 +372,7 @@ class Chooser(QDialog):
         #
         # Side effects:
         #    The `msgr` itself will be modified, e.g., if user excepted
-        #    SSL verification.   It also figures out if we're talking to
-        #    a legacy or new server (and stores that info).
+        #    SSL verification.
         _ssl_excused = False
         try:
             try:
@@ -414,11 +406,7 @@ class Chooser(QDialog):
             s = "\nCaution: SSL exception granted."
             self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
-        # old servers (<0.14.0) don't have this API and will fail
         info = msgr.get_server_info()
-        if "Legacy" in info["product_string"]:
-            s = "\nUsing legacy messenger"
-            self.ui.infoLabel.setText(self.ui.infoLabel.text() + s)
 
         try:
             msgr._set_server_API_version(info["API_version"])

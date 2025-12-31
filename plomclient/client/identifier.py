@@ -47,6 +47,7 @@ from plomclient.plom_exceptions import (
     PlomBenignException,
     PlomConflict,
     PlomNoClasslist,
+    PlomNoPermission,
     PlomSeriousException,
     PlomTakenException,
 )
@@ -811,11 +812,20 @@ class IDClient(QWidget):
                 raise
 
             try:
-                self.msgr.IDclaimThisTask(test)
+                self.msgr.claim_id_task(test)
                 break
             except PlomTakenException as err:
                 log.info("will keep trying as task already taken: {}".format(err))
                 continue
+            except PlomNoPermission as err:
+                InfoMsg(
+                    self,
+                    "Your account does not have permission to identify papers. "
+                    "You may need to change account settings on the server, "
+                    "or ask your instructor/manager for access.",
+                    info=f"{err}",
+                ).exec()
+                return False
 
         pagedata = self.msgr.get_pagedata(test)
         id_pages = []
@@ -959,6 +969,11 @@ class IDClient(QWidget):
                 to use the Manager tool to "Un-ID" the other paper.</p>
             """
             WarnMsg(self, str(err), info=hints, info_pre=False).exec()
+            self.exM.revertStudent(index)
+            return False
+        except PlomTakenException as err:
+            log.error("Not allowed to submit ID for %s: %s", code, err)
+            WarnMsg(self, f'Not allowed to submit ID for {code}:\n"{err}"').exec()
             self.exM.revertStudent(index)
             return False
         except PlomBenignException as err:
