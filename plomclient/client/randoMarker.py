@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2025 Andrew Rechnitzer
-# Copyright (C) 2020-2023, 2025 Colin B. Macdonald
+# Copyright (C) 2020-2023, 2025-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2021 Elizabeth Xiao
 # Copyright (C) 2023 Julian Lapenna
@@ -12,7 +12,7 @@ This is a very very cut-down version of Annotator, and a command-line
 tool used to automate some random marking of papers.
 """
 
-__copyright__ = "Copyright (C) 2020-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
+__copyright__ = "Copyright (C) 2020-2026 Andrew Rechnitzer, Colin B. Macdonald, et al"
 __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2021-2025 Colin B. Macdonald
+# Copyright (C) 2021-2026 Colin B. Macdonald
 
 import platform
 from textwrap import dedent
@@ -23,7 +23,7 @@ def show_about_dialog(parent):
 
             <p><a href="https://plomgrading.org">https://plomgrading.org</a></p>
 
-            <p>Copyright &copy; 2018-2025 Andrew Rechnitzer,
+            <p>Copyright &copy; 2018-2026 Andrew Rechnitzer,
             Colin B. Macdonald, and other contributors.</p>
 
             <p>Plom is Free Software, available under the GNU Affero
