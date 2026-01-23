@@ -980,11 +980,6 @@ class BaseMessenger:
                 verlist = []
             new_rubric["versions"] = verlist
 
-        if not self.is_server_api_less_than(115):
-            # on >= api 115, we want the server to compute the display_delta
-            # (API in principle allows you to specify it but we don't want to)
-            new_rubric.pop("display_delta", None)
-
         with self.SRmutex:
             try:
                 response = self.put_auth(
@@ -1134,12 +1129,6 @@ class BaseMessenger:
             PlomConflict: two users try to modify the rubric.
             PlomSeriousException: Other error types, possible needs fix or debugging.
         """
-
-        if not self.is_server_api_less_than(115):
-            # on >= api 115, we want the server to compute the display_delta
-            # (API in principle allows you to specify it but we don't want to)
-            new_rubric.pop("display_delta", None)
-
         if self.is_server_api_less_than(115):
             new_rubric = new_rubric.copy()
             # string of versions to list of versions
