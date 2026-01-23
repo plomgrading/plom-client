@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Client can create fractional rubrics (if they are enabled on the server).
 
 ### Removed
 
