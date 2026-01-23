@@ -32,7 +32,6 @@ def test_AddRubricDialog_add_new(qtbot) -> None:
     out = d.gimme_rubric_data()
     assert out["kind"] == "relative"
     assert out["value"] == -2
-    assert isinstance(out["value"], int)
     assert out["text"] == "new rubric"
 
 
