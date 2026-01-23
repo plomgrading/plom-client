@@ -88,9 +88,10 @@ class SignedSB(QDoubleSpinBox):
     def textFromValue(self, v: int | float) -> str:
         t = super().textFromValue(v)
         if v > 0:
-            return "+" + t
-        else:
-            return t
+            t = "+" + t
+        # change "1.500" to "1.5" and "1.00" to "1"
+        t = t.rstrip("0").rstrip(".")
+        return t
 
 
 class SubstitutionsHighlighter(QSyntaxHighlighter):
