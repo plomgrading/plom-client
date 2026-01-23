@@ -1263,6 +1263,9 @@ class AddRubricDialog(QDialog):
                     "username": self._username,
                 }
             )
+        # under no current circumstances should we send a potentially
+        # out-of-date display delta: we want the server to recompute
+        rubric.pop("display_delta", None)
 
         return rubric
 
