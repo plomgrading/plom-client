@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
@@ -1225,17 +1225,14 @@ class AddRubricDialog(QDialog):
             kind = "neutral"
             value = 0
             out_of = 0
-            display_delta = "."
         elif self.typeRB_relative.isChecked():
             kind = "relative"
             value = self.relative_value_SB.value()
             out_of = 0
-            display_delta = str(value) if value < 0 else f"+{value}"
         elif self.typeRB_absolute.isChecked():
             kind = "absolute"
             value = self.abs_value_SB.value()
             out_of = self.abs_out_of_SB.value()
-            display_delta = f"{value} of {out_of}"
         else:
             raise RuntimeError("no radio was checked")
 
@@ -1250,7 +1247,6 @@ class AddRubricDialog(QDialog):
         rubric.update(
             {
                 "kind": kind,
-                "display_delta": display_delta,
                 "value": value,
                 "out_of": out_of,
                 "text": txt,
@@ -1261,9 +1257,6 @@ class AddRubricDialog(QDialog):
                 "parameters": params,
             }
         )
-        # TODO: once we drop support for legacy, there is no need (and
-        # probably undesirable) to send the display delta.
-        # rubric.pop("display_delta", None)
         if not self.is_edit():
             rubric.update(
                 {
