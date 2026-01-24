@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2020, 2023-2025 Colin B. Macdonald
+# Copyright (C) 2020, 2023-2026 Colin B. Macdonald
 
 from __future__ import annotations
 
@@ -31,9 +31,7 @@ def test_AddRubricDialog_add_new(qtbot) -> None:
     d.accept()
     out = d.gimme_rubric_data()
     assert out["kind"] == "relative"
-    assert out["display_delta"] == "-2"
     assert out["value"] == -2
-    assert isinstance(out["value"], int)
     assert out["text"] == "new rubric"
 
 
@@ -68,7 +66,6 @@ def test_AddRubricDialog_modify(qtbot) -> None:
     d.accept()
     out = d.gimme_rubric_data()
     assert out["kind"] == "neutral"
-    assert out["display_delta"] == "."
     assert out["value"] == 0
     assert out["text"] == "some text-more"
 
@@ -111,7 +108,6 @@ def test_AddRubricDialog_absolute_rubrics(qtbot) -> None:
     d.accept()
     out = d.gimme_rubric_data()
     assert out["kind"] == "absolute"
-    assert out["display_delta"] == "2 of 5"
     assert out["value"] == 2
     assert out["out_of"] == 5
 

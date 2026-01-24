@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
@@ -41,6 +41,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QFrame,
     QInputDialog,
     QFormLayout,
@@ -66,8 +67,7 @@ from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
 
 
-# TODO this object only allows int inputs, replace to allow float scores
-class SignedSB(QSpinBox):
+class SignedSB(QDoubleSpinBox):
     # add an explicit sign to spinbox and no 0
     # range is from -N,..,-1,1,...N
     # note - to fix #1561 include +/- N in this range.
@@ -85,8 +85,8 @@ class SignedSB(QSpinBox):
         if self.value() == 0:
             self.setValue(self.value() + steps)
 
-    def textFromValue(self, v) -> str:
-        t = QSpinBox().textFromValue(v)
+    def textFromValue(self, v: int | float) -> str:
+        t = super().textFromValue(v)
         if v > 0:
             return "+" + t
         else:
@@ -517,14 +517,7 @@ class AddRubricDialog(QDialog):
         lay.addWidget(self.relative_value_SB)
         self.relative_value_SB.valueChanged.connect(b.click)
         # self.relative_value_SB.clicked.connect(b.click)
-        lay.addItem(
-            QSpacerItem(16, 10, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
-        )
-        lay.addItem(
-            QSpacerItem(
-                48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
-            )
-        )
+        lay.addStretch()
         vlay.addLayout(lay)
 
         hlay = QHBoxLayout()
@@ -533,7 +526,7 @@ class AddRubricDialog(QDialog):
         b.setToolTip(abs_tooltip)
         hlay.addWidget(b)
         self.typeRB_absolute = b
-        __ = QSpinBox()
+        __ = QDoubleSpinBox()
         __.setRange(0, maxMark)
         __.setValue(0)
         __.valueChanged.connect(b.click)
@@ -551,11 +544,7 @@ class AddRubricDialog(QDialog):
         # _.clicked.connect(b.click)
         hlay.addWidget(__)
         self.abs_out_of_SB = __
-        hlay.addItem(
-            QSpacerItem(
-                48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
-            )
-        )
+        hlay.addStretch()
         vlay.addLayout(hlay)
         flay.addRow("Marks", frame)
 
@@ -803,10 +792,10 @@ class AddRubricDialog(QDialog):
                 if com["kind"] == "neutral":
                     self.typeRB_neutral.setChecked(True)
                 elif com["kind"] == "relative":
-                    self.relative_value_SB.setValue(int(com["value"]))  # int rubrics
+                    self.relative_value_SB.setValue(com["value"])
                     self.typeRB_relative.setChecked(True)
                 elif com["kind"] == "absolute":
-                    self.abs_value_SB.setValue(int(com["value"]))  # int rubrics
+                    self.abs_value_SB.setValue(com["value"])
                     self.abs_out_of_SB.setValue(int(com["out_of"]))  # int rubrics
                     self.typeRB_absolute.setChecked(True)
                 else:
@@ -1236,17 +1225,14 @@ class AddRubricDialog(QDialog):
             kind = "neutral"
             value = 0
             out_of = 0
-            display_delta = "."
         elif self.typeRB_relative.isChecked():
             kind = "relative"
             value = self.relative_value_SB.value()
             out_of = 0
-            display_delta = str(value) if value < 0 else f"+{value}"
         elif self.typeRB_absolute.isChecked():
             kind = "absolute"
             value = self.abs_value_SB.value()
             out_of = self.abs_out_of_SB.value()
-            display_delta = f"{value} of {out_of}"
         else:
             raise RuntimeError("no radio was checked")
 
@@ -1261,7 +1247,6 @@ class AddRubricDialog(QDialog):
         rubric.update(
             {
                 "kind": kind,
-                "display_delta": display_delta,
                 "value": value,
                 "out_of": out_of,
                 "text": txt,
@@ -1278,6 +1263,9 @@ class AddRubricDialog(QDialog):
                     "username": self._username,
                 }
             )
+        # under no current circumstances should we send a potentially
+        # out-of-date display delta: we want the server to recompute
+        rubric.pop("display_delta", None)
 
         return rubric
 
