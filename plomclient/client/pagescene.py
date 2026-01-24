@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
@@ -1235,6 +1235,11 @@ class PageScene(QGraphicsScene):
         else:
             jpgname.unlink()
             return pngname
+
+    def deleteLater(self) -> None:
+        # the animations can survive the scene, causing crashes #5105
+        self.squelch_animations()
+        super().deleteLater()
 
     def keyPressEvent(self, event):
         """Changes the focus or cursor based on key presses.
