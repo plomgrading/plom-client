@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
@@ -527,6 +527,8 @@ class Annotator(QWidget):
         # after grabbed mode information, reset rubric_widget
         self.rubric_widget.setEnabled(False)
 
+        # this seems to fix a fairly serious memory leak: Issue #5104
+        self.scene.deleteLater()
         del self.scene
         self.scene = None
 

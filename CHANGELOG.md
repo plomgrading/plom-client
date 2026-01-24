@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
-
+* Fixed a memory leak when changing between papers in annotate mode.
 
 
 
