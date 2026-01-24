@@ -527,6 +527,7 @@ class Annotator(QWidget):
         # after grabbed mode information, reset rubric_widget
         self.rubric_widget.setEnabled(False)
 
+        self.scene.squelch_animations()
         # this seems to fix a fairly serious memory leak: Issue #5104
         self.scene.deleteLater()
         del self.scene
