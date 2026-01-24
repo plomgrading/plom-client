@@ -98,6 +98,28 @@ class SignedSpinBox(QDoubleSpinBox):
         t = t.rstrip("0").rstrip(".")
         return t
 
+    def minimumSizeHint(self):
+        # default width seems too narrow after adding my trim zeros
+        r = super().minimumSizeHint()
+        r.setWidth(r.width() * 2)
+        return r
+
+
+class DoubleSpinBoxHideTrailingZeros(QDoubleSpinBox):
+    """Just a regular double spinbox but hide some unsightly trailing zeros."""
+
+    def textFromValue(self, v: int | float) -> str:
+        t = super().textFromValue(v)
+        # change "1.500" to "1.5" and "1.00" to "1"
+        t = t.rstrip("0").rstrip(".")
+        return t
+
+    def minimumSizeHint(self):
+        # default width seems too narrow after adding my trim zeros
+        r = super().minimumSizeHint()
+        r.setWidth(int(r.width() * 2.25))
+        return r
+
 
 class SubstitutionsHighlighter(QSyntaxHighlighter):
     """Highlight tex prefix, parametric substitutions, and spelling mistakes."""
@@ -522,6 +544,7 @@ class AddRubricDialog(QDialog):
         # lay.addWidget(self.DE)
         lay.addWidget(self.relative_value_SB)
         self.relative_value_SB.valueChanged.connect(b.click)
+        self.relative_value_SB.setDecimals(5)
         # self.relative_value_SB.clicked.connect(b.click)
         lay.addStretch()
         vlay.addLayout(lay)
@@ -532,9 +555,10 @@ class AddRubricDialog(QDialog):
         b.setToolTip(abs_tooltip)
         hlay.addWidget(b)
         self.typeRB_absolute = b
-        __ = QDoubleSpinBox()
+        __ = DoubleSpinBoxHideTrailingZeros()
         __.setRange(0, maxMark)
         __.setValue(0)
+        __.setDecimals(5)
         __.valueChanged.connect(b.click)
         # __.clicked.connect(b.click)
         hlay.addWidget(__)
