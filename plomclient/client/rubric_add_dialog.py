@@ -67,9 +67,14 @@ from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
 
 
-class SignedSB(QDoubleSpinBox):
-    # add an explicit sign to spinbox and no 0
-    # range is from -N,..,-1,1,...N
+class SignedSpinBox(QDoubleSpinBox):
+    """The signed spinbox adds an explicit sign and excludes zero.
+
+    The range is from -N, .., -1, +1, ..., +N.
+
+    Uses floats but generally tries to hide trailing zeros and decimal points.
+    """
+
     # note - to fix #1561 include +/- N in this range.
     # else 1 point questions become very problematic
     # TODO: its possible to manually enter zero (Issue #3446) we currently
@@ -88,9 +93,32 @@ class SignedSB(QDoubleSpinBox):
     def textFromValue(self, v: int | float) -> str:
         t = super().textFromValue(v)
         if v > 0:
-            return "+" + t
-        else:
-            return t
+            t = "+" + t
+        # change "1.500" to "1.5" and "1.00" to "1"
+        t = t.rstrip("0").rstrip(".")
+        return t
+
+    def minimumSizeHint(self):
+        # default width seems too narrow after adding my trim zeros
+        r = super().minimumSizeHint()
+        r.setWidth(r.width() * 2)
+        return r
+
+
+class DoubleSpinBoxHideTrailingZeros(QDoubleSpinBox):
+    """Just a regular double spinbox but hide some unsightly trailing zeros."""
+
+    def textFromValue(self, v: int | float) -> str:
+        t = super().textFromValue(v)
+        # change "1.500" to "1.5" and "1.00" to "1"
+        t = t.rstrip("0").rstrip(".")
+        return t
+
+    def minimumSizeHint(self):
+        # default width seems too narrow after adding my trim zeros
+        r = super().minimumSizeHint()
+        r.setWidth(int(r.width() * 2.25))
+        return r
 
 
 class SubstitutionsHighlighter(QSyntaxHighlighter):
@@ -467,7 +495,7 @@ class AddRubricDialog(QDialog):
         self.splitter.addWidget(self.correction_widget)
 
         self.hiliter = SubstitutionsHighlighter(self.TE)
-        self.relative_value_SB = SignedSB(maxMark)  # QSpinBox allows only int
+        self.relative_value_SB = SignedSpinBox(maxMark)
         self.TEtag = QLineEdit()
         self.TEmeta = ShortTextEdit()
         # cannot edit these
@@ -516,6 +544,7 @@ class AddRubricDialog(QDialog):
         # lay.addWidget(self.DE)
         lay.addWidget(self.relative_value_SB)
         self.relative_value_SB.valueChanged.connect(b.click)
+        self.relative_value_SB.setDecimals(5)
         # self.relative_value_SB.clicked.connect(b.click)
         lay.addStretch()
         vlay.addLayout(lay)
@@ -526,9 +555,10 @@ class AddRubricDialog(QDialog):
         b.setToolTip(abs_tooltip)
         hlay.addWidget(b)
         self.typeRB_absolute = b
-        __ = QDoubleSpinBox()
+        __ = DoubleSpinBoxHideTrailingZeros()
         __.setRange(0, maxMark)
         __.setValue(0)
+        __.setDecimals(5)
         __.valueChanged.connect(b.click)
         # __.clicked.connect(b.click)
         hlay.addWidget(__)
