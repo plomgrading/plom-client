@@ -67,9 +67,14 @@ from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
 
 
-class SignedSB(QDoubleSpinBox):
-    # add an explicit sign to spinbox and no 0
-    # range is from -N,..,-1,1,...N
+class SignedSpinBox(QDoubleSpinBox):
+    """The signed spinbox adds an explicit sign and excludes zero.
+
+    The range is from -N, .., -1, +1, ..., +N.
+
+    Uses floats but generally tries to hide trailing zeros and decimal points.
+    """
+
     # note - to fix #1561 include +/- N in this range.
     # else 1 point questions become very problematic
     # TODO: its possible to manually enter zero (Issue #3446) we currently
@@ -468,7 +473,7 @@ class AddRubricDialog(QDialog):
         self.splitter.addWidget(self.correction_widget)
 
         self.hiliter = SubstitutionsHighlighter(self.TE)
-        self.relative_value_SB = SignedSB(maxMark)  # QSpinBox allows only int
+        self.relative_value_SB = SignedSpinBox(maxMark)
         self.TEtag = QLineEdit()
         self.TEmeta = ShortTextEdit()
         # cannot edit these
