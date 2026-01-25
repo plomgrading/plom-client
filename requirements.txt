@@ -8,9 +8,9 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 
-PyQt6==6.8.1
-PyQt6-Qt6==6.8.2
-PyQt6-sip==13.10.2
+PyQt6==6.9.1
+PyQt6-Qt6==6.9.2
+PyQt6-sip==13.11.0
 arrow==1.4.0
 importlib-resources==6.5.2
 packaging==26.0
