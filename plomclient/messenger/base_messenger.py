@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2024 Andrew Rechnitzer
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2021 Peter Lee
 # Copyright (C) 2022 Michael Deakin
 # Copyright (C) 2022-2023 Edith Coates
@@ -51,7 +51,7 @@ Supported_Server_API_Versions = [
     113,  # 2025-01
     114,  # 2025-05
     115,  # 2025-09
-    116,  # 2025-??
+    116,  # 2026-01
 ]
 # Brief changelog
 #
