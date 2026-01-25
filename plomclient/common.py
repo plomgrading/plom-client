@@ -6,7 +6,7 @@
 
 # Any utilities that don't have there own version can use this one
 # (maybe in future this need not match the client version)
-__version__ = "0.20.0"
+__version__ = "0.20.1.dev0"
 
 import sys
 
