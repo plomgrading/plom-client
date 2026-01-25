@@ -75,6 +75,8 @@
   </kudos>
 
   <url type="homepage">https://plomgrading.org</url>
+  <url type="bugtracker">https://gitlab.com/plom/plom-client/-/issues</url>
+  <url type="vcs-browser">https://gitlab.com/plom/plom-client</url>
   <update_contact>devs@plomgrading.org</update_contact>
   <developer id="plomgrading.org">
     <name>Andrew Rechnitzer, Colin B. Macdonald, and others</name>
