@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: FSFAP
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2022 Elizabeth Xiao
 # Copyright (C) 2024 Bryan Tanady
 #
@@ -13,13 +13,13 @@ PyQt6-Qt6==6.8.2
 PyQt6-sip==13.10.2
 arrow==1.4.0
 importlib-resources==6.5.2
-packaging==25.0
-Pillow==12.0.0
+packaging==26.0
+Pillow==12.1.0
 platformdirs==4.5.1
 pyspellchecker==0.8.4
 requests==2.32.5
 requests-toolbelt==1.0.0
 stdiomask==0.0.6
-tomli==2.3.0
-tomlkit==0.13.3
+tomli==2.4.0
+tomlkit==0.14.0
 urllib3==2.6.3
