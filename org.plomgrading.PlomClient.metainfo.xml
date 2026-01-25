@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2020-2025 Colin B. Macdonald
+  Copyright (C) 2020-2026 Colin B. Macdonald
   Copyright (C) 2021 Óvári
   Copyright (C) 2025 Ambre G.
 
@@ -81,6 +81,7 @@
   </developer>
   <content_rating type="oars-1.0"/>
   <releases>
+    <release date="2026-01-25" version="0.20.0"/>
     <release date="2025-12-09" version="0.19.4"/>
     <release date="2025-10-24" version="0.19.3"/>
     <release date="2025-10-01" version="0.19.2"/>
