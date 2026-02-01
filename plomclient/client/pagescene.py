@@ -2082,10 +2082,14 @@ class PageScene(QGraphicsScene):
         # pass new crop rect, as well as current one (for undo)
         command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
         self.undoStack.push(command)
+        _parent = self.parent()
+        assert _parent is not None
+        # MyPy is rightfully unsure parent is an Annotator:
+        # # assert isinstance(_parent, Annotator)
+        # but that's likely a circular import, so just add exceptions below
         if not _remove_crop:
             # yuck, I don't like it when things access other objects instance vars...
-            _parent = self.parent()
-            assert _parent is not None
-            _parent._crop_rectangle_data = self.current_crop_rectangle_as_proportions()
-        # now set mode to move.
-        self.parent().toMoveMode()
+            _parent._crop_rectangle_data = self.current_crop_rectangle_as_proportions()  # type: ignore[attr-defined]
+        # now set mode to move (just to change it away from crop tool)
+        # TODO: maybe some function call could replace both these?
+        _parent.toMoveMode()
