@@ -219,7 +219,7 @@ class Annotator(QWidget):
         # Set up cursors
         self.loadCursors()
 
-        self._crop_rectangle_data = None
+        self._crop_rectangle_data: None | tuple[float, float, float, float] = None
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -1329,7 +1329,7 @@ class Annotator(QWidget):
     def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
         self._crop_rectangle_data = rect
         # now set mode to move (just to change it away from crop tool)
-        if self.scene.mode == "crop":
+        if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
 
     def toUndo(self):

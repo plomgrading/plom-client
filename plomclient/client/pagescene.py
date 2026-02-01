@@ -2072,10 +2072,10 @@ class PageScene(QGraphicsScene):
         )
         self.trigger_crop(crop_rect)
 
-    def uncrop_underlying_images(self):
+    def uncrop_underlying_images(self) -> None:
         self.trigger_crop(self.overMask.get_original_inner_rect(), _remove_crop=True)
 
-    def trigger_crop(self, crop_rect, *, _remove_crop: bool = False):
+    def trigger_crop(self, crop_rect: QRectF, *, _remove_crop: bool = False) -> None:
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
