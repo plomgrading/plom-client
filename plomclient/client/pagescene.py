@@ -2061,7 +2061,7 @@ class PageScene(QGraphicsScene):
     def crop_from_proportions(
         self, crop_dat: tuple[float, float, float, float]
     ) -> None:
-        # crop dat = (x,y,w,h) as proportions of full image, so scale by underlying image width/height
+        """Crop to just part of the page scene."""
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         crop_rect = QRectF(
@@ -2072,10 +2072,21 @@ class PageScene(QGraphicsScene):
         )
         self.trigger_crop(crop_rect)
 
-    def uncrop_underlying_images(self) -> None:
+    def uncrop(self) -> None:
+        """Uncrop, returning to the entire extent of the underlying images."""
         self.trigger_crop(self.overMask.get_original_inner_rect(), _remove_crop=True)
 
     def trigger_crop(self, crop_rect: QRectF, *, _remove_crop: bool = False) -> None:
+        """React to a cropping operation to a rectangle.
+
+        Args:
+            crop_rect: A rectangular region to crop to.
+
+        Keyword Args:
+            _remove_crop: a hack for removing crop.  The implementation of uncrop
+                just passes the large page rectangle.  We don't want to store
+                this in the annotator.  This bool prevents that from happening.
+        """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()

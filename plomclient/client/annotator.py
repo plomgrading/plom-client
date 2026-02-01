@@ -1324,7 +1324,7 @@ class Annotator(QWidget):
         if not self.scene:
             return
         log.debug("disabling crop")
-        self.scene.uncrop_underlying_images()
+        self.scene.uncrop()
 
     def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
         self._crop_rectangle_data = rect
