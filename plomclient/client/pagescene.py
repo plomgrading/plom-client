@@ -2088,8 +2088,4 @@ class PageScene(QGraphicsScene):
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
         if not _remove_crop:
-            # yuck, I don't like it when things access other objects instance vars...
-            _parent._crop_rectangle_data = self.current_crop_rectangle_as_proportions()  # type: ignore[attr-defined]
-        # now set mode to move (just to change it away from crop tool)
-        # TODO: maybe some function call could replace both these?
-        _parent.toMoveMode()
+            _parent.set_crop_region(self.current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]

@@ -1326,6 +1326,12 @@ class Annotator(QWidget):
         log.debug("disabling crop")
         self.scene.uncrop_underlying_images()
 
+    def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
+        self._crop_rectangle_data = rect
+        # now set mode to move (just to change it away from crop tool)
+        # TODO: maybe should be smarter about this, like only if we actually held that tool?
+        self.toMoveMode()
+
     def toUndo(self):
         self.ui.undoButton.animateClick()
 
