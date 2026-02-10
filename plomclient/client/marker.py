@@ -1918,7 +1918,7 @@ class MarkerClient(QWidget):
                 self.request_one_more()
 
         if self._annotator:
-            self._annotator.load_new_question(*inidata)
+            self._annotator.load_new_task(*inidata)
         else:
             self.startTheAnnotator(inidata)
         self._moveSelectionToTask(task)
@@ -2279,39 +2279,26 @@ class MarkerClient(QWidget):
         # now update the marking history with the task.
         self.marking_history.append(task)
 
-    def getMorePapers(self, old_task: str) -> tuple | None:
-        """Loads more tests.
+    def callbackAnnNextTask(self, old_task: str) -> None:
+        """A call-back mechanism from Annotator, indicating it has saved and would like the next task.
 
         Args:
             old_task: the task code with no leading "q" for the previous
                 thing marked.
 
-        Returns:
-            The data for the annotator or None as described in
-            :method:`get_data_for_annotator`.
+        TODO: support configuring whether next-unmarked or just-next in list.
+        TODO: similarly, ctrl-N should just skip rather than ask to save annotations?
         """
+        # a future configuratable setting?
+        want_next_unmarked = False
         log.debug("Annotator wants more (w/o closing)")
         if not self.allowBackgroundOps:
+            # the uploader code would've requested more in the default background case
             self.request_one_more()
-        if not self.moveToNextUnmarkedTask(old_task if old_task else None):
-            return None
-        task_id_str = self.get_current_task_id_or_none()
-        if not task_id_str:
-            return None
-        data = self.get_data_for_annotator(task_id_str)
-        if data is None:
-            return None
-
-        assert task_id_str == data[0]
-        pdict = data[8]  # eww, hardcoded numbers
-        assert pdict is None, "Annotator should not pull a regrade"
-
-        if self.allowBackgroundOps:
-            # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
-                self.request_one_more()
-
-        return data
+        if want_next_unmarked:
+            self.moveToNextUnmarkedTask(old_task if old_task else None)
+        else:
+            self._next_task_in_list()
 
     def backgroundUploadFinished(
         self, task: str, progress_info: dict[str, Any]

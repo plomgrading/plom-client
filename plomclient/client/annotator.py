@@ -114,7 +114,7 @@ class Annotator(QWidget):
         Args:
             username (str): username of Marker
             parentMarkerUI (MarkerClient): the parent of annotator UI.
-            initialData (dict): as documented by the arguments to "load_new_question"
+            initialData (dict): as documented by the arguments to :method:`load_new_task`.
         """
         super().__init__()
 
@@ -230,7 +230,7 @@ class Annotator(QWidget):
 
         # unit tests might pass None to avoid mocking support code
         if initialData:
-            self.load_new_question(*initialData)
+            self.load_new_task(*initialData)
             self.rubric_widget.setInitialRubrics()
 
         self._load_window_settings_early()
@@ -478,7 +478,7 @@ class Annotator(QWidget):
         """Closes the current question, closes scene and clears instance vars.
 
         As of 2025-Aug, this is something users of the the class can and do call.
-        Its non-interactive: if you user-interactivity such as confirming via
+        Its non-interactive: if you want user-interactivity such as confirming via
         dialog, call something else.
 
         Notes:
@@ -498,7 +498,7 @@ class Annotator(QWidget):
         # feels like a bit of a kludge
         self.view.setHidden(True)
 
-    def load_new_question(
+    def load_new_task(
         self,
         task: str,
         question_label: str,
@@ -1153,7 +1153,7 @@ class Annotator(QWidget):
 
     @pyqtSlot()
     def saveAndGetNext(self) -> None:
-        """Saves the current annotations, and moves on to the next paper."""
+        """Saves the current annotations, and tells the parent Marker UI that we want the next task."""
         if self.scene:
             if not self.saveAnnotations():
                 return
@@ -1178,17 +1178,10 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
-        # TODO: close_current_task should emit(tmp_task)
-        # TODO: self.caller_give_us_more.emit(tmp_task)
-        stuff = self.parentMarkerUI.getMorePapers(tmp_task)
-        if not stuff:
-            self.update_attn_bar(tags=[], msg="", show=False)
-            InfoMsg(self, "No more to grade?").exec()
-            # Not really safe to give it back? (at least we did the view...)
-            return
-
-        log.debug("saveAndGetNext: new stuff is {}".format(stuff))
-        self.load_new_question(*stuff)
+        # we already emitted "accept" for Marker to upload the task: that takes
+        # care of requesting more tasks in background.
+        # TODO: replace this with an emit rather than explicit call into parent
+        self.parentMarkerUI.callbackAnnNextTask(tmp_task)
 
     # TODO: @pyqtSlot()?
     # def revert_changes(self) -> None:
