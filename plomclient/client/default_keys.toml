@@ -109,13 +109,13 @@ categories = [ "General",]
 info = "Save the current annotations and move on to next paper."
 
 ["next-task-in-list"]
-human = "Move to the next task in the list"
+human = "Next task in list"
 keys = [ "pgdown",]
 categories = [ "General",]
 info = "Move to the next task in the list, regardless of its status, after confirming unsaved changes."
 
 ["prev-task-in-list"]
-human = "Move to the previous task in the list"
+human = "Previous task in list"
 keys = [ "pgup",]
 categories = [ "General",]
 info = "Move to the previous task in the list, regardless of its status, after confirming unsaved changes."

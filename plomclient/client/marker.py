@@ -618,7 +618,7 @@ class MarkerClient(QWidget):
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Previous Paper\t{key}", command)
+        m.addAction(f"Previous task\t{key}", command)
 
         (key,) = keydata["next-task-in-list"]["keys"]
         command = self._next_task_in_list
@@ -626,7 +626,7 @@ class MarkerClient(QWidget):
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Next Paper\t{key}", command)
+        m.addAction(f"Next task\t{key}", command)
 
         m.addSeparator()
 
