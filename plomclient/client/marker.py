@@ -612,9 +612,8 @@ class MarkerClient(QWidget):
 
         m.addSeparator()
 
-        # TODO: WIP, needs to ask to save if necessary (and does not right now?)
         key = "pgup"
-        command = self._prev_paper
+        command = self._prev_task_in_list
         sc = QShortcut(QKeySequence(key), self)
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
@@ -622,7 +621,7 @@ class MarkerClient(QWidget):
         m.addAction(f"Previous Paper\t{key}", command)
 
         key = "pgdown"
-        command = self._next_paper
+        command = self._next_task_in_list
         sc = QShortcut(QKeySequence(key), self)
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
@@ -668,8 +667,7 @@ class MarkerClient(QWidget):
 
         return m
 
-    def _prev_paper(self) -> None:
-        print("--prev--paper--")
+    def _prev_task_in_list(self) -> None:
         prIndex = self.ui.tableView.selectedIndexes()
         if len(prIndex) == 0:
             return
@@ -677,10 +675,9 @@ class MarkerClient(QWidget):
         if new_row < 0:
             return
         task_id_str = self.prxM.getPrefix(new_row)
-        self.moveSelectionToTask(task_id_str)
+        self.switch_task(task_id_str)
 
-    def _next_paper(self) -> None:
-        print("--next--paper--")
+    def _next_task_in_list(self) -> None:
         prIndex = self.ui.tableView.selectedIndexes()
         if len(prIndex) == 0:
             return
@@ -688,7 +685,7 @@ class MarkerClient(QWidget):
         if new_row >= self.prxM.rowCount():
             return
         task_id_str = self.prxM.getPrefix(new_row)
-        self.moveSelectionToTask(task_id_str)
+        self.switch_task(task_id_str)
 
     def _close_but_dont_quit(self):
         # unpleasant hackery but gets job done
@@ -1178,7 +1175,7 @@ class MarkerClient(QWidget):
                 WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
                 return
         if update_select:
-            self.moveSelectionToTask(task)
+            self._moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
             self.annotate_task()
 
@@ -1273,8 +1270,11 @@ class MarkerClient(QWidget):
                 username=self.msgr.username,
             )
 
-    def moveSelectionToTask(self, task: str) -> None:
+    def _moveSelectionToTask(self, task: str) -> None:
         """Update the selection in the list of papers.
+
+        Non-interactive: this isn't going to ask if you're sure.
+        You might want :method:`switch_task` instead.
 
         Args:
             task: a string such as "0123g13".
@@ -1845,7 +1845,7 @@ class MarkerClient(QWidget):
 
             if self._annotator:
                 self._annotator.close_current_task()
-        self.moveSelectionToTask(task)
+        self._moveSelectionToTask(task)
 
     def annotate_task(self, task: str | None = None) -> None:
         """Annotate a particular task, or currently-selected task, starting Annotator if necessary."""
@@ -1867,7 +1867,7 @@ class MarkerClient(QWidget):
                     # task list.  A lot to dislike here; lots of signals are going to happen
                     # for example.  And its yet another piece of spaghetti...
                     old_task = self._annotator.task
-                    self.moveSelectionToTask(old_task)
+                    self._moveSelectionToTask(old_task)
                     return
             self._annotator.close_current_task()
 
@@ -1924,7 +1924,7 @@ class MarkerClient(QWidget):
             self._annotator.load_new_question(*inidata)
         else:
             self.startTheAnnotator(inidata)
-        self.moveSelectionToTask(task)
+        self._moveSelectionToTask(task)
 
     def marker_has_reached_task_limit(self, *, use_cached: bool = True) -> bool:
         """Check whether a marker has reached their task limit if applicable.
