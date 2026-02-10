@@ -119,6 +119,7 @@ class Annotator(QWidget):
         super().__init__()
 
         parentMarkerUI.tags_changed_signal.connect(self.tags_changed)
+        parentMarkerUI.experimental_setting_signal.connect(self.toggle_experimental)
 
         self.username = username
         self.parentMarkerUI = parentMarkerUI
@@ -325,45 +326,11 @@ class Annotator(QWidget):
             log.debug("Released crop")
             self.held_crop_rectangle_data = None
 
-    def toggle_experimental(self, checked):
+    def toggle_experimental(self, checked: bool) -> None:
         if not checked:
-            self.parentMarkerUI.set_experimental(False)
-            # TODO: some kind of signal/slot, ontoggle...
             self._hold_crop_checkbox.setVisible(False)
-            if self.scene:
-                self.scene.remove_page_action_buttons()
-            return
-
-        txt = """<p>Enable experimental and/or advanced options?</p>
-            <p>If you are part of a large marking team, you should
-            probably discuss with your manager before enabling.</p>
-        """
-        # features = (
-        #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
-        # )
-        features = (
-            "Spelling checking in rubric creation.",
-            "Persistent held region between papers.",
-        )
-        info = f"""
-            <h4>Current experimental features</h4>
-            <ul>
-              {" ".join("<li>" + x + "</li>" for x in features)}
-            </ul>
-        """
-        # Image by liftarn, public domain, https://freesvg.org/put-your-fingers-in-the-gears
-        res = resources.files(icons) / "fingers_in_gears.svg"
-        pix = QPixmap()
-        pix.loadFromData(res.read_bytes())
-        pix = pix.scaledToHeight(256, Qt.TransformationMode.SmoothTransformation)
-        msg = SimpleQuestion(self, txt, question=info)
-        msg.setIconPixmap(pix)
-        if msg.exec() == QMessageBox.StandardButton.No:
-            self._experimental_mode_checkbox.setChecked(False)
-            return
-        self.parentMarkerUI.set_experimental(True)
-        # TODO: some kind of signal/slot, ontoggle...
-        self._hold_crop_checkbox.setVisible(True)
+        else:
+            self._hold_crop_checkbox.setVisible(True)
 
     def is_experimental(self) -> bool:
         return self.parentMarkerUI.is_experimental()
@@ -470,12 +437,6 @@ class Annotator(QWidget):
             self.change_annotation_colour,
         )
         m.addSeparator()
-        x = m.addAction("Experimental features")
-        x.setCheckable(True)
-        if self.is_experimental():
-            x.setChecked(True)
-        x.triggered.connect(self.toggle_experimental)
-        self._experimental_mode_checkbox = x
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)

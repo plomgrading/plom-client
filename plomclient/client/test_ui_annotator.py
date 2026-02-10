@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2023-2025 Colin B. Macdonald
+# Copyright (C) 2023-2026 Colin B. Macdonald
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import QWidget
@@ -18,6 +18,7 @@ class MockMarker(QWidget):
         "keybinding_custom_overlay": None,
     }
 
+    experimental_setting_signal = pyqtSignal(bool)
     tags_changed_signal = pyqtSignal(str, list)
 
     def getRubricsFromServer(self, q):
