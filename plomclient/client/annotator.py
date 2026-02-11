@@ -606,7 +606,6 @@ class Annotator(QWidget):
         # redo this after all the other rubric stuff initialised
         self.rubric_widget.updateLegalityOfRubrics()
 
-        # Very last thing = unpickle scene from plomDict if there is one
         if plomDict is not None:
             self.unpickleIt(plomDict)
             # restoring the scene would've marked it dirty
@@ -1905,11 +1904,6 @@ class Annotator(QWidget):
         """
         assert self.scene
         aname = self.scene.save(self.saveName)
-        lst = self.scene.pickleSceneItems()  # newest items first
-        lst.reverse()  # so newest items last
-        # get the crop-rect as proportions of underlying image
-        # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rectangle_data = self.scene.current_crop_rectangle_as_proportions()
         # TODO: consider saving colour only if not red?
         plomData = {
             "base_images": self.scene.get_src_img_data(only_visible=True),
@@ -1918,9 +1912,17 @@ class Annotator(QWidget):
             "currentMark": self.getScore(),
             "sceneScale": self.scene.get_scale_factor(),
             "annotationColor": self.scene.ink.color().getRgb()[:3],
-            "crop_rectangle_data": crop_rectangle_data,
-            "sceneItems": lst,
         }
+
+        # get the crop-rect as proportions of underlying image
+        # is 4-tuple (x,y,w,h) scaled by image width / height
+        crop_rectangle_data = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rectangle_data:
+            plomData.update({"crop_rectangle_data": crop_rectangle_data})
+
+        lst = self.scene.pickleSceneItems()  # newest items first
+        lst.reverse()  # so newest items last
+        plomData.update({"sceneItems": lst})
         plomfile = self.saveName.with_suffix(".plom")
 
         with open(plomfile, "w") as fh:

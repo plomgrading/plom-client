@@ -263,7 +263,8 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.outer_rect = outer_rect
         self.inner_rect = inner_rect
         # keep the original inner rectangle for uncropping.
-        self.original_inner_rect = inner_rect
+        self._original_inner_rect = inner_rect
+        self.is_cropped = False
 
         # set rectangles for semi-transparent boundaries - needs some tmp rectangle.
         self.top_bar = QGraphicsRectItem(outer_rect)
@@ -293,11 +294,15 @@ class MaskingOverlay(QGraphicsItemGroup):
 
     def crop_to(self, crop_rect: QRectF) -> None:
         self.inner_rect = crop_rect
+        self.is_cropped = True
         self._set_bars()
         self.update()
 
-    def get_original_inner_rect(self):
-        return self.original_inner_rect
+    def uncrop(self) -> None:
+        self.inner_rect = self._original_inner_rect
+        self.is_cropped = False
+        self._set_bars()
+        self.update()
 
     def _set_bars(self):
         # reset the dotted boundary rectangle
@@ -2036,17 +2041,22 @@ class PageScene(QGraphicsScene):
     def _crop_to(self, crop_rect: QRectF) -> None:
         self.overMask.crop_to(crop_rect)
         self.scoreBox.setPos(crop_rect.topLeft())
-        # set zoom to "fit-page"
         self.views()[0].zoomFitPage(update=True)
 
-    def current_crop_rectangle_as_proportions(
+    def _uncrop(self) -> None:
+        self.overMask.uncrop()
+        self.scoreBox.setPos(self.overMask.inner_rect.topLeft())
+        self.views()[0].zoomFitPage(update=True)
+
+    def get_current_crop_rectangle_as_proportions(
         self,
-    ) -> tuple[float, float, float, float]:
-        """Return the crop rectangle as proportions of original image."""
+    ) -> None | tuple[float, float, float, float]:
+        """Return the crop rectangle as proportions of original image, or None if uncropped."""
+        if not self.overMask.is_cropped:
+            return None
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         rect_in_pix = self.overMask.inner_rect
-
         rect_as_proportions = (
             rect_in_pix.x() / full_width,
             rect_in_pix.y() / full_height,
@@ -2071,18 +2081,18 @@ class PageScene(QGraphicsScene):
 
     def uncrop(self) -> None:
         """Uncrop, returning to the entire extent of the underlying images."""
-        self.trigger_crop(self.overMask.get_original_inner_rect(), _remove_crop=True)
+        self._uncrop()
 
-    def trigger_crop(self, crop_rect: QRectF, *, _remove_crop: bool = False) -> None:
+    def trigger_crop(self, crop_rect: QRectF, *, _keep_crop: bool = True) -> None:
         """React to a cropping operation to a rectangle.
 
         Args:
             crop_rect: A rectangular region to crop to.
 
         Keyword Args:
-            _remove_crop: a hack for removing crop.  The implementation of uncrop
-                just passes the large page rectangle.  We don't want to store
-                this in the annotator.  This bool prevents that from happening.
+            _keep_crop: If True, and by default, if you set the crop, the client
+                will keep that crop region so it can be reused later.  Pass
+                False if you want to set t the crop in a one-off manner.
         """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
@@ -2100,5 +2110,5 @@ class PageScene(QGraphicsScene):
         # MyPy is rightfully unsure parent is an Annotator:
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
-        if not _remove_crop:
-            _parent.set_crop_region(self.current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+        if _keep_crop:
+            _parent.set_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
