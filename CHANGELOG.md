@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* pgup and pgdown keys move within the task list on the right.
 
 ### Removed
 
 ### Changed
 * "hold crop" is no longer experimental, although the behaviour is still being tweaked.
-* "experimental" toggle moved to the right-hand marker menu.
+* Experimental mode toggle moved to the right-hand menu of Marker.
 
 ### Fixed
 
