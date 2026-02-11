@@ -291,7 +291,7 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.addToGroup(self.dotted_boundary)
         self.setZValue(-1)
 
-    def crop_to_focus(self, crop_rect):
+    def crop_to(self, crop_rect: QRectF) -> None:
         self.inner_rect = crop_rect
         self._set_bars()
         self.update()
@@ -2033,10 +2033,8 @@ class PageScene(QGraphicsScene):
         # return any(flag > 0 for flag in self.__getFlags())
         return self.active_drawer is not None
 
-    # PAGE SCENE CROPPING STUFF
-    def _crop_to_focus(self, crop_rect):
-        # this is called by the actual command-redo.
-        self.overMask.crop_to_focus(crop_rect)
+    def _crop_to(self, crop_rect: QRectF) -> None:
+        self.overMask.crop_to(crop_rect)
         self.scoreBox.setPos(crop_rect.topLeft())
         # set zoom to "fit-page"
         self.views()[0].zoomFitPage(update=True)
@@ -2089,9 +2087,14 @@ class PageScene(QGraphicsScene):
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
+
+        # Turned off the undo of crop for Issue #5113.
+        # TODO: delete the code if not restored by say end of 2026
         # pass new crop rect, as well as current one (for undo)
-        command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
-        self.undoStack.push(command)
+        # command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
+        # self.undoStack.push(command)
+        self._crop_to(actual_crop)
+
         _parent = self.parent()
         assert _parent is not None
         # MyPy is rightfully unsure parent is an Annotator:

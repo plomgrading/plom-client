@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2022 Andrew Rechnitzer
-# Copyright (C) 2023 Colin B. Macdonald
+# Copyright (C) 2023, 2026 Colin B. Macdonald
 
 from PyQt6.QtGui import QUndoCommand
 
@@ -15,7 +15,7 @@ class CommandCrop(QUndoCommand):
         self.setText("Crop")
 
     def redo(self):
-        self.scene._crop_to_focus(self.crop_rect)
+        self.scene._crop_to(self.crop_rect)
 
     def undo(self):
-        self.scene._crop_to_focus(self.prev_crop)
+        self.scene._crop_to(self.prev_crop)
