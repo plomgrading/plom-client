@@ -2057,8 +2057,10 @@ class PageScene(QGraphicsScene):
         )
         return rect_as_proportions
 
-    def crop_from_plomfile(self, crop_dat):
-        # crop dat = (x,y,w,h) as proportions of full image, so scale by underlying image width/height
+    def crop_from_proportions(
+        self, crop_dat: tuple[float, float, float, float]
+    ) -> None:
+        """Crop to just part of the page scene."""
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         crop_rect = QRectF(
@@ -2069,15 +2071,31 @@ class PageScene(QGraphicsScene):
         )
         self.trigger_crop(crop_rect)
 
-    def uncrop_underlying_images(self):
-        self.trigger_crop(self.overMask.get_original_inner_rect())
+    def uncrop(self) -> None:
+        """Uncrop, returning to the entire extent of the underlying images."""
+        self.trigger_crop(self.overMask.get_original_inner_rect(), _remove_crop=True)
 
-    def trigger_crop(self, crop_rect):
+    def trigger_crop(self, crop_rect: QRectF, *, _remove_crop: bool = False) -> None:
+        """React to a cropping operation to a rectangle.
+
+        Args:
+            crop_rect: A rectangular region to crop to.
+
+        Keyword Args:
+            _remove_crop: a hack for removing crop.  The implementation of uncrop
+                just passes the large page rectangle.  We don't want to store
+                this in the annotator.  This bool prevents that from happening.
+        """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
         # pass new crop rect, as well as current one (for undo)
         command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
         self.undoStack.push(command)
-        # now set mode to move.
-        self.parent().toMoveMode()
+        _parent = self.parent()
+        assert _parent is not None
+        # MyPy is rightfully unsure parent is an Annotator:
+        # # assert isinstance(_parent, Annotator)
+        # but that's likely a circular import, so just add exceptions below
+        if not _remove_crop:
+            _parent.set_crop_region(self.current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]

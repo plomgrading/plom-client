@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* "hold crop" is no longer experimental, although the behaviour is still being tweaked.
 * Experimental mode toggle moved to the right-hand menu of Marker.
 
 ### Fixed
