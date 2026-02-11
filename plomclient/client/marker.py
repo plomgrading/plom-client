@@ -1790,6 +1790,7 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
+        annotator.annotator_next_task.connect(self.callbackAnnNextTask)
         # manages the "*" in the titlebar when the pagescene is dirty
         annotator.cleanChanged.connect(self.clean_changed)
 

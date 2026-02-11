@@ -106,6 +106,7 @@ class Annotator(QWidget):
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
+    annotator_next_task = pyqtSignal(str)
     cleanChanged = pyqtSignal(bool)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
@@ -1180,8 +1181,7 @@ class Annotator(QWidget):
 
         # we already emitted "accept" for Marker to upload the task: that takes
         # care of requesting more tasks in background.
-        # TODO: replace this with an emit rather than explicit call into parent
-        self.parentMarkerUI.callbackAnnNextTask(tmp_task)
+        self.annotator_next_task.emit(tmp_task)
 
     # TODO: @pyqtSlot()?
     # def revert_changes(self) -> None:
