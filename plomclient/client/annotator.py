@@ -1904,29 +1904,32 @@ class Annotator(QWidget):
         """
         assert self.scene
         aname = self.scene.save(self.saveName)
-        # TODO: consider saving colour only if not red?
-        plomData = {
+        plomdata = {
             "base_images": self.scene.get_src_img_data(only_visible=True),
             "saveName": str(aname),
             "maxMark": self.maxMark,
             "currentMark": self.getScore(),
             "sceneScale": self.scene.get_scale_factor(),
-            "annotationColor": self.scene.ink.color().getRgb()[:3],
         }
+
+        annot_colour = self.scene.ink.color().getRgb()[:3]
+        if annot_colour != (255, 0, 0):
+            # save the colour explicitly if non-red
+            plomdata.update({"annotationColor": annot_colour})
 
         # get the crop-rect as proportions of underlying image
         # is 4-tuple (x,y,w,h) scaled by image width / height
         crop_rectangle_data = self.scene.get_current_crop_rectangle_as_proportions()
         if crop_rectangle_data:
-            plomData.update({"crop_rectangle_data": crop_rectangle_data})
+            plomdata.update({"crop_rectangle_data": crop_rectangle_data})
 
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last
-        plomData.update({"sceneItems": lst})
+        plomdata.update({"sceneItems": lst})
         plomfile = self.saveName.with_suffix(".plom")
 
         with open(plomfile, "w") as fh:
-            json.dump(plomData, fh, indent="  ", default=_json_path_to_str)
+            json.dump(plomdata, fh, indent="  ", default=_json_path_to_str)
             fh.write("\n")
         return aname, plomfile
 
