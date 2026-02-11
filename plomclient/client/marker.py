@@ -2293,7 +2293,6 @@ class MarkerClient(QWidget):
             old_task: the task code with no leading "q" for the previous
                 thing marked.
 
-        TODO: support configuring whether next-unmarked or just-next in list.
         TODO: similarly, ctrl-N should just skip rather than ask to save annotations?
         """
         if self._save_and_next_moves_to_unmarked_task.isChecked():
