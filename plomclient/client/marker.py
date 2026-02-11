@@ -639,6 +639,12 @@ class MarkerClient(QWidget):
         x.triggered.connect(self.toggle_experimental)
         self._experimental_mode_checkbox = x
 
+        x = m.addAction("Save-&&-next moves to unmarked task")
+        x.setCheckable(True)
+        x.setChecked(True)
+        # x.triggered.connect(self.meh)
+        self._save_and_next_moves_to_unmarked_task = x
+
         m.addSeparator()
 
         m.addAction("Help", self.show_help)
@@ -2290,9 +2296,12 @@ class MarkerClient(QWidget):
         TODO: support configuring whether next-unmarked or just-next in list.
         TODO: similarly, ctrl-N should just skip rather than ask to save annotations?
         """
-        # a future configuratable setting?
-        want_next_unmarked = False
-        log.debug("Annotator wants more (w/o closing)")
+        if self._save_and_next_moves_to_unmarked_task.isChecked():
+            want_next_unmarked = True
+        else:
+            want_next_unmarked = False
+
+        log.debug(f"Annotator wants more: want_next_unmarked={want_next_unmarked}")
         if not self.allowBackgroundOps:
             # the uploader code would've requested more in the default background case
             self.request_one_more()
