@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* pgup and pgdown keys move within the task list on the right.
 
 ### Removed
 
