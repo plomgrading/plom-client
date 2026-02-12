@@ -1949,12 +1949,9 @@ class Annotator(QWidget):
         # set crop rectangle from plom file contains if present
         # else, if use held-crop rectangle if present
         if plomData.get("crop_rectangle_data", None):
+            # TODO: note that this overwrites the client's local crop setting
+            # unsure if that is desirable or not
             self.scene.crop_from_proportions(plomData["crop_rectangle_data"])
-        else:
-            if self._crop_rectangle_data:  # if a crop is being held, use it.
-                # TODO: if the number of pages has changed, consider NOT doing this (i.e.,
-                # there is an extra page), but ideally it would stay on for the NEXT task
-                self.scene.crop_from_proportions(self._crop_rectangle_data)
         self.view.setHidden(False)
 
     def setZoomComboBox(self) -> None:
