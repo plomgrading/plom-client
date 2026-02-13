@@ -1953,10 +1953,17 @@ class Annotator(QWidget):
         self.scene.unpickleSceneItems(plomData["sceneItems"])
         # set crop rectangle from plom file contains if present
         # else, if use held-crop rectangle if present
-        if plomData.get("crop_rectangle_data", None):
-            # TODO: note that this overwrites the client's local crop setting
-            # unsure if that is desirable or not
-            self.scene.crop_from_proportions(plomData["crop_rectangle_data"])
+        crop = plomData.get("crop_rectangle_data", None)
+        tol = 0.01
+        if crop:
+            # special case check for files saved near trivial crop
+            # (before 2026 Feb all files were saved (0.0, 0.0, 1.0, 1.0)
+            x, y, w, h = crop
+            if abs(x) > tol or abs(y) > tol or abs(w - 1) > tol or abs(h - 1) > tol:
+                # TODO: note that this overwrites the client's local crop setting
+                # unsure if that is desirable or not
+                log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
+                self.scene.crop_from_proportions(crop)
         self.view.setHidden(False)
 
     def setZoomComboBox(self) -> None:
