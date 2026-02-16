@@ -1134,7 +1134,7 @@ class PageScene(QGraphicsScene):
                     )
         return br
 
-    def updateSceneRectangle(self):
+    def updateSceneRectangle(self) -> None:
         self.setSceneRect(self.getSaveableRectangle())
         self.update()
 
@@ -2041,12 +2041,10 @@ class PageScene(QGraphicsScene):
     def _crop_to(self, crop_rect: QRectF) -> None:
         self.overMask.crop_to(crop_rect)
         self.scoreBox.setPos(crop_rect.topLeft())
-        self.views()[0].zoomFitPage(update=True)
 
     def _uncrop(self) -> None:
         self.overMask.uncrop()
         self.scoreBox.setPos(self.overMask.inner_rect.topLeft())
-        self.views()[0].zoomFitPage(update=True)
 
     def get_current_crop_rectangle_as_proportions(
         self,

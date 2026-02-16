@@ -896,8 +896,8 @@ class CropToolDrawer(MultiStageDrawer):
                 QRectF(self.origin_pos, self.current_pos).normalized()
             )
 
-    def mouse_release(self, event):
-        """Handles mouse release events for the crop tool."""
+    def mouse_release(self, event) -> None:
+        """On mouse release, the crop tool crops tries to crop the page and zoom to the crop."""
         minbox = max(256, 0.2 * self.scene.underImage.min_dimension)
 
         if (
@@ -905,6 +905,9 @@ class CropToolDrawer(MultiStageDrawer):
             and self.temp_box_item.rect().width() >= minbox
         ):
             self.scene.trigger_crop(self.temp_box_item.rect())
+            page_view = self.scene.views()[0]
+            assert isinstance(page_view, PageView)
+            page_view.zoomFitPage(update=True)
 
         self.finish()
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2020 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 
 from PyQt6.QtCore import Qt
@@ -115,21 +115,26 @@ class PageView(QGraphicsView):
         else:
             self.zoomFitWidth(True)
 
-    def zoomFitPage(self, update=False):
+    def zoomFitPage(self, update: bool = False) -> None:
         """Zooms such that the entire page is visible.
 
         Args:
-            update (bool): True if combo box needs updating, False otherwise.
-
-        Returns:
-            None
+            update: True if combo box needs updating, False otherwise.
+                (default False).  Probably a bit of a hack!
         """
+        viewport = self.viewport()
+        assert viewport is not None
         # first recompute the scene rect in case anything in the margins.
-        tempPaperWindow = self.mapToScene(self.viewport().contentsRect()).boundingRect()
-        self.scene().updateSceneRectangle()
+        tempPaperWindow = self.mapToScene(viewport.contentsRect()).boundingRect()
+        scene = self.scene()
+        assert scene is not None
+        # MyPy is rightfully unsure scene is a PageScene
+        # # assert isinstance(scene, PageScene)
+        # but that's likely a circular import, so just add exception:
+        scene.updateSceneRectangle()  # type: ignore[attr-defined]
         if (
-            self.scene().height() / tempPaperWindow.height()
-            > self.scene().width() / tempPaperWindow.width()
+            scene.height() / tempPaperWindow.height()
+            > scene.width() / tempPaperWindow.width()
         ):
             self.zoomFitHeight(False)
         else:

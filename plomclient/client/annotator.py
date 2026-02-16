@@ -1313,6 +1313,7 @@ class Annotator(QWidget):
             return
         log.debug(f"enabling existing crop: {self._crop_rectangle}")
         self.scene.crop_from_proportions(self._crop_rectangle)
+        self.view.zoomFitPage(update=True)
         self._crop_enable = True
 
     def uncrop_region(self) -> None:
@@ -1320,6 +1321,7 @@ class Annotator(QWidget):
             return
         log.debug("disabling crop")
         self.scene.uncrop()
+        self.view.zoomFitPage(update=True)
         self._crop_enable = False
 
     def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
