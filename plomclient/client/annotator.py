@@ -220,7 +220,8 @@ class Annotator(QWidget):
         # Set up cursors
         self.loadCursors()
 
-        self._crop_rectangle_data: None | tuple[float, float, float, float] = None
+        self._crop_enable: None | bool = None
+        self._crop_rectangle: None | tuple[float, float, float, float] = None
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -611,9 +612,9 @@ class Annotator(QWidget):
             # restoring the scene would've marked it dirty
             self.scene.reset_dirty()
         else:
-            # if there is a held crop rectangle, then use it.
-            if self._crop_rectangle_data:
-                self.scene.crop_from_proportions(self._crop_rectangle_data)
+            # if there is a held crop rectangle and user explicitly was cropping, then use it.
+            if self._crop_enable and self._crop_rectangle:
+                self.scene.crop_from_proportions(self._crop_rectangle)
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1305,21 +1306,24 @@ class Annotator(QWidget):
         """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
-        if not self._crop_rectangle_data:
+        if not self._crop_rectangle:
             log.debug("enabling crop, no existing data, entering interactive crop mode")
             self.to_crop_mode()
+            self._crop_enable = True
             return
-        log.debug(f"enabling existing crop: {self._crop_rectangle_data}")
-        self.scene.crop_from_proportions(self._crop_rectangle_data)
+        log.debug(f"enabling existing crop: {self._crop_rectangle}")
+        self.scene.crop_from_proportions(self._crop_rectangle)
+        self._crop_enable = True
 
     def uncrop_region(self) -> None:
         if not self.scene:
             return
         log.debug("disabling crop")
         self.scene.uncrop()
+        self._crop_enable = False
 
     def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
-        self._crop_rectangle_data = rect
+        self._crop_rectangle = rect
         # now set mode to move (just to change it away from crop tool)
         if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
@@ -1458,8 +1462,11 @@ class Annotator(QWidget):
         if self.parentMarkerUI.annotatorSettings.get("_config"):
             self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
 
-        self._crop_rectangle_data = self.parentMarkerUI.annotatorSettings.get(
-            "crop_rectangle_data", None
+        self._crop_enable = self.parentMarkerUI.annotatorSettings.get(
+            "crop_enable", None
+        )
+        self._crop_rectangle = self.parentMarkerUI.annotatorSettings.get(
+            "crop_rectangle", None
         )
 
         # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
@@ -1508,9 +1515,8 @@ class Annotator(QWidget):
             self.ui.zoomCB.currentIndex()
         )
         self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
-        self.parentMarkerUI.annotatorSettings["crop_rectangle_data"] = (
-            self._crop_rectangle_data
-        )
+        self.parentMarkerUI.annotatorSettings["crop_enable"] = self._crop_enable
+        self.parentMarkerUI.annotatorSettings["crop_rectangle"] = self._crop_rectangle
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -1919,9 +1925,9 @@ class Annotator(QWidget):
 
         # get the crop-rect as proportions of underlying image
         # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rectangle_data = self.scene.get_current_crop_rectangle_as_proportions()
-        if crop_rectangle_data:
-            plomdata.update({"crop_rectangle_data": crop_rectangle_data})
+        crop_rectangle = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rectangle:
+            plomdata.update({"crop_rectangle_data": crop_rectangle})
 
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last
