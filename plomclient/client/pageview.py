@@ -125,17 +125,14 @@ class PageView(QGraphicsView):
         viewport = self.viewport()
         assert viewport is not None
         # first recompute the scene rect in case anything in the margins.
-        tempPaperWindow = self.mapToScene(viewport.contentsRect()).boundingRect()
+        paperwin = self.mapToScene(viewport.contentsRect()).boundingRect()
         scene = self.scene()
         assert scene is not None
         # MyPy is rightfully unsure scene is a PageScene
         # # assert isinstance(scene, PageScene)
         # but that's likely a circular import, so just add exception:
         scene.updateSceneRectangle()  # type: ignore[attr-defined]
-        if (
-            scene.height() / tempPaperWindow.height()
-            > scene.width() / tempPaperWindow.width()
-        ):
+        if scene.height() / paperwin.height() > scene.width() / paperwin.width():
             self.zoomFitHeight(False)
         else:
             self.zoomFitWidth(False)
@@ -154,8 +151,8 @@ class PageView(QGraphicsView):
         # first recompute the scene rect in case anything in the margins.
         self.scene().updateSceneRectangle()
 
-        tempPaperWindow = self.mapToScene(self.viewport().contentsRect()).boundingRect()
-        ratio = tempPaperWindow.height() / self.scene().height() * 0.98
+        paperwin = self.mapToScene(self.viewport().contentsRect()).boundingRect()
+        ratio = paperwin.height() / self.scene().height() * 0.98
         self.scale(ratio, ratio)
         # Issue #1768: at least initially we should start at the left of the page
         # self.centerOn(self.paperWindow.center())
@@ -178,8 +175,8 @@ class PageView(QGraphicsView):
         # first recompute the scene rect in case anything in the margins.
         self.scene().updateSceneRectangle()
 
-        tempPaperWindow = self.mapToScene(self.viewport().contentsRect()).boundingRect()
-        rat = tempPaperWindow.width() / self.scene().width() * 0.98
+        paperwin = self.mapToScene(self.viewport().contentsRect()).boundingRect()
+        rat = paperwin.width() / self.scene().width() * 0.98
         self.scale(rat, rat)
         # Issue #1768: at least initially we should start at the top of the page
         # self.centerOn(self.paperWindow.center())
