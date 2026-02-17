@@ -608,9 +608,7 @@ class Annotator(QWidget):
         self.rubric_widget.updateLegalityOfRubrics()
 
         if plomDict is not None:
-            self.unpickleIt(plomDict)
-            # restoring the scene would've marked it dirty
-            self.scene.reset_dirty()
+            self.restore_from_data(plomDict)
         else:
             # if there is a held crop rectangle and user explicitly was cropping, then use it.
             if self._crop_enable and self._crop_rectangle:
@@ -1941,8 +1939,8 @@ class Annotator(QWidget):
             fh.write("\n")
         return aname, plomfile
 
-    def unpickleIt(self, plomData: dict[str, Any]) -> None:
-        """Unpickles the page by calling scene.unpickleSceneItems and sets the page's mark.
+    def restore_from_data(self, plomData: dict[str, Any]) -> None:
+        """Unpackes and restore the scene from data.
 
         Args:
             plomData: a dictionary containing the data for the
@@ -1973,6 +1971,8 @@ class Annotator(QWidget):
                 log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
                 self.scene.crop_from_proportions(crop)
         self.view.setHidden(False)
+        # restoring the scene would've marked it dirty
+        self.scene.reset_dirty()
 
     def setZoomComboBox(self) -> None:
         """Sets the combo box for the zoom method.
