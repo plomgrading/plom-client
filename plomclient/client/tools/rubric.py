@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Bryan Tanady
@@ -68,7 +68,9 @@ class CommandRubric(CommandTool):
 
     def redo(self):
         self.scene.addItem(self.gdt)
-        self.redo_animation()
+        if not self._redo_skip_ani:
+            self.redo_animation()
+        self._redo_skip_ani = False
 
     def undo(self):
         self.scene.removeItem(self.gdt)

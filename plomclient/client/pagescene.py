@@ -1585,7 +1585,7 @@ class PageScene(QGraphicsScene):
             CmdCls = COMMAND_MAP.get(X[0])
             if CmdCls and getattr(CmdCls, "from_pickle", None):
                 # TODO: use try-except here?
-                self.undoStack.push(CmdCls.from_pickle(X, scene=self))
+                self.undoStack.push(CmdCls._from_pickle(X, scene=self))
                 continue
             log.error("Could not unpickle whatever this is:\n  {}".format(X))
             raise ValueError("Could not unpickle whatever this is:\n  {}".format(X))
