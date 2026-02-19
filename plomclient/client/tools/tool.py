@@ -36,8 +36,9 @@ class CommandTool(QUndoCommand):
         # does not animate when the task is revisited.
         self._redo_skip_ani = False
 
+    # pylint seems unhappy with the recursive of these constructors
     @classmethod
-    def _from_pickle(cls, *args, **kwargs) -> CommandTool:
+    def _from_pickle(cls, *args, **kwargs):  # -> CommandTool:
         """Low-level interface to restore an object a command from saved data.
 
         Subclasses should not re-implement this but they must
@@ -48,7 +49,7 @@ class CommandTool(QUndoCommand):
         return instance
 
     @classmethod
-    def from_pickle(cls, *args, **kwargs) -> CommandTool:
+    def from_pickle(cls, *args, **kwargs):  # -> CommandTool:
         """Abstract: subclasses must override this to restore themselves from a data."""
         raise NotImplementedError("subclasses must define this abstract method")
 
