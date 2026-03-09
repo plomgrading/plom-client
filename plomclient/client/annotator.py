@@ -220,7 +220,8 @@ class Annotator(QWidget):
         # Set up cursors
         self.loadCursors()
 
-        self._crop_rectangle_data: None | tuple[float, float, float, float] = None
+        self._crop_enable: None | bool = None
+        self._crop_rectangle: None | tuple[float, float, float, float] = None
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -606,15 +607,12 @@ class Annotator(QWidget):
         # redo this after all the other rubric stuff initialised
         self.rubric_widget.updateLegalityOfRubrics()
 
-        # Very last thing = unpickle scene from plomDict if there is one
         if plomDict is not None:
-            self.unpickleIt(plomDict)
-            # restoring the scene would've marked it dirty
-            self.scene.reset_dirty()
+            self.restore_from_data(plomDict)
         else:
-            # if there is a held crop rectangle, then use it.
-            if self._crop_rectangle_data:
-                self.scene.crop_from_proportions(self._crop_rectangle_data)
+            # if there is a held crop rectangle and user explicitly was cropping, then use it.
+            if self._crop_enable and self._crop_rectangle:
+                self.scene.crop_from_proportions(self._crop_rectangle)
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1306,21 +1304,26 @@ class Annotator(QWidget):
         """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
-        if not self._crop_rectangle_data:
+        if not self._crop_rectangle:
             log.debug("enabling crop, no existing data, entering interactive crop mode")
             self.to_crop_mode()
+            self._crop_enable = True
             return
-        log.debug(f"enabling existing crop: {self._crop_rectangle_data}")
-        self.scene.crop_from_proportions(self._crop_rectangle_data)
+        log.debug(f"enabling existing crop: {self._crop_rectangle}")
+        self.scene.crop_from_proportions(self._crop_rectangle)
+        self.view.zoomFitPage(update=True)
+        self._crop_enable = True
 
     def uncrop_region(self) -> None:
         if not self.scene:
             return
         log.debug("disabling crop")
         self.scene.uncrop()
+        self.view.zoomFitPage(update=True)
+        self._crop_enable = False
 
     def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
-        self._crop_rectangle_data = rect
+        self._crop_rectangle = rect
         # now set mode to move (just to change it away from crop tool)
         if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
@@ -1459,8 +1462,11 @@ class Annotator(QWidget):
         if self.parentMarkerUI.annotatorSettings.get("_config"):
             self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
 
-        self._crop_rectangle_data = self.parentMarkerUI.annotatorSettings.get(
-            "crop_rectangle_data", None
+        self._crop_enable = self.parentMarkerUI.annotatorSettings.get(
+            "crop_enable", None
+        )
+        self._crop_rectangle = self.parentMarkerUI.annotatorSettings.get(
+            "crop_rectangle", None
         )
 
         # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
@@ -1509,9 +1515,8 @@ class Annotator(QWidget):
             self.ui.zoomCB.currentIndex()
         )
         self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
-        self.parentMarkerUI.annotatorSettings["crop_rectangle_data"] = (
-            self._crop_rectangle_data
-        )
+        self.parentMarkerUI.annotatorSettings["crop_enable"] = self._crop_enable
+        self.parentMarkerUI.annotatorSettings["crop_rectangle"] = self._crop_rectangle
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -1905,31 +1910,37 @@ class Annotator(QWidget):
         """
         assert self.scene
         aname = self.scene.save(self.saveName)
-        lst = self.scene.pickleSceneItems()  # newest items first
-        lst.reverse()  # so newest items last
-        # get the crop-rect as proportions of underlying image
-        # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rectangle_data = self.scene.current_crop_rectangle_as_proportions()
-        # TODO: consider saving colour only if not red?
-        plomData = {
+        plomdata = {
             "base_images": self.scene.get_src_img_data(only_visible=True),
             "saveName": str(aname),
             "maxMark": self.maxMark,
             "currentMark": self.getScore(),
             "sceneScale": self.scene.get_scale_factor(),
-            "annotationColor": self.scene.ink.color().getRgb()[:3],
-            "crop_rectangle_data": crop_rectangle_data,
-            "sceneItems": lst,
         }
+
+        annot_colour = self.scene.ink.color().getRgb()[:3]
+        if annot_colour != (255, 0, 0):
+            # save the colour explicitly if non-red
+            plomdata.update({"annotationColor": annot_colour})
+
+        # get the crop-rect as proportions of underlying image
+        # is 4-tuple (x,y,w,h) scaled by image width / height
+        crop_rectangle = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rectangle:
+            plomdata.update({"crop_rectangle_data": crop_rectangle})
+
+        lst = self.scene.pickleSceneItems()  # newest items first
+        lst.reverse()  # so newest items last
+        plomdata.update({"sceneItems": lst})
         plomfile = self.saveName.with_suffix(".plom")
 
         with open(plomfile, "w") as fh:
-            json.dump(plomData, fh, indent="  ", default=_json_path_to_str)
+            json.dump(plomdata, fh, indent="  ", default=_json_path_to_str)
             fh.write("\n")
         return aname, plomfile
 
-    def unpickleIt(self, plomData: dict[str, Any]) -> None:
-        """Unpickles the page by calling scene.unpickleSceneItems and sets the page's mark.
+    def restore_from_data(self, plomData: dict[str, Any]) -> None:
+        """Unpackes and restore the scene from data.
 
         Args:
             plomData: a dictionary containing the data for the
@@ -1948,14 +1959,20 @@ class Annotator(QWidget):
         self.scene.unpickleSceneItems(plomData["sceneItems"])
         # set crop rectangle from plom file contains if present
         # else, if use held-crop rectangle if present
-        if plomData.get("crop_rectangle_data", None):
-            self.scene.crop_from_proportions(plomData["crop_rectangle_data"])
-        else:
-            if self._crop_rectangle_data:  # if a crop is being held, use it.
-                # TODO: if the number of pages has changed, consider NOT doing this (i.e.,
-                # there is an extra page), but ideally it would stay on for the NEXT task
-                self.scene.crop_from_proportions(self._crop_rectangle_data)
+        crop = plomData.get("crop_rectangle_data", None)
+        tol = 0.01
+        if crop:
+            # special case check for files saved near trivial crop
+            # (before 2026 Feb all files were saved (0.0, 0.0, 1.0, 1.0)
+            x, y, w, h = crop
+            if abs(x) > tol or abs(y) > tol or abs(w - 1) > tol or abs(h - 1) > tol:
+                # TODO: note that this overwrites the client's local crop setting
+                # unsure if that is desirable or not
+                log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
+                self.scene.crop_from_proportions(crop)
         self.view.setHidden(False)
+        # restoring the scene would've marked it dirty
+        self.scene.reset_dirty()
 
     def setZoomComboBox(self) -> None:
         """Sets the combo box for the zoom method.
