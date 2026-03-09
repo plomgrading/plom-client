@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * pgup and pgdown keys move within the task list on the right.
+* The behaviour of save-and-next can be changed: by default it skips marked tasks and looks for unmarked tasks; this can be toggled in the Marker hamburger menu on the right.
 
 ### Removed
 

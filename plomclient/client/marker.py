@@ -639,6 +639,12 @@ class MarkerClient(QWidget):
         x.triggered.connect(self.toggle_experimental)
         self._experimental_mode_checkbox = x
 
+        x = m.addAction("Save-&&-next moves to unmarked task")
+        x.setCheckable(True)
+        x.setChecked(True)
+        # x.triggered.connect(self.meh)
+        self._save_and_next_moves_to_unmarked_task = x
+
         m.addSeparator()
 
         m.addAction("Help", self.show_help)
@@ -1790,6 +1796,7 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
+        annotator.annotator_next_task.connect(self.callbackAnnNextTask)
         # manages the "*" in the titlebar when the pagescene is dirty
         annotator.cleanChanged.connect(self.clean_changed)
 
@@ -1918,7 +1925,7 @@ class MarkerClient(QWidget):
                 self.request_one_more()
 
         if self._annotator:
-            self._annotator.load_new_question(*inidata)
+            self._annotator.load_new_task(*inidata)
         else:
             self.startTheAnnotator(inidata)
         self._moveSelectionToTask(task)
@@ -2279,39 +2286,28 @@ class MarkerClient(QWidget):
         # now update the marking history with the task.
         self.marking_history.append(task)
 
-    def getMorePapers(self, old_task: str) -> tuple | None:
-        """Loads more tests.
+    def callbackAnnNextTask(self, old_task: str) -> None:
+        """A call-back mechanism from Annotator, indicating it has saved and would like the next task.
 
         Args:
             old_task: the task code with no leading "q" for the previous
                 thing marked.
 
-        Returns:
-            The data for the annotator or None as described in
-            :method:`get_data_for_annotator`.
+        TODO: similarly, ctrl-N should just skip rather than ask to save annotations?
         """
-        log.debug("Annotator wants more (w/o closing)")
+        if self._save_and_next_moves_to_unmarked_task.isChecked():
+            want_next_unmarked = True
+        else:
+            want_next_unmarked = False
+
+        log.debug(f"Annotator wants more: want_next_unmarked={want_next_unmarked}")
         if not self.allowBackgroundOps:
+            # the uploader code would've requested more in the default background case
             self.request_one_more()
-        if not self.moveToNextUnmarkedTask(old_task if old_task else None):
-            return None
-        task_id_str = self.get_current_task_id_or_none()
-        if not task_id_str:
-            return None
-        data = self.get_data_for_annotator(task_id_str)
-        if data is None:
-            return None
-
-        assert task_id_str == data[0]
-        pdict = data[8]  # eww, hardcoded numbers
-        assert pdict is None, "Annotator should not pull a regrade"
-
-        if self.allowBackgroundOps:
-            # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
-                self.request_one_more()
-
-        return data
+        if want_next_unmarked:
+            self.moveToNextUnmarkedTask(old_task if old_task else None)
+        else:
+            self._next_task_in_list()
 
     def backgroundUploadFinished(
         self, task: str, progress_info: dict[str, Any]
