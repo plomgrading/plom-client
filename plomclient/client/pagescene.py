@@ -1582,13 +1582,18 @@ class PageScene(QGraphicsScene):
                 self.undoStack.push(command)
         # now load up the new items
         for X in lst:
-            CmdCls = COMMAND_MAP.get(X[0])
-            if CmdCls and getattr(CmdCls, "from_pickle", None):
-                # TODO: use try-except here?
-                self.undoStack.push(CmdCls.from_pickle(X, scene=self))
-                continue
-            log.error("Could not unpickle whatever this is:\n  {}".format(X))
-            raise ValueError("Could not unpickle whatever this is:\n  {}".format(X))
+            CmdCls = COMMAND_MAP.get(X[0], None)
+            if not CmdCls:
+                err = f"Could not unpickle whatever this is:\n  {X}"
+                log.error(err)
+                raise ValueError(err)
+            if not getattr(CmdCls, "from_pickle", None):
+                err = f"Could not unpickle this b/c it has no 'from_pickle':\n  {X}"
+                log.error(err)
+                raise ValueError(err)
+            # Note the use of the private _from_pickle, necessary to disable animation on redraw
+            # TODO: use try-except here?
+            self.undoStack.push(CmdCls._from_pickle(X, scene=self))
         # now make sure focus is cleared from every item
         for X in self.items():
             X.clearFocus()
