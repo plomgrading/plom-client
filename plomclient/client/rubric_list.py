@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
@@ -1781,7 +1781,7 @@ class RubricWidget(QWidget):
             index: the index of the comment inside the current rubric list
                 used for updating the data in the rubric list after edit (only)
             add_to_group: if set to a string, the user might be trying to add
-                to a group with this name.  For example, a UI could pre-select
+                to a group with this name.  For example, a UI could preselect
                 that option.  Mutually exclusive with `edit`, `index`, or
                 at least ill-defined what happens if you pass those as well.
             add_to_user_tab: if set to a string, the user might be adding
