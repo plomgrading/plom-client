@@ -45,6 +45,7 @@ class CommandTool(QUndoCommand):
         implement `method:`from_pickle`.
         """
         instance = cls.from_pickle(*args, **kwargs)
+        # To reproduce crash #5110, change to False and switch rapidly & repeatedly b/w papers
         instance._redo_skip_ani = True
         return instance
 
