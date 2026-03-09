@@ -75,25 +75,6 @@ def _(x: str) -> str:
     return x
 
 
-def readLastTime() -> dict[str, Any]:
-    """Read the login + server options that were used on the last run of the client."""
-    lastTime: dict[str, Any] = {}
-    # set some reasonable defaults.
-    lastTime["LogToFile"] = True  # default until stable release?
-    lastTime["user"] = ""
-    lastTime["server"] = ""
-    lastTime["question"] = 1
-    lastTime["v"] = 1
-    lastTime["fontSize"] = 10
-    lastTime["KeyBinding"] = "default"
-    # update default from config file
-    if cfgfile.exists():
-        # too early to log: log.info("Loading config file %s", cfgfile)
-        with open(cfgfile, "rb") as f:
-            lastTime.update(tomllib.load(f))
-    return lastTime
-
-
 class Chooser(QDialog):
 
     def __init__(self, Qapp):
@@ -103,7 +84,7 @@ class Chooser(QDialog):
         self.Qapp = Qapp
         self.messenger = None
 
-        self.lastTime = readLastTime()
+        self.lastTime = self.load_config_file_or_defaults()
 
         kwargs = {}
         if self.lastTime.get("LogToFile"):
@@ -221,7 +202,7 @@ class Chooser(QDialog):
 
         assert self.messenger is not None
 
-        self.saveDetails()
+        self.save_config_file()
 
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
@@ -276,7 +257,45 @@ class Chooser(QDialog):
     def run_identifier(self) -> None:
         self._launch_subapp("Identifier")
 
-    def saveDetails(self) -> None:
+    def load_config_file_or_defaults(self) -> dict[str, Any]:
+        """Read the login + server options that were used on the last run of the client.
+
+        Note: this can open dialogs, potentially before we have our main
+        window in place.
+        """
+        lastTime: dict[str, Any] = {}
+        # set some reasonable defaults.
+        lastTime["LogToFile"] = True  # default until stable release?
+        lastTime["user"] = ""
+        lastTime["server"] = ""
+        lastTime["question"] = 1
+        lastTime["v"] = 1
+        lastTime["fontSize"] = 10
+        lastTime["KeyBinding"] = "default"
+        # update defaults from config file
+        try:
+            # too early to log: log.info("Loading config file %s", cfgfile)
+            with open(cfgfile, "rb") as f:
+                lastTime.update(tomllib.load(f))
+        except FileNotFoundError:
+            pass
+        except (tomllib.TOMLDecodeError, OSError) as e:
+            WarnMsg(
+                self,
+                _(
+                    """<p>Cannot read from the config file:</p>
+                    <blockquote><tt>{config_file}</tt></blockquote>
+                    <p>Perhaps the file is corrupted?  We can ignore the error
+                    and continue with default settings.</p>
+                    <p>
+                    You can also try restarting, and if the error does not go away,
+                    consider manually removing the config file from your computer.</p>
+                    <p>Error msg: <tt>{error_message}</tt></p>"""
+                ).format(config_file=cfgfile, error_message=e),
+            ).exec()
+        return lastTime
+
+    def save_config_file(self) -> None:
         """Write the options to the config file."""
         self.lastTime["user"] = self.ui.userLE.text().strip()
         server = self.ui.serverLE.text().strip()
@@ -295,14 +314,16 @@ class Chooser(QDialog):
         except OSError as e:
             WarnMsg(
                 self,
-                "Cannot write config file:\n"
-                "    {}\n\n"
-                "Any settings will not be saved for future sessions.\n\n"
-                "Error msg: {}.".format(cfgfile, e),
+                _(
+                    """<p>Cannot write to the config file:</p>
+                    <blockquote><tt>{config_file}</tt></blockquote>
+                    <p>Settings will not be saved for future sessions.</p>
+                    <p>Error msg: <tt>{error_message}</tt></p>"""
+                ).format(config_file=cfgfile, error_message=e),
             ).exec()
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
-        self.saveDetails()
+        self.save_config_file()
         dl = getattr(self.Qapp, "downloader", None)
         if dl:
             while True:
