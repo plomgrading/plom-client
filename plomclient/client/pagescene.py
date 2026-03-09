@@ -1591,6 +1591,7 @@ class PageScene(QGraphicsScene):
                 err = f"Could not unpickle this b/c it has no 'from_pickle':\n  {X}"
                 log.error(err)
                 raise ValueError(err)
+            # Note the use of the private _from_pickle, necessary to disable animation on redraw
             # TODO: use try-except here?
             self.undoStack.push(CmdCls._from_pickle(X, scene=self))
         # now make sure focus is cleared from every item
