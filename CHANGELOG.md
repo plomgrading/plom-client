@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * The behaviour of save-and-next can be changed: by default it skips marked tasks and looks for unmarked tasks; this can be toggled in the Marker hamburger menu on the right.
 
 ### Removed
+* Plom-client no longer records the annotation colour in the data if the default colour is used.
 
 ### Changed
 * "hold crop" is no longer experimental, although the behaviour is still being tweaked.
@@ -20,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * no longer crashes when starting with a corrupt/unreadable config file.
-
+* rare crashes when rapidly switching tasks should be even more rare but perhaps not eliminated.
 
 
 
