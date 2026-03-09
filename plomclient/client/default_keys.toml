@@ -100,7 +100,7 @@ info = "Decreae the relative size of annotations on the page."
 human = "Cancel"
 keys = [ "ctrl+c",]
 categories = [ "General",]
-info = "Cancel the current annotations and return to the marker-window"
+info = "Leave annotation mode; change to view-only mode"
 
 ["next-paper"]
 human = "Save and next paper"
