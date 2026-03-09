@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Experimental mode toggle moved to the right-hand menu of Marker.
 
 ### Fixed
-* crash when starting with a corrupt/unreadable config file.
+* no longer crashes when starting with a corrupt/unreadable config file.
 
 
 
