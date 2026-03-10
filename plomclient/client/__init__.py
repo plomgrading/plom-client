@@ -13,7 +13,7 @@ __license__ = "AGPL-3.0-or-later"
 ScenePixelHeight = 2000
 
 # Also hardcoded in AppImageBuilder.yml
-__version__ = "0.20.1"
+__version__ = "0.20.2"
 
 
 from .marker import MarkerClient

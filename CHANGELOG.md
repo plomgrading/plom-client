@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.20.1] - 2026-03-09
+## [0.20.2] - 2026-03-09
 
 ### Added
 * pgup and pgdown keys move within the task list on the right.
@@ -150,7 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[0.20.1]: https://gitlab.com/plom/plom-client/-/compare/v0.20.0...v0.20.1
+[0.20.2]: https://gitlab.com/plom/plom-client/-/compare/v0.20.0...v0.20.2
 [0.20.0]: https://gitlab.com/plom/plom-client/-/compare/v0.19.4...v0.20.0
 [0.19.4]: https://gitlab.com/plom/plom-client/-/compare/v0.19.3...v0.19.4
 [0.19.3]: https://gitlab.com/plom/plom-client/-/compare/v0.19.2...v0.19.3
