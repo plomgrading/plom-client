@@ -56,7 +56,6 @@ local_possible_statuses = (
     "complete",
     "uploading...",
     "failed upload",
-    "deferred",
 )
 
 # there is some overlap with the servers's status strings
@@ -554,10 +553,6 @@ class MarkerExamModel(QStandardItemModel):
         self.setData(self.index(r, _idx_mark), pprint_score(mark))
         self._setAnnotatedFile(r, aname, pname)
         self._setPaperDir(r, tdir)
-
-    def deferPaper(self, task):
-        """Sets the status for the task's paper to deferred."""
-        self.setStatusByTask(task, "deferred")
 
     def remove_task(self, task: str) -> None:
         """Removes the task from the list."""

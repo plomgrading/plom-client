@@ -535,7 +535,7 @@ class MarkerClient(QWidget):
         # self.ui.getMoreButton.setVisible(False)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
-        m.addAction("&Defer selected task", self.defer_task)
+        m.addAction("&Defer selected task to...", self.defer_task)
         m.addSeparator()
         m.addAction("Claim selected task for me", self.claim_task)
         m.addAction("Claim more tasks for me", self.request_one_more)
@@ -1690,8 +1690,6 @@ class MarkerClient(QWidget):
         task = self.get_current_task_id_or_none()
         if not task:
             return
-        if self.examModel.getStatusByTask(task) == "deferred":
-            return
         if not self.examModel.is_our_task(task, self.msgr.username):
             s = f"Cannot defer task {task} b/c it isn't yours"
             user = self.examModel.get_username_by_task(task)
@@ -1719,17 +1717,64 @@ class MarkerClient(QWidget):
                         return
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
-        self.examModel.deferPaper(task)
+
+        # TODO: cache this instead of asking every time
+        users = self.msgr.get_user_list()
+        lead_markers = []
+        other_markers = []
+        for u, group_list in users.items():
+            if "lead_marker" in group_list:
+                lead_markers.append(u)
+            elif "marker" in group_list:
+                other_markers.append(u)
+        lead_markers.sort()
+        other_markers.sort()
+
+        # TODO: needs a custom dialog to select multiples
+        # TODO: or Aidan suggested a custom drop down
+        meh, r = QInputDialog.getItem(
+            self,
+            "pick",
+            f"<p>Defer task {task} to which user(s)?</p>",
+            # TODO: note lead markers first, following by all others
+            lead_markers + [" - - - - - "] + other_markers,
+            editable=False,
+        )
+        if not r:
+            # user cancelled
+            return
+        if "- - -" in meh:
+            return
+        print(meh)
+        print(type(meh))
+
+        self.defer_task_to_users(task, [meh])
+        self.refresh_server_data()
+
         if advance_to_next:
+            print("advancing more")
             # TODO: maybe we really need request_one_more_if_necessary
             # TODO: or that someone would just notice we're not far enough ahead
             # TODO: problem with current approach is if you "get more" til you
             # TODO: have 4 untouched, each defer will get one more untouhed.
             # TODO: IMHO, I'd rather this only happen when there is less than 2 untouched
             self.request_one_more()
+            # TODO: deends on "next" settings?
             self.moveToNextUnmarkedTask()
             # alternatively or if we want to search "forward" of current:
             # self.moveToNextUnmarkedTask(task)
+
+    def defer_task_to_users(self, task: str, user_list: list[str]) -> None:
+        """Tag some users, and surrender a task.
+
+        Args:
+            task: a task code.
+            user_list: a list of usernames to alert to this task by tagging.
+        """
+        for u in user_list:
+            self.msgr.add_single_tag(task, f"@{u}")
+        self.msgr.surrender_task(task)
+        # TODO: optionally lower the priority
 
     def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
