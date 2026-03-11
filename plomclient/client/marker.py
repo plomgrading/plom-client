@@ -535,7 +535,7 @@ class MarkerClient(QWidget):
         # self.ui.getMoreButton.setVisible(False)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
-        m.addAction("&Defer selected task to...", self.defer_task)
+        m.addAction("&Defer selected task to...", self.defer_current_task)
         m.addSeparator()
         m.addAction("Claim selected task for me", self.claim_task)
         m.addAction("Claim more tasks for me", self.request_one_more)
@@ -550,7 +550,7 @@ class MarkerClient(QWidget):
         self.ui.task_overflow_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
         )
-        self.ui.deferButton.clicked.connect(self.defer_task)
+        self.ui.deferButton.clicked.connect(self.defer_current_task)
         # self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
@@ -1678,18 +1678,23 @@ class MarkerClient(QWidget):
             WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
             return
 
-    def defer_task(self, *, advance_to_next: bool = True) -> None:
-        """Mark task as "defer" - to be skipped until later.
+    def defer_current_task(self) -> None:
+        """Recommend the currently highlighted task for someone else and surrender the task."""
+        task = self.get_current_task_id_or_none()
+        if not task:
+            return
+        self.defer_task(task)
 
-        You'll still have to do it.
+    def defer_task(self, task: str, *, advance_to_next: bool = True) -> None:
+        """Recommend a task for someone else and surrender the task.
+
+        Args:
+            task: which task?
 
         Keyword Args:
             advance_to_next: whether to also advance to the next task
                 (default).
         """
-        task = self.get_current_task_id_or_none()
-        if not task:
-            return
         if not self.examModel.is_our_task(task, self.msgr.username):
             s = f"Cannot defer task {task} b/c it isn't yours"
             user = self.examModel.get_username_by_task(task)
