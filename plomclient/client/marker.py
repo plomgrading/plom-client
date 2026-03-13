@@ -1742,7 +1742,9 @@ class MarkerClient(QWidget):
             self,
             "pick",
             f"<p>Defer task {task} to which user(s)?</p>",
-            # TODO: note lead markers first, following by all others
+            # lead markers first, following by all others
+            # Future improved dialog will clarify this, perhaps hiding the others
+            # behind an expander/dropdown, when there are many of them.
             lead_markers + [" - - - - - "] + other_markers,
             editable=False,
         )
@@ -1751,8 +1753,6 @@ class MarkerClient(QWidget):
             return
         if "- - -" in meh:
             return
-        print(meh)
-        print(type(meh))
 
         self._defer_task_to_users(task, [meh])
         self.refresh_server_data()
