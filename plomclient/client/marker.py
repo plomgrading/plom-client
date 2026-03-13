@@ -1767,7 +1767,7 @@ class MarkerClient(QWidget):
                 foreground.
         """
         # TODO: should we loop and keep trying?  subtle near the end of marking
-        if self.examModel.countReadyToMark() < 2:
+        if self.examModel.count_local_ready_to_mark() < 2:
             self.request_one_more()
 
     def _defer_task_to_users(self, task: str, user_list: list[str]) -> None:
@@ -1981,7 +1981,7 @@ class MarkerClient(QWidget):
 
         if self.allowBackgroundOps:
             # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
+            if self.examModel.count_local_ready_to_mark() < 2:
                 self.request_one_more()
 
         if self._annotator:

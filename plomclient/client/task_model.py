@@ -559,10 +559,12 @@ class MarkerExamModel(QStandardItemModel):
         r = self._findTask(task)
         self.removeRow(r)
 
-    def countReadyToMark(self):
-        """Returns the number of untouched Papers."""
+    def count_local_ready_to_mark(self):
+        """Returns the number of our untouched tasks we have locally."""
         count = 0
         for r in range(self.rowCount()):
+            # Note: currently tasks that are out with others appear as "Out"
+            # so this correctly counts only our tasks.
             if self._getStatus(r) == "untouched":
                 count += 1
         return count
