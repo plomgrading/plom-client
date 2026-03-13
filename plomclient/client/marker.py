@@ -1719,8 +1719,13 @@ class MarkerClient(QWidget):
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
 
-        # TODO: cache this instead of asking every time
-        users = self.msgr.get_user_list()
+        try:
+            # TODO: cache this instead of asking every time
+            users = self.msgr.get_user_list()
+        except PlomNoServerSupportException as e:
+            # this error check can soon be removed: api 115
+            WarnMsg(self, str(e)).exec()
+            return
         lead_markers = []
         other_markers = []
         for u, group_list in users.items():
@@ -1776,7 +1781,11 @@ class MarkerClient(QWidget):
         self.msgr.remove_single_tag(task, "@" + self.msgr.username)
         for u in user_list:
             self.msgr.add_single_tag(task, "@" + u)
-        self.msgr.surrender_task(task)
+        try:
+            self.msgr.surrender_task(task)
+        except PlomNoServerSupportException as e:
+            WarnMsg(self, f"Task tagged for others but cannot surrender: {e}").exec()
+            return
         # TODO: optionally lower the priority
 
     def reset_task(self, task: str | None = None) -> None:
