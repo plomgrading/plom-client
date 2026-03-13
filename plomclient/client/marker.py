@@ -1778,7 +1778,10 @@ class MarkerClient(QWidget):
             user_list: a list of usernames to alert to this task by tagging.
         """
         # untag ourselves, unless we're explicitly in the list!
-        self.msgr.remove_single_tag(task, "@" + self.msgr.username)
+        try:
+            self.msgr.remove_single_tag(task, "@" + self.msgr.username)
+        except PlomConflict:
+            pass
         for u in user_list:
             self.msgr.add_single_tag(task, "@" + u)
         try:
