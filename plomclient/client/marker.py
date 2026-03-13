@@ -1772,8 +1772,10 @@ class MarkerClient(QWidget):
             task: a task code.
             user_list: a list of usernames to alert to this task by tagging.
         """
+        # untag ourselves, unless we're explicitly in the list!
+        self.msgr.remove_single_tag(task, "@" + self.msgr.username)
         for u in user_list:
-            self.msgr.add_single_tag(task, f"@{u}")
+            self.msgr.add_single_tag(task, "@" + u)
         self.msgr.surrender_task(task)
         # TODO: optionally lower the priority
 
