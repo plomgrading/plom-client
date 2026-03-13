@@ -1685,15 +1685,11 @@ class MarkerClient(QWidget):
             return
         self.defer_task(task)
 
-    def defer_task(self, task: str, *, advance_to_next: bool = True) -> None:
+    def defer_task(self, task: str) -> None:
         """Recommend a task for someone else and surrender the task.
 
         Args:
             task: which task?
-
-        Keyword Args:
-            advance_to_next: whether to also advance to the next task
-                (default).
         """
         if not self.examModel.is_our_task(task, self.msgr.username):
             s = f"Cannot defer task {task} b/c it isn't yours"
@@ -1753,23 +1749,23 @@ class MarkerClient(QWidget):
         print(meh)
         print(type(meh))
 
-        self.defer_task_to_users(task, [meh])
+        self._defer_task_to_users(task, [meh])
         self.refresh_server_data()
+        self.request_more_tasks_if_necessary()
 
-        if advance_to_next:
-            print("advancing more")
-            # TODO: maybe we really need request_one_more_if_necessary
-            # TODO: or that someone would just notice we're not far enough ahead
-            # TODO: problem with current approach is if you "get more" til you
-            # TODO: have 4 untouched, each defer will get one more untouhed.
-            # TODO: IMHO, I'd rather this only happen when there is less than 2 untouched
+    def request_more_tasks_if_necessary(self, *, background: bool = True) -> None:
+        """If there are not a minimum of claimed task, get some more.
+
+        Keyword Args:
+            background: its not urgent; we can hand off to the background
+                downloader.  Currently not implemented; always happens in
+                foreground.
+        """
+        # TODO: should we loop and keep trying?  subtle near the end of marking
+        if self.examModel.countReadyToMark() < 2:
             self.request_one_more()
-            # TODO: deends on "next" settings?
-            self.moveToNextUnmarkedTask()
-            # alternatively or if we want to search "forward" of current:
-            # self.moveToNextUnmarkedTask(task)
 
-    def defer_task_to_users(self, task: str, user_list: list[str]) -> None:
+    def _defer_task_to_users(self, task: str, user_list: list[str]) -> None:
         """Tag some users, and surrender a task.
 
         Args:
