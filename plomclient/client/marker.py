@@ -1743,6 +1743,13 @@ class MarkerClient(QWidget):
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
 
+        if (
+            not self._cached_user_list_lead_markers
+            and not self._cached_user_list_other_markers
+        ):
+            WarnMsg(self, "Server older than API 115: too old for this feature").exec()
+            return
+
         # TODO: needs a custom dialog to select multiples
         # TODO: or Aidan suggested a custom drop down
         meh, r = QInputDialog.getItem(
