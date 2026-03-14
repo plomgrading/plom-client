@@ -1450,7 +1450,7 @@ class MarkerClient(QWidget):
             self._show_only_my_tasks()
 
     def refresh_server_data(self):
-        """Refresh various server data including the current task last from the server."""
+        """Refresh various server data including the current task list from the server."""
         info = self.msgr.get_exam_info()
         self.max_papernum = info["current_largest_paper_num"]
         # legacy won't provide this; fallback to a static value
