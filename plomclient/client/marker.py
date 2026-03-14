@@ -207,6 +207,9 @@ class MarkerClient(QWidget):
         # history contains all the tgv in order of being marked except the current one.
         self.marking_history = []
 
+        self._cached_user_list_lead_markers = []
+        self._cached_user_list_other_markers = []
+
         self._hack_prevent_shutdown = False
 
     def setup(
@@ -1483,6 +1486,27 @@ class MarkerClient(QWidget):
         # self.ui.tableView.resizeRowsToContents
 
         self.updateProgress()
+        self._update_user_lists()
+
+    def _update_user_lists(self) -> None:
+        try:
+            users = self.msgr.get_user_list()
+        except PlomNoServerSupportException as e:
+            # no server support for api < 115; just leave them empty as per
+            # init (exception handler to be removed when we drop 114 support)
+            log.warning(f"server does not support user lists: {e}")
+            return
+        lead_markers = []
+        other_markers = []
+        for u, group_list in users.items():
+            if "lead_marker" in group_list:
+                lead_markers.append(u)
+            elif "marker" in group_list:
+                other_markers.append(u)
+        lead_markers.sort()
+        other_markers.sort()
+        self._cached_user_list_lead_markers = lead_markers
+        self._cached_user_list_other_markers = other_markers
 
     def download_task_list(self, *, username: str = "") -> bool:
         """Download and fill/update the task list.
@@ -1719,23 +1743,6 @@ class MarkerClient(QWidget):
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
 
-        try:
-            # TODO: cache this instead of asking every time
-            users = self.msgr.get_user_list()
-        except PlomNoServerSupportException as e:
-            # this error check can soon be removed: api 115
-            WarnMsg(self, str(e)).exec()
-            return
-        lead_markers = []
-        other_markers = []
-        for u, group_list in users.items():
-            if "lead_marker" in group_list:
-                lead_markers.append(u)
-            elif "marker" in group_list:
-                other_markers.append(u)
-        lead_markers.sort()
-        other_markers.sort()
-
         # TODO: needs a custom dialog to select multiples
         # TODO: or Aidan suggested a custom drop down
         meh, r = QInputDialog.getItem(
@@ -1745,7 +1752,9 @@ class MarkerClient(QWidget):
             # lead markers first, following by all others
             # Future improved dialog will clarify this, perhaps hiding the others
             # behind an expander/dropdown, when there are many of them.
-            lead_markers + [" - - - - - "] + other_markers,
+            self._cached_user_list_lead_markers
+            + [" - - - - - "]
+            + self._cached_user_list_other_markers,
             editable=False,
         )
         if not r:
