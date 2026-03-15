@@ -1752,6 +1752,7 @@ class MarkerClient(QWidget):
             return
 
         d = DeferToDialog(
+            self,
             task,
             self._cached_user_list_lead_markers,
             self._cached_user_list_other_markers,

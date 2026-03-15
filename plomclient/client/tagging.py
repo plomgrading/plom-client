@@ -165,13 +165,14 @@ class AddRemoveTagDialog(QDialog):
 class DeferToDialog(QDialog):
     def __init__(
         self,
+        parent,
         task: str,
         lead_markers: list[str],
         other_markers: list[str],
         *,
         checked: list[str] = [],
     ) -> None:
-        super().__init__()
+        super().__init__(parent)
         self.setWindowTitle(_("Defer task {task}").format(task=task))
 
         dialog_lay = QVBoxLayout()
