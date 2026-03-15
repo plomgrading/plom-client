@@ -4,6 +4,7 @@
 
 import html
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -173,7 +174,7 @@ class DeferToDialog(QDialog):
         checked: list[str] = [],
     ) -> None:
         super().__init__(parent)
-        self.setWindowTitle(_("Defer task {task}").format(task=task))
+        self.setWindowTitle(_("Defer task"))
 
         dialog_lay = QVBoxLayout()
         dialog_lay.addWidget(
@@ -183,12 +184,10 @@ class DeferToDialog(QDialog):
         self._checkboxes = []
 
         if lead_markers:
-            w = QGroupBox(_("&Lead markers"))
+            w = QGroupBox(_("&Lead markers:"))
             w.setFlat(True)
-            scroll = QScrollArea()
-            scroll.setWidgetResizable(True)
+            w.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             content = QFrame()
-            # content.setFrameShape(QFrame.Shape.NoFrame)
             lay = QVBoxLayout(content)
             for username in lead_markers:
                 cb = QCheckBox(username)
@@ -196,22 +195,26 @@ class DeferToDialog(QDialog):
                     cb.setChecked(True)
                 lay.addWidget(cb)
                 self._checkboxes.append(cb)
-            scroll.setWidget(content)
-            scroll.setFrameShape(QFrame.Shape.NoFrame)
             lay = QVBoxLayout()
-            lay.addWidget(scroll)
+            if len(lead_markers) <= 8:
+                lay.addWidget(content)
+            else:
+                scroll = QScrollArea()
+                scroll.setWidgetResizable(True)
+                scroll.setWidget(content)
+                scroll.setFrameShape(QFrame.Shape.NoFrame)
+                lay.addWidget(scroll)
             lay.setContentsMargins(0, 0, 0, 0)
             w.setLayout(lay)
             dialog_lay.addWidget(w)
 
         if other_markers:
             if lead_markers:
-                w = QGroupBox(_("Other &markers"))
+                w = QGroupBox(_("Other &markers:"))
             else:
-                w = QGroupBox(_("&Markers"))
+                w = QGroupBox(_("&Markers:"))
             w.setFlat(True)
-            scroll = QScrollArea()
-            scroll.setWidgetResizable(True)
+            w.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             content = QFrame()
             lay = QVBoxLayout(content)
             for username in other_markers:
@@ -220,21 +223,25 @@ class DeferToDialog(QDialog):
                     cb.setChecked(True)
                 lay.addWidget(cb)
                 self._checkboxes.append(cb)
-            scroll.setWidget(content)
-            scroll.setFrameShape(QFrame.Shape.NoFrame)
             lay = QVBoxLayout()
-            lay.addWidget(scroll)
+            if len(other_markers) <= 5 or (
+                len(other_markers) <= 8 and len(lead_markers) <= 4
+            ):
+                lay.addWidget(content)
+            else:
+                scroll = QScrollArea()
+                scroll.setWidgetResizable(True)
+                scroll.setWidget(content)
+                scroll.setFrameShape(QFrame.Shape.NoFrame)
+                lay.addWidget(scroll)
             lay.setContentsMargins(0, 0, 0, 0)
             w.setLayout(lay)
             dialog_lay.addWidget(w)
 
         label = QLabel(
             _(
-                """<p><i>
-                Task {task} will be &ldquo;surrendered&rdquo; from your
-                task list.
-                Any of the users you tag here may receive the task.
-                </i></p>"""
+                "Task {task} will be dropped from your task list. "
+                "Any of the users you tag here may receive the task."
             ).format(task=task)
         )
         label.setWordWrap(True)
