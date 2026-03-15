@@ -90,7 +90,7 @@ from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
 from .key_wrangler import get_key_bindings
 from .viewers import QuestionViewDialog, SelectPaperQuestion, SolutionViewer
-from .tagging import AddRemoveTagDialog
+from .tagging import AddRemoveTagDialog, DeferToDialog
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, SimpleQuestion
 from .useful_classes import _json_path_to_str
 from .tagging_range_dialog import TaggingAndRangeOptions
@@ -1750,27 +1750,21 @@ class MarkerClient(QWidget):
             WarnMsg(self, "Server older than API 115: too old for this feature").exec()
             return
 
-        # TODO: needs a custom dialog to select multiples
-        # TODO: or Aidan suggested a custom drop down
-        meh, r = QInputDialog.getItem(
-            self,
-            "pick",
-            f"<p>Defer task {task} to which user(s)?</p>",
-            # lead markers first, following by all others
-            # Future improved dialog will clarify this, perhaps hiding the others
-            # behind an expander/dropdown, when there are many of them.
-            self._cached_user_list_lead_markers
-            + [" - - - - - "]
-            + self._cached_user_list_other_markers,
-            editable=False,
+        d = DeferToDialog(
+            task,
+            self._cached_user_list_lead_markers,
+            self._cached_user_list_other_markers,
         )
-        if not r:
-            # user cancelled
+        if not d.exec():
             return
-        if "- - -" in meh:
+        defer_to_users = d.get_chosen_users()
+
+        # Note: unconditional surrender is unacceptable: you must nominate someone!
+        if not defer_to_users:
+            # TODO: perhaps the dialog should prevent closing if no checks?
             return
 
-        self._defer_task_to_users(task, [meh])
+        self._defer_task_to_users(task, defer_to_users)
         self.refresh_server_data()
         self.request_more_tasks_if_necessary()
 

@@ -1,23 +1,31 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2024, 2026 Colin B. Macdonald
 
 import html
 
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QGroupBox,
     QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
     QMessageBox,
+    QScrollArea,
     QSizePolicy,
     QSpacerItem,
     QToolButton,
     QVBoxLayout,
 )
+
+
+# future translation support
+def _(x: str) -> str:
+    return x
 
 
 class AddRemoveTagDialog(QDialog):
@@ -152,3 +160,88 @@ class AddRemoveTagDialog(QDialog):
             return
         self.return_values = ("remove", tag)
         self.accept()
+
+
+class DeferToDialog(QDialog):
+    def __init__(
+        self, task: str, lead_markers: list[str], other_markers: list[str]
+    ) -> None:
+        super().__init__()
+        self.setWindowTitle(_("Defer task {task}").format(task=task))
+
+        dialog_lay = QVBoxLayout()
+        dialog_lay.addWidget(
+            QLabel(_("<b>Who should mark task {task}?</b>").format(task=task))
+        )
+
+        self._checkboxes = []
+
+        if lead_markers:
+            w = QGroupBox(_("&Lead markers"))
+            w.setFlat(True)
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            content = QFrame()
+            # content.setFrameShape(QFrame.Shape.NoFrame)
+            lay = QVBoxLayout(content)
+            for username in lead_markers:
+                cb = QCheckBox(username)
+                lay.addWidget(cb)
+                self._checkboxes.append(cb)
+            scroll.setWidget(content)
+            scroll.setFrameShape(QFrame.Shape.NoFrame)
+            lay = QVBoxLayout()
+            lay.addWidget(scroll)
+            lay.setContentsMargins(0, 0, 0, 0)
+            w.setLayout(lay)
+            dialog_lay.addWidget(w)
+
+        if other_markers:
+            if lead_markers:
+                w = QGroupBox(_("Other &markers"))
+            else:
+                w = QGroupBox(_("&Markers"))
+            w.setFlat(True)
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            content = QFrame()
+            lay = QVBoxLayout(content)
+            for username in other_markers:
+                cb = QCheckBox(username)
+                lay.addWidget(cb)
+                self._checkboxes.append(cb)
+            scroll.setWidget(content)
+            scroll.setFrameShape(QFrame.Shape.NoFrame)
+            lay = QVBoxLayout()
+            lay.addWidget(scroll)
+            lay.setContentsMargins(0, 0, 0, 0)
+            w.setLayout(lay)
+            dialog_lay.addWidget(w)
+
+        label = QLabel(
+            _(
+                """<p><i>
+                Task {task} will be &ldquo;surrendered&rdquo; from your
+                task list.
+                Any of the users you tag here may receive the task.
+                </i></p>"""
+            ).format(task=task)
+        )
+        label.setWordWrap(True)
+
+        dialog_lay.addWidget(label)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        dialog_lay.addWidget(buttons)
+        self.setLayout(dialog_lay)
+
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+    def get_chosen_users(self) -> list[str]:
+        users = []
+        for x in self._checkboxes:
+            if x.isChecked():
+                users.append(x.text().lstrip("@"))
+        return users
