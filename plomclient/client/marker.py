@@ -209,6 +209,7 @@ class MarkerClient(QWidget):
 
         self._cached_user_list_lead_markers = []
         self._cached_user_list_other_markers = []
+        self._last_time_defer_to_users = []
 
         self._hack_prevent_shutdown = False
 
@@ -1754,10 +1755,12 @@ class MarkerClient(QWidget):
             task,
             self._cached_user_list_lead_markers,
             self._cached_user_list_other_markers,
+            checked=self._last_time_defer_to_users,
         )
         if not d.exec():
             return
         defer_to_users = d.get_chosen_users()
+        self._last_time_defer_to_users = defer_to_users
 
         # Note: unconditional surrender is unacceptable: you must nominate someone!
         if not defer_to_users:

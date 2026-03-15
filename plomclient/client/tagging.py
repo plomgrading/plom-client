@@ -164,7 +164,12 @@ class AddRemoveTagDialog(QDialog):
 
 class DeferToDialog(QDialog):
     def __init__(
-        self, task: str, lead_markers: list[str], other_markers: list[str]
+        self,
+        task: str,
+        lead_markers: list[str],
+        other_markers: list[str],
+        *,
+        checked: list[str] = [],
     ) -> None:
         super().__init__()
         self.setWindowTitle(_("Defer task {task}").format(task=task))
@@ -186,6 +191,8 @@ class DeferToDialog(QDialog):
             lay = QVBoxLayout(content)
             for username in lead_markers:
                 cb = QCheckBox(username)
+                if username in checked:
+                    cb.setChecked(True)
                 lay.addWidget(cb)
                 self._checkboxes.append(cb)
             scroll.setWidget(content)
@@ -208,6 +215,8 @@ class DeferToDialog(QDialog):
             lay = QVBoxLayout(content)
             for username in other_markers:
                 cb = QCheckBox(username)
+                if username in checked:
+                    cb.setChecked(True)
                 lay.addWidget(cb)
                 self._checkboxes.append(cb)
             scroll.setWidget(content)
