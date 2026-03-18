@@ -1764,8 +1764,8 @@ class MarkerClient(QWidget):
         self._last_time_defer_to_users = defer_to_users
 
         # Note: unconditional surrender is unacceptable: you must nominate someone!
+        # The dialog shold've prevented this, but just in case...
         if not defer_to_users:
-            # TODO: perhaps the dialog should prevent closing if no checks?
             return
 
         self._defer_task_to_users(task, defer_to_users)

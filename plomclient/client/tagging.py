@@ -25,6 +25,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from .useful_classes import InfoMsg
+
 
 # future translation support
 def _(x: str) -> str:
@@ -177,6 +179,7 @@ class DeferToDialog(QDialog):
     Keyword Args:
         checked: a list of usernames that should be pre-checked.
     """
+
     def __init__(
         self,
         parent,
@@ -275,3 +278,17 @@ class DeferToDialog(QDialog):
             if x.isChecked():
                 users.append(x.text().lstrip("@"))
         return users
+
+    def accept(self):
+        """Override accept to check they selected something."""
+        if not self.get_chosen_users():
+            msg = """
+                <p>You must select one or more users.</p>
+                <p>Plom does not allow you to surrender tasks without
+                suggesting someone else to do it.</p>
+                <small>(If you really want to surrender some tasks,
+                you can logout of the client.)</small>
+            """
+            InfoMsg(self, msg).exec()
+            return
+        super().accept()

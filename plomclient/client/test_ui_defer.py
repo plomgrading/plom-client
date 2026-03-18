@@ -2,8 +2,10 @@
 # Copyright (C) 2026 Colin B. Macdonald
 
 from PyQt6.QtCore import Qt
+from pytest import raises
 
-from .tagging import AddRemoveTagDialog, DeferToDialog
+from .tagging import DeferToDialog
+from .useful_classes import InfoMsg
 
 
 def test_defer(qtbot) -> None:
@@ -26,13 +28,16 @@ def test_defer_cancel(qtbot) -> None:
     d.reject()
 
 
-def test_defer_cannot_defer_to_noone(qtbot) -> None:
+def test_defer_cannot_defer_to_noone(qtbot, monkeypatch) -> None:
+    def _raise(*args, **kwargs):
+        raise RuntimeError()
+
+    monkeypatch.setattr(InfoMsg, "exec", _raise)
     d = DeferToDialog(None, "0123g4", ["user1"], ["user2", "user3"])
     d.show()
     qtbot.addWidget(d)
-    d.accept()
-    # TODO: should be some kind of error?  maybe mock dialog?
-    assert d.get_chosen_users() == []
+    with raises(RuntimeError):
+        d.accept()
 
 
 def test_defer_prechecked_accept_ok(qtbot) -> None:
