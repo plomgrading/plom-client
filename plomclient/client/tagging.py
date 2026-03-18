@@ -166,6 +166,17 @@ class AddRemoveTagDialog(QDialog):
 
 
 class DeferToDialog(QDialog):
+    """Dialog to defer a task to other user(s).
+
+    Args:
+        parent (QWidget): who should parent this modal dialog.
+        task: which task.
+        lead_markers: a list of usernames of the lead markers.
+        other_markers: a list of the usernames of non-lead markers.
+
+    Keyword Args:
+        checked: a list of usernames that should be pre-checked.
+    """
     def __init__(
         self,
         parent,
