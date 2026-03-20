@@ -41,7 +41,7 @@ def test_defer_cannot_defer_to_noone(qtbot, monkeypatch) -> None:
 
 
 def test_defer_prechecked_accept_ok(qtbot) -> None:
-    d = DeferToDialog(None, "0123g4", ["user1"], ["user2", "user3"], checked="user2")
+    d = DeferToDialog(None, "0123g4", ["user1"], ["user2", "user3"], checked=["user2"])
     d.show()
     qtbot.addWidget(d)
     d.accept()
@@ -49,7 +49,7 @@ def test_defer_prechecked_accept_ok(qtbot) -> None:
 
 
 def test_defer_prechecked_and_toggle_some(qtbot) -> None:
-    d = DeferToDialog(None, "0123g4", ["user1"], ["user2", "user3"], checked="user2")
+    d = DeferToDialog(None, "0123g4", ["user1"], ["user2", "user3"], checked=["user2"])
     d.show()
     qtbot.addWidget(d)
     qtbot.keyClick(d._checkboxes[0], Qt.Key.Key_Space)
