@@ -1800,7 +1800,7 @@ class MarkerClient(QWidget):
             self.msgr.add_single_tag(task, "@" + u)
         try:
             self.msgr.surrender_task(task)
-        except PlomNoServerSupportException as e:
+        except (PlomNoServerSupportException, PlomConflict) as e:
             WarnMsg(self, f"Task tagged for others but cannot surrender: {e}").exec()
             return
         # TODO: optionally lower the priority
