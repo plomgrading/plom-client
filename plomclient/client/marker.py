@@ -1763,8 +1763,9 @@ class MarkerClient(QWidget):
         defer_to_users = d.get_chosen_users()
         self._last_time_defer_to_users = defer_to_users
 
-        # Note: unconditional surrender is unacceptable: you must nominate someone!
-        # The dialog shold've prevented this, but just in case...
+        # Note: unconditional surrender is considered unacceptable: you are
+        # expected to nominate someone!  (The dialog should've enforced this
+        # so this case shouldn't actually happen).
         if not defer_to_users:
             return
 
