@@ -1761,7 +1761,7 @@ class RubricWidget(QWidget):
 
     def _new_or_edit_rubric(
         self,
-        com: dict[str, Any] | None,
+        rubric_data: dict[str, Any] | None,
         *,
         edit: bool = False,
         index: int | None = None,
@@ -1771,13 +1771,13 @@ class RubricWidget(QWidget):
         """Open a dialog to edit a comment or make a new one.
 
         Args:
-            com (dict/None): a comment to modify or use as a template
-                depending on next arg.  If set to None, which always
-                means create new.
+            rubric_data: some existing rubric data, either to modify or
+                use as a template depending on the ``edit`` keyword arg.
+                If set to None, which always means create new.
 
         Keyword Args:
-            edit: True if we are modifying the comment.  If False, use
-                `com` as a template for a new duplicated comment.
+            edit: True if we are modifying an existing rubric.  If False, use
+                ``rubric_data`` as a template for a new (duplicated) rubric.
             index: the index of the comment inside the current rubric list
                 used for updating the data in the rubric list after edit (only)
             add_to_group: if set to a string, the user might be trying to add
@@ -1795,9 +1795,9 @@ class RubricWidget(QWidget):
         if edit:
             # TODO: No no use signals slots or something, not like this
             annotr = self._parent
-            assert com is not None
+            assert rubric_data is not None
             try:
-                __ = annotr.getOtherRubricUsagesFromServer(com["rid"])
+                __ = annotr.getOtherRubricUsagesFromServer(rubric_data["rid"])
                 num_uses = len(__)
             except PlomNoServerSupportException:
                 # checking will fail on legacy or maybe even not-so-recent
@@ -1813,7 +1813,8 @@ class RubricWidget(QWidget):
             self.question_label,
             self.version,
             self.max_version,
-            com,
+            rubric_data,
+            edit=edit,
             groups=self.get_group_names(),
             reapable=reapable,
             experimental=self._parent.is_experimental(),

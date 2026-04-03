@@ -433,6 +433,7 @@ class AddRubricDialog(QDialog):
         maxver,
         com=None,
         *,
+        edit: bool = False,
         groups=[],
         reapable=[],
         experimental=False,
@@ -451,10 +452,13 @@ class AddRubricDialog(QDialog):
             version (int): which version is currently being marked?
             maxver (int): the largest version: versions range from 1
                 to this value.
-            com (dict/None): if None, we're creating a new rubric.
-                Otherwise, this has the current comment data.
+            com: information to prepopulate fields.  This could be b/c
+                we're editing this rubric or making a copy of a rubric
+                or just guesses of what the user might want, say based
+                on previous inputs.
 
         Keyword Args:
+            edit: we're editing an existing rubric.
             groups (list): optional list of existing/recommended group
                 names that the rubric could be added to.
             add_to_group (str/None): preselect this group in the scope
@@ -478,11 +482,9 @@ class AddRubricDialog(QDialog):
         self.maxver = maxver
         self._username = username
 
-        self._is_edit = False
-        if com:
-            self._is_edit = True
+        self._is_edit = edit
 
-        if self.is_edit():
+        if self.is_edit:
             self.setWindowTitle("Modify rubric")
         else:
             self.setWindowTitle("Add new rubric")
@@ -780,7 +782,7 @@ class AddRubricDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        # if self.is_edit():
+        # if self.is_edit:
         #     # TODO: this would need to fresh everything, not just count
         #     __ = QPushButton("\N{ANTICLOCKWISE OPEN CIRCLE ARROW} Refresh")
         #     __.clicked.connect(self.refresh_usage)
@@ -809,14 +811,31 @@ class AddRubricDialog(QDialog):
         # Set up TE and CB so that when CB changed, text is updated
         self.reapable_CB.currentIndexChanged.connect(self.changedReapableCB)
 
-        # the rubric may have fields we don't modify: keep a copy around
-        self._old_rubric = {} if not com else com.copy()
+        if com is None:
+            com = {}
+
+        self._old_rubric = {}
+        if self.is_edit:
+            # the rubric may have fields we don't modify: keep a copy around
+            self._old_rubric = com.copy()
+
         params = []
-        # If supplied with current text/delta then set them
+        # TODO: I don't think multi-line placeholder text works!
+        self.TE.setPlaceholderText(
+            "Your rubric must contain some text.\n"
+            'Prepend with "tex:" to use latex.\n\n'
+            "You can harvest existing text from the page.\n\n"
+            'Change "Marks" below to associate a point-change.'
+        )
+        self.TEtag.setPlaceholderText("Currently not user-editable, used for grouping.")
+        self.TEmeta.setPlaceholderText(
+            "Notes about this rubric such as hints on when to use it.\n\n"
+            "Not shown to student!"
+        )
+
+        # If supplied with text and/or other fields, set them
         if com:
-            if com["text"]:
-                self.TE.clear()
-                self.TE.insertPlainText(com["text"])
+            self.TE.insertPlainText(com.get("text", ""))
             self.TEmeta.insertPlainText(com.get("meta", ""))
             if com["kind"]:
                 if com["kind"] == "neutral":
@@ -830,8 +849,10 @@ class AddRubricDialog(QDialog):
                     self.typeRB_absolute.setChecked(True)
                 else:
                     raise RuntimeError(f"unexpected kind in {com}")
-            if com.get("rid"):
+            if self.is_edit and com.get("rid"):
                 self.label_rubric_id.setText(str(com["rid"]))
+
+        if self.is_edit:
             s = ""
             lastmod = com.get("last_modified", "unknown")
             # Note sure it would be None but seems harmless (or no more harmful
@@ -846,6 +867,12 @@ class AddRubricDialog(QDialog):
             s += f'created by {com.get("username", "unknown")}'
             self.last_modified_label.setText(s)
             self.last_modified_label.setWordWrap(True)
+        else:
+            self.last_modified_label.setText(
+                f"You ({self._username}) are creating a new rubric"
+            )
+
+        if com:
             if com.get("versions"):
                 self.version_specific_cb.setChecked(True)
                 self.version_specific_le.setText(com.get("versions"))
@@ -905,22 +932,6 @@ class AddRubricDialog(QDialog):
                 self.label_pedagogy_tags.setVisible(True)
 
         else:
-            self.TE.setPlaceholderText(
-                "Your rubric must contain some text.\n\n"
-                'Prepend with "tex:" to use latex.\n\n'
-                "You can harvest existing text from the page.\n\n"
-                'Change "Marks" below to associate a point-change.'
-            )
-            self.TEtag.setPlaceholderText(
-                "Currently not user-editable, used for grouping."
-            )
-            self.TEmeta.setPlaceholderText(
-                "Notes about this rubric such as hints on when to use it.\n\n"
-                "Not shown to student!"
-            )
-            self.last_modified_label.setText(
-                f"You ({self._username}) are creating a new rubric"
-            )
             self._formlayout.setRowVisible(self._major_minor_frame, False)
 
             if add_to_group:
@@ -932,6 +943,7 @@ class AddRubricDialog(QDialog):
         self.subsRemakeGridUI(params)
         self.hiliter.setSubs([x for x, __ in params])
 
+    @property
     def is_edit(self):
         """Answer true if we are editing a rubric (rather than making a new one)."""
         return self._is_edit
@@ -1134,7 +1146,7 @@ class AddRubricDialog(QDialog):
 
         Currently unused.
         """
-        if not self.is_edit():
+        if not self.is_edit:
             return
         # TODO: No no use signals slots or something, not like this
         annotr = self.parent()._parent
@@ -1287,7 +1299,7 @@ class AddRubricDialog(QDialog):
                 "parameters": params,
             }
         )
-        if not self.is_edit():
+        if not self.is_edit:
             rubric.update(
                 {
                     "username": self._username,
