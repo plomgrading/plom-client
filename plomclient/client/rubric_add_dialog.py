@@ -777,7 +777,10 @@ class AddRubricDialog(QDialog):
             "Currently (0.19.x) the server defaults to major edits, subject to change."
         )
         vlay.addWidget(b)
+        self._formlayout = flay
         self.toggle_usage_panel()
+        if not self.is_edit:
+            self.hide_usage_panel()
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -792,8 +795,6 @@ class AddRubricDialog(QDialog):
         vlay.addLayout(flay)
         vlay.addWidget(buttons)
         self.setLayout(vlay)
-
-        self._formlayout = flay
 
         # set up widgets
         buttons.accepted.connect(self.accept)
@@ -932,14 +933,13 @@ class AddRubricDialog(QDialog):
                 self.label_pedagogy_tags.setVisible(True)
 
         else:
-            self._formlayout.setRowVisible(self._major_minor_frame, False)
-
             if add_to_group:
                 assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
                 self.group_checkbox.setChecked(True)
                 self.group_combobox.setCurrentText(add_to_group)
                 # show the user we did this by opening the scope panel
                 self.scopeButton.animateClick()
+
         self.subsRemakeGridUI(params)
         self.hiliter.setSubs([x for x, __ in params])
 
@@ -1118,6 +1118,9 @@ class AddRubricDialog(QDialog):
         else:
             self.usage_button.setArrowType(Qt.ArrowType.RightArrow)
             self._major_minor_frame.setVisible(False)
+
+    def hide_usage_panel(self):
+        self._formlayout.setRowVisible(self._major_minor_frame, False)
 
     def update_usage_button(self, n: int | None) -> None:
         """Update a button in the interface."""
