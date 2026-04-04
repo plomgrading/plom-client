@@ -1287,7 +1287,7 @@ class AddRubricDialog(QDialog):
         meta = self.TEmeta.toPlainText().strip()
         if self.typeRB_neutral.isChecked():
             kind = "neutral"
-            value = 0
+            value: int | float = 0
             out_of = 0
         elif self.typeRB_relative.isChecked():
             kind = "relative"
