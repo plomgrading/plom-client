@@ -515,3 +515,28 @@ def test_AddRubricDialog_ctrl_enter_adds_tex(qtbot) -> None:
     assert not d.isVisible()
     out = d.gimme_rubric_data()
     assert out["text"] == "tex: $x$"
+
+
+def test_AddRubricDialog_seeded_data_as_suggestion(qtbot) -> None:
+    param_in = [("{param1}", ["x", "y"]), ("{param2}", ["sin(x)", "cos(y)"])]
+    tags_in = "group:(a) exclusive:(a)"
+    rub = {
+        "rid": 1234,
+        "kind": "absolute",
+        "value": 1,
+        "out_of": 3,
+        "parameters": param_in,
+        "tags": tags_in,
+    }
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=False)
+    qtbot.addWidget(d)
+    qtbot.keyClicks(d.TE, "user-added text")
+    d.accept()
+    out = d.gimme_rubric_data()
+    assert out["text"] == "user-added text"
+    # important that the seeded values are applied
+    assert out["kind"] == "absolute"
+    assert out["value"] == 1
+    assert out["out_of"] == 3
+    assert out["parameters"] == param_in
+    assert out["tags"] == tags_in
