@@ -1044,16 +1044,31 @@ class AddRubricDialog(QDialog):
 
     def get_parameters(self) -> list[tuple[str, list[str]]]:
         """Extract the current parametric values from the UI."""
-        idx = self.scope_frame.layout().indexOf(self._param_grid)
+        # TODO: this code needed a lot of asserts and typing to pass mypy...
+        # TODO: investigate seeming identity: layout == self._param_grid?
+        lay = self.scope_frame.layout()
+        assert lay is not None
+        idx = lay.indexOf(self._param_grid)
         # print(f"extracting parameters from grid at layout index {idx}")
-        layout = self.scope_frame.layout().itemAt(idx)
+        layout = lay.itemAt(idx)
+        assert layout is not None
+        assert isinstance(layout, QGridLayout)
         N = layout.rowCount()
         params = []
         for r in range(1, N - 1):
-            param = layout.itemAtPosition(r, 0).widget().text()
+            item = layout.itemAtPosition(r, 0)
+            assert item is not None
+            widget = item.widget()
+            assert widget is not None
+            assert isinstance(widget, QLineEdit)
+            param = widget.text()
             values = []
             for c in range(1, self.maxver + 1):
-                values.append(layout.itemAtPosition(r, c).widget().text())
+                item = layout.itemAtPosition(r, c)
+                assert item is not None
+                widget = item.widget()
+                assert isinstance(widget, QLineEdit)
+                values.append(widget.text())
             params.append((param, values))
         return params
 
