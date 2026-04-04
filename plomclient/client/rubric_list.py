@@ -1672,8 +1672,9 @@ class RubricWidget(QWidget):
         # TODO: maybe get it on a per-tab basis?
         # TODO: we could also use the tab contents, when there is no history
         seed_rubric_data = self._recently_created_rubric
-        # users will need to add their own text however
-        seed_rubric_data.pop("text")
+        if seed_rubric_data:
+            # users will need to add their own text however
+            seed_rubric_data.pop("text", None)
         if w.is_group_tab():
             self._new_or_edit_rubric(seed_rubric_data, add_to_group=w.shortname)
         elif w.is_user_tab():
