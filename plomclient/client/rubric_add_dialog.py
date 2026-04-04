@@ -431,7 +431,7 @@ class AddRubricDialog(QDialog):
         question_label,
         version,
         maxver,
-        com=None,
+        com: None | dict[str, Any] = None,
         *,
         edit: bool = False,
         groups=[],
@@ -475,6 +475,10 @@ class AddRubricDialog(QDialog):
             none expected!
         """
         super().__init__(parent)
+
+        # help mypy ignore type changes of metasyntactic variables
+        __: Any = None
+        b: Any = None
 
         self.use_experimental_features = experimental
         self.question_idx = question_idx
@@ -653,7 +657,8 @@ class AddRubricDialog(QDialog):
         b.activated.connect(lambda: self.group_checkbox.setChecked(True))
         hlay.addWidget(b)
         self.group_combobox = b
-        b = QToolButton(text="\N{HEAVY PLUS SIGN}")
+
+        b = QToolButton(text="\N{HEAVY PLUS SIGN}")  # type: ignore[call-arg]
         b.setToolTip("Add new group")
         b.setAutoRaise(True)
         b.clicked.connect(self.add_new_group)
@@ -668,7 +673,7 @@ class AddRubricDialog(QDialog):
                 48, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum
             )
         )
-        b = QToolButton(text="What are groups?")
+        b = QToolButton(text="What are groups?")  # type: ignore[call-arg]
         b.setAutoRaise(True)
         msg = """<p>Groups are intended for multi-part questions.
               For example, you could make groups &ldquo;(a)&rdquo;,
@@ -970,7 +975,7 @@ class AddRubricDialog(QDialog):
                 w = QLineEdit(values[v])
                 w.setPlaceholderText(f"<value for ver{v + 1}>")
                 grid.addWidget(w, nr, v + 1)
-            b = QToolButton(text="\N{HEAVY MINUS SIGN}")
+            b = QToolButton(text="\N{HEAVY MINUS SIGN}")  # type: ignore[call-arg]
             b.setToolTip("remove this parameter and values")
             b.setAutoRaise(True)
             f = _func_factory(self, i)
@@ -979,9 +984,9 @@ class AddRubricDialog(QDialog):
             nr += 1
 
         if params:
-            b = QToolButton(text="\N{HEAVY PLUS SIGN} add another")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add another")  # type: ignore[call-arg]
         else:
-            b = QToolButton(text="\N{HEAVY PLUS SIGN} add a parameterized substitution")
+            b = QToolButton(text="\N{HEAVY PLUS SIGN} add a parameterized substitution")  # type: ignore[call-arg]
         b.setAutoRaise(True)
         b.pressed.connect(self.subsAddRow)
         b.setToolTip("Inserted at cursor point; highlighted text as initial value")
