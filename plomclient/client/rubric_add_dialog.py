@@ -932,13 +932,12 @@ class AddRubricDialog(QDialog):
                 )
                 self.label_pedagogy_tags.setVisible(True)
 
-        else:
-            if add_to_group:
-                assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
-                self.group_checkbox.setChecked(True)
-                self.group_combobox.setCurrentText(add_to_group)
-                # show the user we did this by opening the scope panel
-                self.scopeButton.animateClick()
+        if add_to_group:
+            assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
+            self.group_checkbox.setChecked(True)
+            self.group_combobox.setCurrentText(add_to_group)
+            # show the user we did this by opening the scope panel
+            self.scopeButton.animateClick()
 
         self.subsRemakeGridUI(params)
         self.hiliter.setSubs([x for x, __ in params])
