@@ -43,7 +43,7 @@ def test_AddRubricDialog_modify(qtbot) -> None:
         "value": 1,
         "text": "some text",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub, edit=True)
     qtbot.addWidget(d)
     assert d.windowTitle().startswith("Modify")
     assert not d.typeRB_neutral.isChecked()
@@ -75,7 +75,7 @@ def test_AddRubricDialog_modify_invalid(qtbot) -> None:
         "text": "no id, lots of missing fields",
     }
     with raises(KeyError):
-        AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub0)
+        AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub0, edit=True)
     rub: dict[str, Any] = {
         "rid": 1234,
         "kind": "man_unkind",
@@ -97,7 +97,7 @@ def test_AddRubricDialog_absolute_rubrics(qtbot) -> None:
         "out_of": 3,
         "text": "some text",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub, experimental=True)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub, edit=True)
     qtbot.addWidget(d)
     assert not d.typeRB_neutral.isChecked()
     assert not d.typeRB_relative.isChecked()
@@ -120,7 +120,9 @@ def test_AddRubricDialog_harvest(qtbot) -> None:
         "value": 1,
         "text": "will be replaced",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub, reapable=["AAA", "BBB"])
+    d = AddRubricDialog(
+        None, "user", 10, 1, "Q1", 1, 3, rub, edit=True, reapable=["AAA", "BBB"]
+    )
     qtbot.addWidget(d)
     qtbot.keyClicks(d.reapable_CB, "BBB")
     d.accept()
@@ -135,7 +137,7 @@ def test_AddRubricDialog_optional_meta_field(qtbot) -> None:
         "text": "some text",
         "meta": "meta",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.keyClicks(d.TEmeta, " very meta")
     d.accept()
@@ -152,7 +154,7 @@ def test_AddRubricDialog_optional_username(qtbot) -> None:
     assert out["username"] == "user"
 
     # still owned by original user if new users modifies it
-    d = AddRubricDialog(None, "another_user", 10, 1, "Q1", 1, 2, out)
+    d = AddRubricDialog(None, "another_user", 10, 1, "Q1", 1, 2, out, edit=True)
     qtbot.addWidget(d)
     qtbot.keyClicks(d.TE, "text")
     d.accept()
@@ -199,7 +201,7 @@ def test_AddRubricDialog_modify_parameterized(qtbot) -> None:
         "text": "some text",
         "parameters": [("{param1}", ["x", "y"]), ("{param2}", ["a", "b"])],
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, experimental=True)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
     qtbot.mouseClick(d.addParameterButton, Qt.MouseButton.LeftButton)
@@ -220,7 +222,7 @@ def test_AddRubricDialog_modify_parameterized_remove(qtbot) -> None:
             ("{param9}", ["c", "d"]),
         ],
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, experimental=True)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
     # remove the 2nd row (deletes param2)
@@ -256,7 +258,7 @@ def test_AddRubricDialog_change_existing_versions(qtbot) -> None:
         "text": "some text",
         "versions": "1, 3",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
     # unchecking
@@ -312,7 +314,7 @@ def test_AddRubricDialog_group_without_group_list(qtbot) -> None:
         "text": "some text",
         "tags": "unrelated_tag group:(bar)",
     }
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
     qtbot.mouseClick(d.group_excl, Qt.MouseButton.LeftButton)
@@ -333,7 +335,9 @@ def test_AddRubricDialog_change_group_make_exclusive(qtbot) -> None:
     }
     groups = ("(a)", "(b")
     for group in groups:
-        d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, groups=groups)
+        d = AddRubricDialog(
+            None, "user", 10, 1, "Q1", 1, 2, rub, edit=True, groups=groups
+        )
         qtbot.addWidget(d)
         qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
         qtbot.keyClicks(d.group_combobox, group)
@@ -375,7 +379,7 @@ def test_AddRubricDialog_group_too_complicated(qtbot) -> None:
         "text": "some text",
     }
     rub["tags"] = "group:(a) group:(b)"
-    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub)
+    d = AddRubricDialog(None, "user", 10, 1, "Q1", 1, 2, rub, edit=True)
     qtbot.addWidget(d)
     qtbot.mouseClick(d.scopeButton, Qt.MouseButton.LeftButton)
     assert d.group_checkbox.isChecked()
