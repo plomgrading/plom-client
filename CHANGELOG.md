@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* Defer has been revamped: it is now used to hand off tasks to other users, typically when you're unsure about a task; "defer" as in "deferential".
 
 ### Fixed
 
