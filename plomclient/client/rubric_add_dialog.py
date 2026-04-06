@@ -828,7 +828,7 @@ class AddRubricDialog(QDialog):
         params = []
         # TODO: I don't think multi-line placeholder text works!
         self.TE.setPlaceholderText(
-            "Your rubric must contain some text.\n"
+            "Your rubric must contain some text.\n\n"
             'Prepend with "tex:" to use latex.\n\n'
             "You can harvest existing text from the page.\n\n"
             'Change "Marks" below to associate a point-change.'
