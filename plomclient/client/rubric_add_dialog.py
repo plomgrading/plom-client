@@ -826,7 +826,7 @@ class AddRubricDialog(QDialog):
             self._old_rubric = com.copy()
 
         params = []
-        # TODO: I don't think multi-line placeholder text works!
+        # Issue #5126: multiline placeholder text doesn't seem to work
         self.TE.setPlaceholderText(
             "Your rubric must contain some text.\n\n"
             'Prepend with "tex:" to use latex.\n\n'
