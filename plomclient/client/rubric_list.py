@@ -1696,8 +1696,8 @@ class RubricWidget(QWidget):
         rlist = w.get_rid_list()
         if not rlist:
             return {}
-        # caution: quadratic scaling; "no one will have 10k rubrics" /s
-        w_rubrics = [r for r in self.rubrics if r["rid"] in rlist]
+        dict_of_rubrics = {rub["rid"]: rub for rub in self.rubrics}
+        w_rubrics = [dict_of_rubrics[r] for r in rlist]
         # is legographic sort of ok?  need to make datetime for compare?
         w_rubrics.sort(key=lambda x: x["last_modified"])
         # for r in w_rubrics:
