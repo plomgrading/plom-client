@@ -1673,11 +1673,7 @@ class RubricWidget(QWidget):
             seed_rubric_data = self._get_latest_rubric_from_tab(w)
             if not seed_rubric_data:
                 # handle empty gracefully (although group tab shouldn't be empty)
-                # seed_rubric_data = {"tags": f"group:{w.shortname}"}
-                # self._new_or_edit_rubric(seed_rubric_data)
-                # TODO: do we even need the add_to_group feature?
-                self._new_or_edit_rubric(None, add_to_group=w.shortname)
-                return
+                seed_rubric_data = {"tags": f"group:{w.shortname}"}
             seed_rubric_data = deepcopy(seed_rubric_data)
             seed_rubric_data.pop("text", None)
             self._new_or_edit_rubric(seed_rubric_data)
@@ -1858,7 +1854,6 @@ class RubricWidget(QWidget):
             groups=self.get_group_names(),
             reapable=reapable,
             experimental=self._parent.is_experimental(),
-            add_to_group=add_to_group,
             num_uses=num_uses,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
