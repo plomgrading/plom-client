@@ -1669,15 +1669,30 @@ class RubricWidget(QWidget):
         """Open a dialog to create a new rubric."""
         w = self.RTW.currentWidget()
         # Use the most-recently created rubric as seed data for the dialog
-        # TODO: maybe get it on a per-tab basis?
-        # TODO: we could also use the tab contents, when there is no history
         seed_rubric_data = self._recently_created_rubric
         if seed_rubric_data:
             # users will need to add their own text however
             seed_rubric_data = deepcopy(seed_rubric_data)
             seed_rubric_data.pop("text", None)
         if w.is_group_tab():
-            self._new_or_edit_rubric(seed_rubric_data, add_to_group=w.shortname)
+            rlist = w.get_rid_list()
+            if not rlist:
+                # handle empty gracefully (although group tab shouldn't be empty)
+                # seed_rubric_data = {"tags": f"group:{w.shortname}"}
+                # self._new_or_edit_rubric(seed_rubric_data)
+                # TODO: do we even need the add_to_group feature?
+                self._new_or_edit_rubric(None, add_to_group=w.shortname)
+                return
+            # caution: quadratic
+            w_rubrics = [r for r in self.rubrics if r["rid"] in rlist]
+            # is legographic sort of ok?  need to make datetime for compare?
+            w_rubrics.sort(key=lambda x: x["last_modified"])
+            # for r in w_rubrics:
+            #     print((r["rid"], r["last_modified"]))
+            latest = w_rubrics[-1]
+            seed_rubric_data = deepcopy(latest)
+            seed_rubric_data.pop("text", None)
+            self._new_or_edit_rubric(seed_rubric_data)
         elif w.is_user_tab():
             self._new_or_edit_rubric(seed_rubric_data, add_to_user_tab=w.shortname)
         else:
