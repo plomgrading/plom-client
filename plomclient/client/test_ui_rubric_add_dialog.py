@@ -71,20 +71,25 @@ def test_AddRubricDialog_modify(qtbot) -> None:
 
 
 def test_AddRubricDialog_modify_invalid(qtbot) -> None:
-    rub0 = {
-        "text": "no id, lots of missing fields",
-    }
-    with raises(KeyError):
-        AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub0, edit=True)
     rub: dict[str, Any] = {
         "rid": 1234,
         "kind": "man_unkind",
-        "display_delta": "+1",
         "value": 1,
         "out_of": 0,
         "text": "some text",
     }
     with raises(RuntimeError, match="unexpected kind"):
+        AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
+
+
+def test_AddRubricDialog_modify_invalid_absolute_missing_out_of(qtbot) -> None:
+    rub: dict[str, Any] = {
+        "rid": 1234,
+        "kind": "absolute",
+        "value": 1,
+        "text": "some text",
+    }
+    with raises(KeyError):
         AddRubricDialog(None, "user", 10, 1, "Q1", 1, 3, rub)
 
 
