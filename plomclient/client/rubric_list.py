@@ -1668,33 +1668,29 @@ class RubricWidget(QWidget):
     def add_new_rubric(self) -> None:
         """Open a dialog to create a new rubric."""
         w = self.RTW.currentWidget()
-        seed_rubric_data = {}
         if w.is_group_tab():
             seed_rubric_data = self._get_latest_rubric_from_tab(w)
             if not seed_rubric_data:
                 # handle empty gracefully (although group tab shouldn't be empty)
                 seed_rubric_data = {"tags": f"group:{w.shortname}"}
+        elif w.is_user_tab():
+            seed_rubric_data = self._get_latest_rubric_from_tab(w)
+        else:
+            seed_rubric_data = None
+
+        if not seed_rubric_data:
+            seed_rubric_data = self._recently_created_rubric
+
+        if seed_rubric_data is not None:
             seed_rubric_data = deepcopy(seed_rubric_data)
+            # users will need to add their own text
             seed_rubric_data.pop("text", None)
-            self._new_or_edit_rubric(seed_rubric_data)
-            return
 
         if w.is_user_tab():
-            seed_rubric_data = self._get_latest_rubric_from_tab(w)
-            if not seed_rubric_data:
-                seed_rubric_data = self._recently_created_rubric
-            seed_rubric_data = deepcopy(seed_rubric_data)
-            seed_rubric_data.pop("text", None)
-            # Note if the seed has group tag stuff that might happen in addition to the add_to_user_tab
+            # Note if seed has group tags, that might happen in addition to user tab
             self._new_or_edit_rubric(seed_rubric_data, add_to_user_tab=w.shortname)
-            return
-
-        # Use the most-recently created rubric as seed data for the dialog
-        seed_rubric_data = self._recently_created_rubric
-        # users will need to add their own text however
-        seed_rubric_data = deepcopy(seed_rubric_data)
-        seed_rubric_data.pop("text", None)
-        self._new_or_edit_rubric(seed_rubric_data)
+        else:
+            self._new_or_edit_rubric(seed_rubric_data)
 
     def _get_latest_rubric_from_tab(self, w) -> dict[str, Any]:
         rlist = w.get_rid_list()
