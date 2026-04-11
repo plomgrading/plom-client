@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 import sys
 from textwrap import shorten
-from typing import Any
+from typing import Any, Sequence
 
 import arrow
 from spellchecker import SpellChecker
@@ -434,8 +434,8 @@ class AddRubricDialog(QDialog):
         com: None | dict[str, Any] = None,
         *,
         edit: bool = False,
-        groups: list[str] = [],
-        reapable=[],
+        groups: Sequence[str] = [],
+        reapable: Sequence[str] = [],
         experimental=False,
         num_uses=0,
     ):
@@ -460,7 +460,7 @@ class AddRubricDialog(QDialog):
             edit: we're editing an existing rubric.
             groups: optional list of existing/recommended group
                 names that the rubric could be added to.
-            reapable (list): these are used to "harvest" plain 'ol text
+            reapable: these are used to "harvest" plain 'ol text
                 annotations and morph them into comments.
             experimental (bool): whether to enable experimental or advanced
                 features.
