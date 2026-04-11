@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2024 Aden Chan
 
 from __future__ import annotations
@@ -9,11 +9,7 @@ import logging
 
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QContextMenuEvent, QCursor, QMouseEvent
-from PyQt6.QtWidgets import (
-    QAbstractItemView,
-    QMenu,
-    QTableView,
-)
+from PyQt6.QtWidgets import QAbstractItemView, QMenu, QTableView
 
 
 log = logging.getLogger("tasklist")
@@ -32,7 +28,7 @@ class TaskTableView(QTableView):
     annotateSignal = pyqtSignal()
     tagSignal = pyqtSignal(str)
     claimSignal = pyqtSignal(str)
-    deferSignal = pyqtSignal()
+    deferSignal = pyqtSignal(str)
     reassignSignal = pyqtSignal(str)
     reassignToMeSignal = pyqtSignal(str)
     resetSignal = pyqtSignal(str)
@@ -162,6 +158,10 @@ class TaskTableView(QTableView):
             a = QAction(f"Claim task {task}", self)
             a.triggered.connect(lambda: self.claimSignal.emit(task))
             menu.addAction(a)
+            a = QAction(f"Defer task {task} to...", self)
+            a.triggered.connect(lambda: self.deferSignal.emit(task))
+            menu.addAction(a)
+            menu.addSeparator()
             a = QAction(f"Reassign task {task}...", self)
             a.triggered.connect(lambda: self.reassignSignal.emit(task))
             menu.addAction(a)
@@ -170,10 +170,6 @@ class TaskTableView(QTableView):
             menu.addAction(a)
             menu.addSeparator()
 
-        a = QAction("Defer current task", self)
-        a.triggered.connect(self.deferSignal.emit)
-        menu.addAction(a)
-        menu.addSeparator()
         a = QAction("Refresh task list", self)
         a.triggered.connect(self.refresh_task_list.emit)
         menu.addAction(a)

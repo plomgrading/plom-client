@@ -90,7 +90,7 @@ from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
 from .key_wrangler import get_key_bindings
 from .viewers import QuestionViewDialog, SelectPaperQuestion, SolutionViewer
-from .tagging import AddRemoveTagDialog
+from .tagging import AddRemoveTagDialog, DeferToDialog
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, SimpleQuestion
 from .useful_classes import _json_path_to_str
 from .tagging_range_dialog import TaggingAndRangeOptions
@@ -206,6 +206,10 @@ class MarkerClient(QWidget):
         self.msgr = None
         # history contains all the tgv in order of being marked except the current one.
         self.marking_history = []
+
+        self._cached_user_list_lead_markers = []
+        self._cached_user_list_other_markers = []
+        self._last_time_defer_to_users = []
 
         self._hack_prevent_shutdown = False
 
@@ -535,7 +539,7 @@ class MarkerClient(QWidget):
         # self.ui.getMoreButton.setVisible(False)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
-        m.addAction("&Defer selected task", self.defer_task)
+        m.addAction("&Defer selected task to...", self.defer_current_task)
         m.addSeparator()
         m.addAction("Claim selected task for me", self.claim_task)
         m.addAction("Claim more tasks for me", self.request_one_more)
@@ -550,7 +554,7 @@ class MarkerClient(QWidget):
         self.ui.task_overflow_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
         )
-        self.ui.deferButton.clicked.connect(self.defer_task)
+        self.ui.deferButton.clicked.connect(self.defer_current_task)
         # self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
@@ -1450,7 +1454,7 @@ class MarkerClient(QWidget):
             self._show_only_my_tasks()
 
     def refresh_server_data(self):
-        """Refresh various server data including the current task last from the server."""
+        """Refresh various server data including the current task list from the server."""
         info = self.msgr.get_exam_info()
         self.max_papernum = info["current_largest_paper_num"]
         # legacy won't provide this; fallback to a static value
@@ -1483,6 +1487,27 @@ class MarkerClient(QWidget):
         # self.ui.tableView.resizeRowsToContents
 
         self.updateProgress()
+        self._update_user_lists()
+
+    def _update_user_lists(self) -> None:
+        try:
+            users = self.msgr.get_user_list()
+        except PlomNoServerSupportException as e:
+            # no server support for api < 115; just leave them empty as per
+            # init (exception handler to be removed when we drop 114 support)
+            log.warning(f"server does not support user lists: {e}")
+            return
+        lead_markers = []
+        other_markers = []
+        for u, group_list in users.items():
+            if "lead_marker" in group_list:
+                lead_markers.append(u)
+            elif "marker" in group_list:
+                other_markers.append(u)
+        lead_markers.sort()
+        other_markers.sort()
+        self._cached_user_list_lead_markers = lead_markers
+        self._cached_user_list_other_markers = other_markers
 
     def download_task_list(self, *, username: str = "") -> bool:
         """Download and fill/update the task list.
@@ -1678,20 +1703,19 @@ class MarkerClient(QWidget):
             WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
             return
 
-    def defer_task(self, *, advance_to_next: bool = True) -> None:
-        """Mark task as "defer" - to be skipped until later.
-
-        You'll still have to do it.
-
-        Keyword Args:
-            advance_to_next: whether to also advance to the next task
-                (default).
-        """
+    def defer_current_task(self) -> None:
+        """Recommend the currently highlighted task for someone else and surrender the task."""
         task = self.get_current_task_id_or_none()
         if not task:
             return
-        if self.examModel.getStatusByTask(task) == "deferred":
-            return
+        self.defer_task(task)
+
+    def defer_task(self, task: str) -> None:
+        """Recommend a task for someone else and surrender the task.
+
+        Args:
+            task: which task?
+        """
         if not self.examModel.is_our_task(task, self.msgr.username):
             s = f"Cannot defer task {task} b/c it isn't yours"
             user = self.examModel.get_username_by_task(task)
@@ -1719,17 +1743,68 @@ class MarkerClient(QWidget):
                         return
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
-        self.examModel.deferPaper(task)
-        if advance_to_next:
-            # TODO: maybe we really need request_one_more_if_necessary
-            # TODO: or that someone would just notice we're not far enough ahead
-            # TODO: problem with current approach is if you "get more" til you
-            # TODO: have 4 untouched, each defer will get one more untouhed.
-            # TODO: IMHO, I'd rather this only happen when there is less than 2 untouched
+
+        if (
+            not self._cached_user_list_lead_markers
+            and not self._cached_user_list_other_markers
+        ):
+            WarnMsg(self, "Server older than API 115: too old for this feature").exec()
+            return
+
+        d = DeferToDialog(
+            self,
+            task,
+            self._cached_user_list_lead_markers,
+            self._cached_user_list_other_markers,
+            checked=self._last_time_defer_to_users,
+        )
+        if not d.exec():
+            return
+        defer_to_users = d.get_chosen_users()
+        self._last_time_defer_to_users = defer_to_users
+
+        # Note: unconditional surrender is considered unacceptable: you are
+        # expected to nominate someone!  (The dialog should've enforced this
+        # so this case shouldn't actually happen).
+        if not defer_to_users:
+            return
+
+        self._defer_task_to_users(task, defer_to_users)
+        self.refresh_server_data()
+        self.request_more_tasks_if_necessary()
+
+    def request_more_tasks_if_necessary(self, *, background: bool = True) -> None:
+        """If there are not a minimum of claimed task, get some more.
+
+        Keyword Args:
+            background: its not urgent; we can hand off to the background
+                downloader.  Currently not implemented; always happens in
+                foreground.
+        """
+        # TODO: should we loop and keep trying?  subtle near the end of marking
+        if self.examModel.count_local_ready_to_mark() < 2:
             self.request_one_more()
-            self.moveToNextUnmarkedTask()
-            # alternatively or if we want to search "forward" of current:
-            # self.moveToNextUnmarkedTask(task)
+
+    def _defer_task_to_users(self, task: str, user_list: list[str]) -> None:
+        """Tag some users, and surrender a task.
+
+        Args:
+            task: a task code.
+            user_list: a list of usernames to alert to this task by tagging.
+        """
+        # untag ourselves, unless we're explicitly in the list!
+        try:
+            self.msgr.remove_single_tag(task, "@" + self.msgr.username)
+        except PlomConflict:
+            pass
+        for u in user_list:
+            self.msgr.add_single_tag(task, "@" + u)
+        try:
+            self.msgr.surrender_task(task)
+        except (PlomNoServerSupportException, PlomConflict) as e:
+            WarnMsg(self, f"Task tagged for others but cannot surrender: {e}").exec()
+            return
+        # TODO: optionally lower the priority
 
     def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
@@ -1921,7 +1996,7 @@ class MarkerClient(QWidget):
 
         if self.allowBackgroundOps:
             # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
+            if self.examModel.count_local_ready_to_mark() < 2:
                 self.request_one_more()
 
         if self._annotator:

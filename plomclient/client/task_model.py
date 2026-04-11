@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2024 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -56,7 +56,6 @@ local_possible_statuses = (
     "complete",
     "uploading...",
     "failed upload",
-    "deferred",
 )
 
 # there is some overlap with the servers's status strings
@@ -555,19 +554,17 @@ class MarkerExamModel(QStandardItemModel):
         self._setAnnotatedFile(r, aname, pname)
         self._setPaperDir(r, tdir)
 
-    def deferPaper(self, task):
-        """Sets the status for the task's paper to deferred."""
-        self.setStatusByTask(task, "deferred")
-
     def remove_task(self, task: str) -> None:
         """Removes the task from the list."""
         r = self._findTask(task)
         self.removeRow(r)
 
-    def countReadyToMark(self):
-        """Returns the number of untouched Papers."""
+    def count_local_ready_to_mark(self):
+        """Returns the number of our untouched tasks we have locally."""
         count = 0
         for r in range(self.rowCount()):
+            # Note: currently tasks that are out with others appear as "Out"
+            # so this correctly counts only our tasks.
             if self._getStatus(r) == "untouched":
                 count += 1
         return count
