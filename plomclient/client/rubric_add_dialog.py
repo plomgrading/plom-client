@@ -843,7 +843,7 @@ class AddRubricDialog(QDialog):
         if com:
             self.TE.insertPlainText(com.get("text", ""))
             self.TEmeta.insertPlainText(com.get("meta", ""))
-            if com["kind"]:
+            if com.get("kind"):
                 if com["kind"] == "neutral":
                     self.typeRB_neutral.setChecked(True)
                 elif com["kind"] == "relative":
