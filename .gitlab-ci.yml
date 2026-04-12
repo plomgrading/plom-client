@@ -452,7 +452,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.5
+    - python3 -m pip install ruff~=0.15.10
   script:
     - ruff check .
     # ruff format .
@@ -463,7 +463,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.5
+    - python3 -m pip install ruff~=0.15.10
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
