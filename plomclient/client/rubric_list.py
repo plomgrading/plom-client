@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import datetime
 import logging
 import random  # optionally used for debugging
+from copy import deepcopy
 from typing import Any, Sequence
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
@@ -897,6 +898,8 @@ class RubricWidget(QWidget):
         self._parent = parent
         self.username = parent.username
         self.rubrics: list[dict[str, Any]] = []
+        # stores the most recently created/edited
+        self._recently_created_rubric = None
 
         grid = QGridLayout()
         # assume our container will deal with margins
@@ -1663,14 +1666,22 @@ class RubricWidget(QWidget):
         self.setRubricTabsFromState(wranglerState)
 
     def add_new_rubric(self) -> None:
-        """Open a dialog to create a new comment."""
+        """Open a dialog to create a new rubric."""
         w = self.RTW.currentWidget()
+        # Use the most-recently created rubric as seed data for the dialog
+        # TODO: maybe get it on a per-tab basis?
+        # TODO: we could also use the tab contents, when there is no history
+        seed_rubric_data = self._recently_created_rubric
+        if seed_rubric_data:
+            # users will need to add their own text however
+            seed_rubric_data = deepcopy(seed_rubric_data)
+            seed_rubric_data.pop("text", None)
         if w.is_group_tab():
-            self._new_or_edit_rubric(None, add_to_group=w.shortname)
+            self._new_or_edit_rubric(seed_rubric_data, add_to_group=w.shortname)
         elif w.is_user_tab():
-            self._new_or_edit_rubric(None, add_to_user_tab=w.shortname)
+            self._new_or_edit_rubric(seed_rubric_data, add_to_user_tab=w.shortname)
         else:
-            self._new_or_edit_rubric(None)
+            self._new_or_edit_rubric(seed_rubric_data)
 
     def other_usage(self, rid: int) -> None:
         """Open a dialog showing a list of tasks using the given rubric.
@@ -1878,6 +1889,9 @@ class RubricWidget(QWidget):
                 WarnMsg(self, f"Inconsistent Rubric: {e}").exec()
                 return
             self.rubrics.append(new_rubric)
+
+        # keep a copy of the rubric we last created
+        self._recently_created_rubric = deepcopy(new_rubric)
 
         if add_to_user_tab:
             # User originally wanted to add this to a custom tab
