@@ -1801,6 +1801,9 @@ class MarkerClient(QWidget):
             self.msgr.add_single_tag(task, "@" + u)
         try:
             self.msgr.surrender_task(task)
+        except PlomNoPaper as e:
+            WarnMsg(self, f"Unexpected could not find task: {e}").exec()
+            return
         except (PlomNoServerSupportException, PlomConflict) as e:
             WarnMsg(self, f"Task tagged for others but cannot surrender: {e}").exec()
             return
