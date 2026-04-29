@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import pathlib
 import queue
@@ -224,6 +225,10 @@ def synchronous_upload(
                 aname, pname
             )
         )
+    # TODO: we could just keep all this in memory instead of on disc?
+    with pname.open("r") as fh:
+        plom_data = json.load(fh)
+
     try:
         progress_info = _msgr.MreturnMarkedTask(
             task,
@@ -232,7 +237,7 @@ def synchronous_upload(
             grade,
             marking_time,
             aname,
-            pname,
+            plom_data,
             rubrics,
             integrity_check,
         )
