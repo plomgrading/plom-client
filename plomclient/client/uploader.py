@@ -187,8 +187,6 @@ def synchronous_upload(
     aname: pathlib.Path,
     pname: pathlib.Path,
     marking_time: float | int,
-    question_idx: int,
-    ver: int,
     rubrics: list,
     integrity_check: str,
     failCallback=None,
@@ -232,8 +230,6 @@ def synchronous_upload(
     try:
         progress_info = _msgr.MreturnMarkedTask(
             task,
-            question_idx,
-            ver,
             grade,
             marking_time,
             aname,

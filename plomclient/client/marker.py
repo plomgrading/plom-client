@@ -2345,8 +2345,6 @@ class MarkerClient(QWidget):
             aname,
             plomFileName,
             totmtime,  # total marking time (seconds)
-            self.question_idx,
-            self.version,
             rubrics,
             integrity_check,
         )
