@@ -23,6 +23,7 @@ from PyQt6.QtCore import (
     pyqtSignal,
 )
 
+from plomclient.client import __version__
 from plomclient.messenger import Messenger
 from plomclient.plom_exceptions import (
     PlomConflict,
@@ -236,6 +237,8 @@ def synchronous_upload(
             plom_data,
             rubrics,
             integrity_check,
+            user_agent="org.plomgrading.PlomClient",
+            user_agent_version=__version__,
         )
     except (PlomTaskChangedError, PlomTaskDeletedError, PlomConflict) as ex:
         failCallback(task, str(ex), True, False)

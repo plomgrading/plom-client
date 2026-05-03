@@ -19,6 +19,7 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QColor, QPainterPath, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from plomclient.client import __version__
 from plomclient.messenger import Messenger
 from plomclient.plom_exceptions import PlomTakenException, PlomExistingLoginException
 
@@ -286,6 +287,8 @@ def do_random_marking_backend(
                 anndata,
                 rubrics,
                 integrity_check,
+                user_agent="RandoMarker",
+                user_agent_version=__version__,
             )
 
             # remark every 6th paper
@@ -302,6 +305,8 @@ def do_random_marking_backend(
                     anndata,
                     rubrics,
                     integrity_check,
+                    user_agent="RandoMarker",
+                    user_agent_version=__version__,
                 )
         remarking_counter += 1
 
