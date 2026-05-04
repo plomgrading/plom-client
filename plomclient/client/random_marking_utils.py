@@ -281,6 +281,8 @@ def do_random_marking_backend(
             print("Score of {} out of {}".format(score, maxMark))
             messenger.MreturnMarkedTask(
                 task,
+                question,
+                version,
                 score,
                 max(0, round(random.gauss(180, 50))),
                 aname,
@@ -299,6 +301,8 @@ def do_random_marking_backend(
                 print("Remarking to {} out of {}".format(score, maxMark))
                 messenger.MreturnMarkedTask(
                     task,
+                    question,
+                    version,
                     score,
                     max(0, round(random.gauss(180, 50))),
                     aname,
