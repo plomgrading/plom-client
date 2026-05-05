@@ -10,8 +10,6 @@ from requests import __version__ as requests_version
 from . import __version__
 from .translations import translate as _
 
-# TODO: use resources to important contributors list?
-
 
 def show_about_dialog(parent):
     QMessageBox.about(

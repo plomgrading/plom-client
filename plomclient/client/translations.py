@@ -20,18 +20,9 @@ pybabel init -i messages.pot -d locales/ -l zh
 import gettext
 import locale
 
-# from pathlib import Path
-
-
-# without translation _() is a no-op
-# code below will (hopefully?) overwrite this
-# but without this prototype, the `mypy` linter is unhappy.
-# def _(x: str) -> str:
-#     return x
-
-
+# Issue #5130: uncomment this
 # Hat-tip to https://github.com/slgobinath/SafeEyes/pull/706/files
-_translations = gettext.NullTranslations()
+# _translations = gettext.NullTranslations()
 
 
 def setup():
@@ -56,6 +47,12 @@ def setup():
     return _translations
 
 
+# Issue #5130: uncomment this
+# def translate(msg: str) -> str:
+#     """Translate a string using the current translator."""
+#     return _translations.gettext(msg)
+
+
+# Issue #5130: ... and remove this placeholder
 def translate(msg: str) -> str:
-    """Translate a string using the current translator."""
-    return _translations.gettext(msg)
+    return msg

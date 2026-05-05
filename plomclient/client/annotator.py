@@ -79,6 +79,7 @@ from .translations import translate as _
 
 log = logging.getLogger("annotr")
 
+
 # Short descriptions of each tool to display to user.
 tipText = {
     "box": "Box: L = highlighted box, R/Shift = highlighted ellipse.",
