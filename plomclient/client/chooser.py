@@ -65,7 +65,6 @@ from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, WarningQuestion
 from .useful_classes import ClientSettingsDialog
 from .translations import translate as _
 
-
 log = logging.getLogger("client")
 logdir = platformdirs.user_log_path("plom", "PlomGrading.org")
 cfgdir = platformdirs.user_config_path("plom", "PlomGrading.org")
@@ -279,16 +278,16 @@ class Chooser(QDialog):
         except (tomllib.TOMLDecodeError, OSError) as e:
             WarnMsg(
                 self,
-                _(
-                    """<p>Cannot read from the config file:</p>
+                _("""
+                    <p>Cannot read from the config file:</p>
                     <blockquote><tt>{config_file}</tt></blockquote>
-                    <p>Perhaps the file is corrupted?  We can ignore the error
-                    and continue with default settings.</p>
-                    <p>
-                    You can also try restarting, and if the error does not go away,
-                    consider manually removing the config file from your computer.</p>
-                    <p>Error msg: <tt>{error_message}</tt></p>"""
-                ).format(config_file=cfgfile, error_message=e),
+                    <p>Perhaps the file is corrupted?  We can ignore the
+                    error and continue with default settings.</p>
+                    <p>You can also try restarting, and if the error
+                    does not go away, consider manually removing the
+                    config file from your computer.</p>
+                    <p>Error message: <tt>{error_message}</tt></p>
+                """).format(config_file=cfgfile, error_message=e),
             ).exec()
         return lastTime
 
@@ -311,12 +310,13 @@ class Chooser(QDialog):
         except OSError as e:
             WarnMsg(
                 self,
-                _(
-                    """<p>Cannot write to the config file:</p>
+                _("""
+                    <p>Cannot write to the config file:</p>
                     <blockquote><tt>{config_file}</tt></blockquote>
-                    <p>Settings will not be saved for future sessions.</p>
-                    <p>Error msg: <tt>{error_message}</tt></p>"""
-                ).format(config_file=cfgfile, error_message=e),
+                    <p>Settings will not be saved for future
+                    sessions.</p>
+                    <p>Error message: <tt>{error_message}</tt></p>
+                """).format(config_file=cfgfile, error_message=e),
             ).exec()
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
@@ -502,15 +502,14 @@ class Chooser(QDialog):
             if rej.get("action", "block") == "warn":
                 msg_ = WarningQuestion(
                     self,
-                    _(
-                        """<p>Your client version {client_version} is
-                        on the server's reject list:</p>\n
-                        <blockquote>{reason}</blockquote>\n
+                    _("""
+                        <p>Your client version {client_version} is
+                        on the server's reject list:</p>
+                        <blockquote>{reason}</blockquote>
                         <p>It is strongly recommended that you stop and
                         download a newer version of the client to
                         connect to this server.</p>
-                        """
-                    ).format(client_version=__version__, reason=reason),
+                    """).format(client_version=__version__, reason=reason),
                     question="Ignore warning and continue anyway?",
                     details=details_str_for_dialog,
                 )
@@ -519,14 +518,13 @@ class Chooser(QDialog):
             else:
                 WarnMsg(
                     self,
-                    _(
-                        """<p>Your client version {client_version} is
-                        blocked by the server, which says:</p>\n
-                        <blockquote>{reason}</blockquote>\n
-                        <p>You will need to download a newer version of the
-                        client to connect to this server.</p>
-                        """
-                    ).format(client_version=__version__, reason=reason),
+                    _("""
+                        <p>Your client version {client_version} is
+                        blocked by the server, which says:</p>
+                        <blockquote>{reason}</blockquote>
+                        <p>You will need to download a newer version of
+                        the client to connect to this server.</p>
+                    """).format(client_version=__version__, reason=reason),
                     details=details_str_for_dialog,
                 ).exec()
                 return False
