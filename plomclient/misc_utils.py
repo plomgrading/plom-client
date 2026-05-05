@@ -16,7 +16,6 @@ from typing import Any, Sequence
 
 import arrow
 
-
 # ------------------------------------------------
 # some time conversion tools put here nice and central
 
