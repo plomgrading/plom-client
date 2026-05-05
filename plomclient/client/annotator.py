@@ -869,16 +869,14 @@ class Annotator(QWidget):
         repeats = {k: v for k, v in repeats.items() if len(v) > 1}
         if repeats:
             log.warning("Repeated pages in md5sum data: %s", repeats)
-            info = dedent(
-                """
+            info = _("""
                 <p>This can happen with self-submitted work if a student
                 submits multiple copies of the same page.
                 Its probably harmless in that case, but if you see this
                 with scanned work, it might indicate a bug.</p>
                 <p>The repeated pages are:</p>
                 <ul>
-                """
-            )
+            """)
             for md5, pages in repeats.items():
                 info += f"<li>pages {pages} @ md5: {md5}</li>"
             info += "</ul>"
@@ -926,8 +924,7 @@ class Annotator(QWidget):
         #
         for x in image_md5_list:
             if x not in [p["md5"] for p in pagedata]:
-                s = dedent(
-                    f"""
+                s = dedent(f"""
                     Unexpectedly situation!\n
                     There is an image being annotated that is not present in
                     the server's page data.  Probably that is not allowed(?)
@@ -937,8 +934,7 @@ class Annotator(QWidget):
                     Server pagedata is:
                       {pagedata}\n
                     Consider filing a bug with this info!
-                    """
-                ).strip()
+                """).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
 
@@ -966,18 +962,14 @@ class Annotator(QWidget):
             # But if the input already had dupes than its not our problem
             md5_in = [x["md5"] for x in src_img_data]
             if len(set(md5)) != len(md5) and len(set(md5_in)) == len(md5_in):
-                s = dedent(
-                    """
+                s = dedent("""
                     Unexpectedly repeated md5sums: did Adjust Pages somehow
                     dupe a page?  This should not happen!\n
                     Please file an issue with this info!\n
                     perm = {}\n
                     annotr src_img_data = {}\n
                     pagedata = {}
-                    """.format(
-                        perm, src_img_data, pagedata
-                    )
-                ).strip()
+                    """.format(perm, src_img_data, pagedata)).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
             self.new_or_permuted_image_data(perm)

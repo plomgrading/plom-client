@@ -234,6 +234,18 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
+#: annotator.py:872
+msgid ""
+"\n"
+"                <p>This can happen with self-submitted work if a student\n"
+"                submits multiple copies of the same page.\n"
+"                Its probably harmless in that case, but if you see this\n"
+"                with scanned work, it might indicate a bug.</p>\n"
+"                <p>The repeated pages are:</p>\n"
+"                <ul>\n"
+"                "
+msgstr ""
+
 #: about_dialog.py:20
 #, python-brace-format
 msgid ""
