@@ -648,7 +648,7 @@ class Chooser(QDialog):
             self.messenger = None
             return
         except PlomAuthenticationException as e:
-            InfoMsg(self, _("Could not authenticate: ") + str(e)).exec()
+            InfoMsg(self, _("Could not authenticate: "), info=e).exec()
             self.messenger = None
             return
         except PlomExistingLoginException:
