@@ -14,10 +14,8 @@ msgstr ""
 "Generated-By: Babel 2.17.0\n"
 
 #: chooser.py:244
-msgid "Only Marker/Lead Marker can mark papers!"
-msgstr ""
-"Seul.e. s les Évaluateur.trice.s/Évaluateur.trice.s en Charge peuvent "
-"évalurt une fiche"
+msgid 'Only "marker" can mark papers!'
+msgstr "Seul.e. s les Évaluateur.trice.s peuvent évalurt une fiche"
 
 #: chooser.py:263
 msgid "Only Lead Marker should be identifying papers."
