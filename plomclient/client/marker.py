@@ -861,7 +861,7 @@ class MarkerClient(QWidget):
                 num, question_idx, edition=None, integrity=integrity
             )
             annot_img_info, annot_img_bytes = self.msgr.get_annotations_image(
-                num, question_idx, edition=data["annotation_edition"]
+                num, question_idx, edition=data["edition"]
             )
             plomdata = data["annotations"]
         except PlomNoPaper as e:
