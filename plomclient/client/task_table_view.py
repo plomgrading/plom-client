@@ -11,7 +11,6 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QContextMenuEvent, QCursor, QMouseEvent
 from PyQt6.QtWidgets import QAbstractItemView, QMenu, QTableView
 
-
 log = logging.getLogger("tasklist")
 
 

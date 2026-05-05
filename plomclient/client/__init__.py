@@ -24,7 +24,6 @@ from .random_identifying_utils import do_rando_identifying
 from .image_view_widget import ImageViewWidget
 from .task_table_view import TaskTableView
 
-
 # what you get from "from plomclient.client import *"
 __all__ = ["MarkerClient", "IDClient", "Chooser"]
 

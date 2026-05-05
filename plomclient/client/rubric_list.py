@@ -55,7 +55,6 @@ from plomclient.plom_exceptions import (
     PlomNoServerSupportException,
 )
 
-
 log = logging.getLogger("annotr")
 
 

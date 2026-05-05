@@ -77,7 +77,6 @@ from .useful_classes import SimpleQuestion, SimpleQuestionCheckBox
 from .useful_classes import _json_path_to_str
 from .translations import translate as _
 
-
 log = logging.getLogger("annotr")
 
 # Short descriptions of each tool to display to user.

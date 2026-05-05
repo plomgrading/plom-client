@@ -112,7 +112,6 @@ from .draw_operations import (
     PenToolDrawer,
 )
 
-
 log = logging.getLogger("scene")
 
 COMMAND_MAP = {

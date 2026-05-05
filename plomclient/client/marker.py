@@ -100,7 +100,6 @@ from .uploader import BackgroundUploader, synchronous_upload
 from .translations import translate as _
 from . import icons, ui_files
 
-
 if platform.system() == "Darwin":
     # apparently needed for shortcuts under macOS
     from PyQt6.QtGui import qt_set_sequence_auto_mnemonic
