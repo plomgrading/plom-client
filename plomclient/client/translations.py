@@ -55,4 +55,5 @@ def setup():
 
 # Issue #5130: ... and remove this placeholder
 def translate(msg: str) -> str:
+    """Dummy placeholder standing in for an actual translator."""
     return msg
