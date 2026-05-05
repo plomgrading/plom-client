@@ -849,17 +849,8 @@ class MarkerClient(QWidget):
         num, question_idx = unpack_task_code(task)
         assert question_idx == self.question_idx, f"wrong qidx={question_idx}"
 
-        # TODO: this integrity is almost certainly not important unless I want
-        # to modify.  If just looking...?  Anyway, non-legacy doesn't enforce it
         try:
-            integrity = self.examModel.getIntegrityCheck(task)
-        except ValueError:
-            return False
-
-        try:
-            data = self.msgr.get_annotations(
-                num, question_idx, edition=None, integrity=integrity
-            )
+            data = self.msgr.get_annotations(num, question_idx, edition=None)
             annot_img_info, annot_img_bytes = self.msgr.get_annotations_image(
                 num, question_idx, edition=data["edition"]
             )
