@@ -208,7 +208,7 @@ class Chooser(QDialog):
 
         if which_subapp == "Marker":
             if "marker" not in roles:
-                WarnMsg(self, 'Only "marker" accounts can mark papers!').exec()
+                WarnMsg(self, _('Only "marker" accounts can mark papers!')).exec()
                 return
             question = self.getQuestion()
             v = self.getv()
@@ -234,7 +234,7 @@ class Chooser(QDialog):
                     # return
                 else:
                     WarnMsg(
-                        self, 'Only "identifier" accounts can identify papers!'
+                        self, _('Only "identifier" accounts can identify papers!')
                     ).exec()
                     return
             self.setEnabled(False)
