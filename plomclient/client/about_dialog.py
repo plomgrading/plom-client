@@ -20,7 +20,9 @@ def show_about_dialog(parent):
         _("""
             <h2>Plom Client {version}</h2>
 
-            <p><a href="https://plomgrading.org">https://plomgrading.org</a></p>
+            <p>
+            <a href="https://plomgrading.org">https://plomgrading.org</a>
+            </p>
 
             <p>Copyright &copy; 2018-2026 Andrew Rechnitzer,
             Colin B. Macdonald, and other contributors.</p>
@@ -36,17 +38,12 @@ def show_about_dialog(parent):
             contributors</a>.</p>
 
             <h3>System info</h3>
+        """).format(version=__version__)
+        + f"""
             <p>
-            PyQt {pyqt_version} (Qt {qt_version})<br />
+            PyQt {PYQT_VERSION_STR} (Qt {QT_VERSION_STR})<br />
             Requests {requests_version}<br />
-            Python {python_version()}<br />
-            {platform_info}</p>
-        """).format(
-            version=__version__,
-            pyqt_version=PYQT_VERSION_STR,
-            qt_version=QT_VERSION_STR,
-            requests_version=requests_version,
-            python_version=platform.python_version,
-            platform_info=platform.platform(),
-        ),
+            Python {platform.python_version()}<br />
+            {platform.platform()}</p>
+        """,
     )

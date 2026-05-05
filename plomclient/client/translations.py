@@ -8,7 +8,7 @@
 
 # keeping things up-to-date after changing python code:
 cd plomclient/client
-pybabel extract chooser.py marker.py annotator.py -o messages.pot
+pybabel extract chooser.py marker.py annotator.py about_dialog.py -o messages.pot
 pybabel update -i messages.pot -d locales/
 pybabel compile -d locales/
 

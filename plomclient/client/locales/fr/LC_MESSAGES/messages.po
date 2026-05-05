@@ -201,37 +201,66 @@ msgstr "connecté.e en tant que « {username} »"
 msgid "Choose a task for “{assessment_name}”"
 msgstr "Choisissez une tâche pour « {assessment_name} »"
 
-#: marker.py:387
+#: marker.py:386
 #, python-brace-format
 msgid "{what_task} of {assessment_name}"
 msgstr "{what_task} de {assessment_name}"
 
-#: marker.py:553
+#: marker.py:552
 msgid "Reset selected task"
 msgstr ""
 
-#: marker.py:554
+#: marker.py:553
 msgid "Reassign selected task to me"
 msgstr ""
 
-#: marker.py:555
+#: marker.py:554
 msgid "Reassign selected task..."
 msgstr ""
 
-#: marker.py:566 marker.py:599
+#: marker.py:565 marker.py:598
 msgid "Refresh task list"
 msgstr ""
 
-#: marker.py:600
+#: marker.py:599
 msgid "View another paper..."
 msgstr ""
 
-#: annotator.py:198 annotator.py:774
+#: annotator.py:197 annotator.py:773
 msgid "Save && Next"
 msgstr ""
 
-#: annotator.py:754
+#: annotator.py:753
 msgid "Next"
+msgstr ""
+
+#: about_dialog.py:20
+#, python-brace-format
+msgid ""
+"\n"
+"            <h2>Plom Client {version}</h2>\n"
+"\n"
+"            <p>\n"
+"            <a "
+"href=\"https://plomgrading.org\">https://plomgrading.org</a>\n"
+"            </p>\n"
+"\n"
+"            <p>Copyright &copy; 2018-2026 Andrew Rechnitzer,\n"
+"            Colin B. Macdonald, and other contributors.</p>\n"
+"\n"
+"            <p>Plom is Free Software, available under the GNU Affero\n"
+"            General Public License version 3, or at your option, any\n"
+"            later version.</p>\n"
+"\n"
+"            <h3>Contributors</h3>\n"
+"\n"
+"            <p>Plom would not have been possible without the help of\n"
+"            <a "
+"href=\"https://gitlab.com/plom/plom/-/blob/main/CONTRIBUTORS\">our\n"
+"            contributors</a>.</p>\n"
+"\n"
+"            <h3>System info</h3>\n"
+"        "
 msgstr ""
 
 #~ msgid "is on the server's reject list:"
