@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Vala Vakilian
 # Copyright (C) 2021 Forest Kobayashi
@@ -13,6 +13,7 @@ from __future__ import annotations
 from datetime import datetime
 import logging
 import random  # optionally used for debugging
+from copy import deepcopy
 from typing import Any, Sequence
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
@@ -897,6 +898,8 @@ class RubricWidget(QWidget):
         self._parent = parent
         self.username = parent.username
         self.rubrics: list[dict[str, Any]] = []
+        # stores the most recently created/edited
+        self._recently_created_rubric = None
 
         grid = QGridLayout()
         # assume our container will deal with margins
@@ -1663,12 +1666,22 @@ class RubricWidget(QWidget):
         self.setRubricTabsFromState(wranglerState)
 
     def add_new_rubric(self) -> None:
-        """Open a dialog to create a new comment."""
+        """Open a dialog to create a new rubric."""
         w = self.RTW.currentWidget()
+        # Use the most-recently created rubric as seed data for the dialog
+        # TODO: maybe get it on a per-tab basis?
+        # TODO: we could also use the tab contents, when there is no history
+        seed_rubric_data = self._recently_created_rubric
+        if seed_rubric_data:
+            # users will need to add their own text however
+            seed_rubric_data = deepcopy(seed_rubric_data)
+            seed_rubric_data.pop("text", None)
         if w.is_group_tab():
-            self._new_or_edit_rubric(None, add_to_group=w.shortname)
+            self._new_or_edit_rubric(seed_rubric_data, add_to_group=w.shortname)
+        elif w.is_user_tab():
+            self._new_or_edit_rubric(seed_rubric_data, add_to_user_tab=w.shortname)
         else:
-            self._new_or_edit_rubric(None)
+            self._new_or_edit_rubric(seed_rubric_data)
 
     def other_usage(self, rid: int) -> None:
         """Open a dialog showing a list of tasks using the given rubric.
@@ -1711,15 +1724,6 @@ class RubricWidget(QWidget):
                 "<p>This is a &ldquo;system rubric&rdquo; "
                 "created by Plom itself; the server will probably not "
                 "let you modify it.</p>"
-            )
-            edit_button = False
-        elif self._parent.parentMarkerUI.msgr.is_legacy_server():
-            # TODO: don't like "drilling up": maybe Annotator should know legacy or not
-            msg = (
-                "<p>You did not create this rubric "
-                f"(it was created by &ldquo;{com['username']}&rdquo;).  "
-                "You are connected to a legacy server which does not "
-                " support modification of other user's rubrics.</p>"
             )
             edit_button = False
         else:
@@ -1768,28 +1772,32 @@ class RubricWidget(QWidget):
 
     def _new_or_edit_rubric(
         self,
-        com: dict[str, Any] | None,
+        rubric_data: dict[str, Any] | None,
         *,
         edit: bool = False,
         index: int | None = None,
         add_to_group: str | None = None,
+        add_to_user_tab: str | None = None,
     ) -> None:
         """Open a dialog to edit a comment or make a new one.
 
         Args:
-            com (dict/None): a comment to modify or use as a template
-                depending on next arg.  If set to None, which always
-                means create new.
+            rubric_data: some existing rubric data, either to modify or
+                use as a template depending on the ``edit`` keyword arg.
+                If set to None, which always means create new.
 
         Keyword Args:
-            edit: True if we are modifying the comment.  If False, use
-                `com` as a template for a new duplicated comment.
+            edit: True if we are modifying an existing rubric.  If False, use
+                ``rubric_data`` as a template for a new (duplicated) rubric.
             index: the index of the comment inside the current rubric list
                 used for updating the data in the rubric list after edit (only)
             add_to_group: if set to a string, the user might be trying to add
-                to a group with this name.  For example, a UI could pre-select
+                to a group with this name.  For example, a UI could preselect
                 that option.  Mutually exclusive with `edit`, `index`, or
                 at least ill-defined what happens if you pass those as well.
+            add_to_user_tab: if set to a string, the user might be adding
+                to a custom tab.  This is a bit different from `add_to_group`
+                because currently currently custom tabs are a different feature.
 
         Returns:
             None, does its work through side effects on the comment list.
@@ -1798,9 +1806,9 @@ class RubricWidget(QWidget):
         if edit:
             # TODO: No no use signals slots or something, not like this
             annotr = self._parent
-            assert com is not None
+            assert rubric_data is not None
             try:
-                __ = annotr.getOtherRubricUsagesFromServer(com["rid"])
+                __ = annotr.getOtherRubricUsagesFromServer(rubric_data["rid"])
                 num_uses = len(__)
             except PlomNoServerSupportException:
                 # checking will fail on legacy or maybe even not-so-recent
@@ -1816,7 +1824,8 @@ class RubricWidget(QWidget):
             self.question_label,
             self.version,
             self.max_version,
-            com,
+            rubric_data,
+            edit=edit,
             groups=self.get_group_names(),
             reapable=reapable,
             experimental=self._parent.is_experimental(),
@@ -1881,6 +1890,14 @@ class RubricWidget(QWidget):
                 return
             self.rubrics.append(new_rubric)
 
+        # keep a copy of the rubric we last created
+        self._recently_created_rubric = deepcopy(new_rubric)
+
+        if add_to_user_tab:
+            # User originally wanted to add this to a custom tab
+            for tab in self.get_user_tabs():
+                if tab.shortname == add_to_user_tab:
+                    tab.append_by_rid(new_rubric["rid"])
         self.setRubricTabsFromState(self.get_tab_rubric_lists())
 
     def get_tab_rubric_lists(self) -> dict[str, list[Any]]:

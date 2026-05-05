@@ -129,7 +129,7 @@ class QuestionViewDialog(GroupView):
         """If we have a marker parent then use it to manage tags."""
         if self.marker:
             task = f"{self.papernum:04}g{self.question_index}"
-            self.marker.manage_task_tags(task, parent=self)
+            self.marker.manage_tags(task, parent=self)
 
 
 class WholeTestView(QDialog):
@@ -254,15 +254,34 @@ class SolutionViewer(QWidget):
     reference, this is a new top-level window (not formally parented
     by the Annotator or Marker windows).  At least in the Gnome
     environment, that means it does not stay on top of the Annotator
-    window (unlike for example `QVHistogram` in Manager).
+    window.
 
-    The parent must be an Annotator, or otherwise have a method
-    ``refreshSolutionImage`` that behaves like Annotator.
+    Current, this is QWidget instantiated w/o parent.  That seems like a bad
+    idea: like it should be a QMainWindow or a QDialog?  A QDialog will
+    possibly mean it has no separate icon in the task bar.  Further notes
+    on this::
+
+       1. If this a subclass of QDialog, and we call `super().__init__(parent)`
+          below, then the modeless dialog is still always on top of the Marker
+          window (at least on Gnome Wayland).  On a small screen that's unlikely
+          what people want.
+
+       2. If this class is a QWidget, it should not be parented with
+          `super().__init__(parent)`: else it is not a top-level window.
+
+       3. It remains to try `QMainWindow`, but this requires some reworking
+          elsewhere, for example, I just noticed that Marker is not a
+          `QMainWindow` either!  We need both these things to be top-level
+          windows, equal under a common QApplication.  Its possible that
+          requires some reworking on Chooser as well.
+
+    The parent must be an Marker, or otherwise have a method
+    ``refreshSolutionImage``.
     """
 
     def __init__(self, parent: QWidget, fname: Path) -> None:
         super().__init__()
-        self._annotr = parent
+        self._marker = parent
         grid = QVBoxLayout()
         self.sv = ImageViewWidget(self, fname)
         refreshButton = QPushButton("&Refresh")
@@ -283,7 +302,7 @@ class SolutionViewer(QWidget):
 
     def refresh(self):
         """Re-download the solution image from the server."""
-        fname = self._annotr.refreshSolutionImage()
+        fname = self._marker.refreshSolutionImage()
         self.sv.updateImage(fname)
         if fname is None:
             WarnMsg(self, "Server no longer has a solution.  Try again later?").exec()

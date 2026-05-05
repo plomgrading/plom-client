@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2022 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020 Forest Kobayashi
 # Copyright (C) 2021 Peter Lee
@@ -13,10 +13,6 @@
 """Plom's Chooser dialog."""
 
 from __future__ import annotations
-
-__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
-__credits__ = "The Plom Project Developers"
-__license__ = "AGPL-3.0-or-later"
 
 from pathlib import Path
 import logging
@@ -58,7 +54,6 @@ from plomclient.plom_exceptions import (
     PlomExistingLoginException,
     PlomServerNotReady,
     PlomSSLError,
-    PlomNoServerSupportException,
 )
 from . import __version__
 from . import MarkerClient, IDClient
@@ -77,23 +72,9 @@ cfgdir = platformdirs.user_config_path("plom", "PlomGrading.org")
 cfgfile = cfgdir / "plomConfig.toml"
 
 
-def readLastTime() -> dict[str, Any]:
-    """Read the login + server options that were used on the last run of the client."""
-    lastTime: dict[str, Any] = {}
-    # set some reasonable defaults.
-    lastTime["LogToFile"] = True  # default until stable release?
-    lastTime["user"] = ""
-    lastTime["server"] = ""
-    lastTime["question"] = 1
-    lastTime["v"] = 1
-    lastTime["fontSize"] = 10
-    lastTime["KeyBinding"] = "default"
-    # update default from config file
-    if cfgfile.exists():
-        # too early to log: log.info("Loading config file %s", cfgfile)
-        with open(cfgfile, "rb") as f:
-            lastTime.update(tomllib.load(f))
-    return lastTime
+# future translation support
+def _(x: str) -> str:
+    return x
 
 
 class Chooser(QDialog):
@@ -105,7 +86,7 @@ class Chooser(QDialog):
         self.Qapp = Qapp
         self.messenger = None
 
-        self.lastTime = readLastTime()
+        self.lastTime = self.load_config_file_or_defaults()
 
         kwargs = {}
         if self.lastTime.get("LogToFile"):
@@ -126,6 +107,8 @@ class Chooser(QDialog):
         )
         # Default to INFO log level
         logging.getLogger().setLevel(self.lastTime.get("LogLevel", "Info").upper())
+        # Disable PyQt6.uic debugging, its a bit much
+        logging.getLogger("PyQt6").setLevel("INFO")
 
         s = f"Plom Client {__version__} (communicates with api {self.APIVersion})"
         log.info(s)
@@ -220,28 +203,17 @@ class Chooser(QDialog):
                 return
 
         assert self.messenger is not None
-        if self.messenger.is_legacy_server() and self.messenger.username == "manager":
-            InfoMsg(
-                self,
-                # TRANSLATORS: don't bother translating this: legacy support will be removed
-                "<p>You are not allowed to mark or ID papers while "
-                "logged-in as &ldquo;manager&rdquo;.</p>",
-            ).exec()
-            return
 
-        self.saveDetails()
+        self.save_config_file()
 
         img_cache_dir = self._workdir / "page_img_cache"
         img_cache_dir.mkdir(exist_ok=True)
         self.Qapp.downloader = Downloader(img_cache_dir, msgr=self.messenger)
-        try:
-            role = self.messenger.get_user_role()
-        except PlomNoServerSupportException:
-            role = ""
+        roles = self.messenger.get_user_roles()
 
         if which_subapp == "Marker":
-            if len(role) and role not in ["marker", "lead_marker"]:
-                WarnMsg(self, _("Only Marker/Lead Marker can mark papers!")).exec()
+            if "marker" not in roles:
+                WarnMsg(self, 'Only "marker" accounts can mark papers!').exec()
                 return
             question = self.getQuestion()
             v = self.getv()
@@ -256,22 +228,20 @@ class Chooser(QDialog):
             # store ref in Qapp to avoid garbase collection
             self.Qapp.marker = markerwin
         elif which_subapp == "Identifier":
-            if len(role) and role != "lead_marker":
-                InfoMsg(
-                    self,
-                    "<p>"
-                    + _("Only Lead Marker should be identifying papers.")
-                    + "</p>"
-                    + "<p>"
-                    + _(
-                        "You may want to ask your Instructor/Manager to"
-                        " promote your account. (In the future this might"
-                        " be enforced.)"
-                    )
-                    + "</p>",
-                ).exec()
-                # TODO: maybe this should be enforced serverside?
-                # return
+            if "identifier" not in roles:
+                if self.messenger.is_server_api_less_than(116):
+                    InfoMsg(
+                        self,
+                        '<p>Only "identifier" or "lead marker" accounts should '
+                        " be used for identifying papers.</p>"
+                        "<p>(This is an older server: the rule is not enforced.)</p>",
+                    ).exec()
+                    # return
+                else:
+                    WarnMsg(
+                        self, 'Only "identifier" accounts can identify papers!'
+                    ).exec()
+                    return
             self.setEnabled(False)
             self.hide()
             idwin = IDClient(self.Qapp, tmpdir=self._workdir)
@@ -289,7 +259,45 @@ class Chooser(QDialog):
     def run_identifier(self) -> None:
         self._launch_subapp("Identifier")
 
-    def saveDetails(self) -> None:
+    def load_config_file_or_defaults(self) -> dict[str, Any]:
+        """Read the login + server options that were used on the last run of the client.
+
+        Note: this can open dialogs, potentially before we have our main
+        window in place.
+        """
+        lastTime: dict[str, Any] = {}
+        # set some reasonable defaults.
+        lastTime["LogToFile"] = True  # default until stable release?
+        lastTime["user"] = ""
+        lastTime["server"] = ""
+        lastTime["question"] = 1
+        lastTime["v"] = 1
+        lastTime["fontSize"] = 10
+        lastTime["KeyBinding"] = "default"
+        # update defaults from config file
+        try:
+            # too early to log: log.info("Loading config file %s", cfgfile)
+            with open(cfgfile, "rb") as f:
+                lastTime.update(tomllib.load(f))
+        except FileNotFoundError:
+            pass
+        except (tomllib.TOMLDecodeError, OSError) as e:
+            WarnMsg(
+                self,
+                _(
+                    """<p>Cannot read from the config file:</p>
+                    <blockquote><tt>{config_file}</tt></blockquote>
+                    <p>Perhaps the file is corrupted?  We can ignore the error
+                    and continue with default settings.</p>
+                    <p>
+                    You can also try restarting, and if the error does not go away,
+                    consider manually removing the config file from your computer.</p>
+                    <p>Error msg: <tt>{error_message}</tt></p>"""
+                ).format(config_file=cfgfile, error_message=e),
+            ).exec()
+        return lastTime
+
+    def save_config_file(self) -> None:
         """Write the options to the config file."""
         self.lastTime["user"] = self.ui.userLE.text().strip()
         server = self.ui.serverLE.text().strip()
@@ -308,17 +316,16 @@ class Chooser(QDialog):
         except OSError as e:
             WarnMsg(
                 self,
-                _("Cannot write config file:")
-                + "\n"
-                + f"    {cfgfile}\n\n"
-                + _("Any settings will not be saved for future sessions.")
-                + "\n\n"
-                + _("Error msg:")
-                + f" {e}.",
+                _(
+                    """<p>Cannot write to the config file:</p>
+                    <blockquote><tt>{config_file}</tt></blockquote>
+                    <p>Settings will not be saved for future sessions.</p>
+                    <p>Error msg: <tt>{error_message}</tt></p>"""
+                ).format(config_file=cfgfile, error_message=e),
             ).exec()
 
     def closeEvent(self, event: None | QtGui.QCloseEvent) -> None:
-        self.saveDetails()
+        self.save_config_file()
         dl = getattr(self.Qapp, "downloader", None)
         if dl:
             while True:
@@ -388,8 +395,7 @@ class Chooser(QDialog):
         #
         # Side effects:
         #    The `msgr` itself will be modified, e.g., if user excepted
-        #    SSL verification.   It also figures out if we're talking to
-        #    a legacy or new server (and stores that info).
+        #    SSL verification.
         _ssl_excused = False
         try:
             try:
@@ -434,12 +440,7 @@ class Chooser(QDialog):
                 self.ui.infoLabel.text() + "\n" + _("Caution: SSL exception granted.")
             )
 
-        # old servers (<0.14.0) don't have this API and will fail
         info = msgr.get_server_info()
-        if "Legacy" in info["product_string"]:
-            self.ui.infoLabel.setText(
-                self.ui.infoLabel.text() + "\n" + _("Using legacy messenger")
-            )
 
         try:
             msgr._set_server_API_version(info["API_version"])
@@ -812,12 +813,14 @@ class Chooser(QDialog):
 
     @pyqtSlot(int)
     def on_identify_window_close(self, value: int) -> None:
-        # `value` is always 1, no real meaning yet
+        # `value` is 1 or 2, 2 means stay in the chooser dialog, 1 means quit
         self.show()
         self.setEnabled(True)
         # TODO: wall-paper for Issue #2903
         if not self.is_logged_in():
             self.logout()
+        if value == 1:
+            self.close()
 
     @pyqtSlot(int, list)
     def on_marker_window_close(self, value: int, stuff: list[Any] | None) -> None:

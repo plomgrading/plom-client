@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -11,10 +11,6 @@
 """The Plom Marker client."""
 
 from __future__ import annotations
-
-__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
-__credits__ = "The Plom Project Developers"
-__license__ = "AGPL-3.0-or-later"
 
 from collections import defaultdict
 import html
@@ -60,7 +56,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
 )
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QKeySequence, QPixmap, QShortcut
 
 from . import __version__
 from plomclient.misc_utils import unpack_task_code
@@ -92,8 +88,9 @@ from .question_labels import (
 from .about_dialog import show_about_dialog
 from .annotator import Annotator
 from .image_view_widget import ImageViewWidget
-from .viewers import QuestionViewDialog, SelectPaperQuestion
-from .tagging import AddRemoveTagDialog
+from .key_wrangler import get_key_bindings
+from .viewers import QuestionViewDialog, SelectPaperQuestion, SolutionViewer
+from .tagging import AddRemoveTagDialog, DeferToDialog
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg, SimpleQuestion
 from .useful_classes import _json_path_to_str
 from .tagging_range_dialog import TaggingAndRangeOptions
@@ -101,7 +98,8 @@ from .quota_dialogs import ExplainQuotaDialog, ReachedQuotaLimitDialog
 from .task_model import MarkerExamModel, ProxyModel
 from .uploader import BackgroundUploader, synchronous_upload
 from .translations import translate as _
-from . import ui_files
+from . import icons, ui_files
+
 
 if platform.system() == "Darwin":
     # apparently needed for shortcuts under macOS
@@ -131,16 +129,19 @@ class MarkerClient(QWidget):
             as after an explicit server refresh or some other event. The
             arguments are the task code (e.g., "0123g2") and a list,
             possibly empty, of the current tags.
+        experimental_setting_signal: emitted when the user enables or
+            disables the optional experimental features toggle.
     """
 
     my_shutdown_signal = pyqtSignal(int, list)
     tags_changed_signal = pyqtSignal(str, list)
+    experimental_setting_signal = pyqtSignal(bool)
 
     def __init__(self, Qapp, *, tmpdir=None):
         """Initialize a new MarkerClient.
 
         Args:
-            Qapp(QApplication): Main client application
+            Qapp (QApplication): Main client application
 
         Keyword Args:
             tmpdir (pathlib.Path/None): a temporary directory for
@@ -159,6 +160,8 @@ class MarkerClient(QWidget):
         self.ui = self
 
         self._annotator = None
+
+        self.solutionView = None
 
         # Save the local temp directory for image files and the class list.
         if not tmpdir:
@@ -204,6 +207,10 @@ class MarkerClient(QWidget):
         self.msgr = None
         # history contains all the tgv in order of being marked except the current one.
         self.marking_history = []
+
+        self._cached_user_list_lead_markers = []
+        self._cached_user_list_other_markers = []
+        self._last_time_defer_to_users = []
 
         self._hack_prevent_shutdown = False
 
@@ -256,14 +263,8 @@ class MarkerClient(QWidget):
             ErrorMsg(self, str(err)).exec()
             return
 
-        if not self.msgr.is_legacy_server():
-            assert self.msgr.username
-            self.annotatorSettings["nextTaskPreferTagged"] = "@" + self.msgr.username
         self.update_get_next_button()
 
-        # Get list of papers already marked and add to table.
-        if self.msgr.is_legacy_server():
-            self.loadMarkedList()
         self.refresh_server_data()
 
         # Connect the view **after** list updated.
@@ -285,8 +286,11 @@ class MarkerClient(QWidget):
         self._requestNext(enter_annotate_mode_if_possible=True)
         # reset the view so whole exam shown.
         self.testImg.resetView()
-        # resize the table too.
-        QTimer.singleShot(100, self.ui.tableView.resizeRowsToContents)
+
+        # Careful: disabled for Issue #5098, but it might make the table more
+        # more compact (but should be responsibility of task_table_view.py)
+        # QTimer.singleShot(2000, self.ui.tableView.resizeRowsToContents)
+
         log.debug("Marker main thread: " + str(threading.get_ident()))
 
         if self.allowBackgroundOps:
@@ -319,17 +323,50 @@ class MarkerClient(QWidget):
         if lastTime.get("FOREGROUND", False):
             self.allowBackgroundOps = False
 
-    def is_experimental(self):
+    def is_experimental(self) -> bool:
         return self.annotatorSettings["experimental"]
 
-    def set_experimental(self, x):
+    def set_experimental(self, x: bool) -> None:
         # TODO: maybe signals/slots should be used to watch for changes
         if x:
             log.info("Experimental/advanced mode enabled")
             self.annotatorSettings["experimental"] = True
+            self.experimental_setting_signal.emit(True)
         else:
             log.info("Experimental/advanced mode disabled")
             self.annotatorSettings["experimental"] = False
+            self.experimental_setting_signal.emit(False)
+
+    def toggle_experimental(self, checked: bool) -> None:
+        if not checked:
+            self.set_experimental(False)
+            return
+
+        txt = """<p>Enable experimental and/or advanced options?</p>
+            <p>If you are part of a large marking team, you should
+            probably discuss with your manager before enabling.</p>
+        """
+        # features = (
+        #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
+        # )
+        features = ("Spelling checking in rubric creation.",)
+        info = f"""
+            <h4>Current experimental features</h4>
+            <ul>
+              {" ".join("<li>" + x + "</li>" for x in features)}
+            </ul>
+        """
+        # Image by liftarn, public domain, https://freesvg.org/put-your-fingers-in-the-gears
+        res = resources.files(icons) / "fingers_in_gears.svg"
+        pix = QPixmap()
+        pix.loadFromData(res.read_bytes())
+        pix = pix.scaledToHeight(256, Qt.TransformationMode.SmoothTransformation)
+        msg = SimpleQuestion(self, txt, question=info)
+        msg.setIconPixmap(pix)
+        if msg.exec() == QMessageBox.StandardButton.No:
+            self._experimental_mode_checkbox.setChecked(False)
+            return
+        self.set_experimental(True)
 
     # TODO: does it matter if we connect to selectionChanged that sends new/old?
     @pyqtSlot()
@@ -385,8 +422,8 @@ class MarkerClient(QWidget):
         # downloader placeholder support first (?)
         # Note: clicked events occur AFTER the selection has already changed
         # self.ui.tableView.clicked.connect(self.annotate_task)
-        # TODO: currently not firing?  Proabbly b/c of mouseEvent hackery
-        self.ui.tableView.doubleClicked.connect(self.annotate_task)
+        # TODO: currently not firing?  Probably b/c of mouseEvent hackery
+        # self.ui.tableView.doubleClicked.connect(self.annotate_task)
         self.ui.tableView.annotateSignal.connect(self.annotate_task)
         self.ui.tableView.tagSignal.connect(self.manage_tags)
         self.ui.tableView.claimSignal.connect(self.claim_task)
@@ -506,7 +543,7 @@ class MarkerClient(QWidget):
         # self.ui.getMoreButton.setVisible(False)
         self.ui.annButton.clicked.connect(self.annotate_task)
         m = QMenu(self)
-        m.addAction("&Defer selected task", self.defer_task)
+        m.addAction("&Defer selected task to...", self.defer_current_task)
         m.addSeparator()
         m.addAction("Claim selected task for me", self.claim_task)
         m.addAction("Claim more tasks for me", self.request_one_more)
@@ -521,7 +558,7 @@ class MarkerClient(QWidget):
         self.ui.task_overflow_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
         )
-        self.ui.deferButton.clicked.connect(self.defer_task)
+        self.ui.deferButton.clicked.connect(self.defer_current_task)
         # self.ui.deferButton.setVisible(False)
         self.ui.tasksComboBox.activated.connect(self.change_task_view)
         self.ui.refreshTaskListButton.clicked.connect(self.refresh_server_data)
@@ -536,7 +573,7 @@ class MarkerClient(QWidget):
         self.ui.failmodeCB.stateChanged.connect(self.toggle_fail_mode)
         self.ui.explainQuotaButton.clicked.connect(ExplainQuotaDialog(self).exec)
 
-        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
         self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         # self.ui.hamMenuButton.setToolTip("Menu (F10)")
         self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -549,8 +586,12 @@ class MarkerClient(QWidget):
         self.ui.viewModeMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         self.ui.viewModeMenuButton.setMenu(m)
 
-    def buildHamburger(self):
-        # keydata = self.get_key_bindings()
+    def build_hamburger(self):
+        # TODO: no customizable keys are needed outside of Annotator
+        # TODO: but later we should store the keybinding here no in Ann
+        keydata = get_key_bindings("default")
+
+        self._store_QShortcuts = []
 
         m = QMenu()
 
@@ -558,12 +599,60 @@ class MarkerClient(QWidget):
         m.addAction(_("Refresh task list"), self.refresh_server_data)
         m.addAction(_("View another paper..."), self.choose_and_view_other)
 
+        (key,) = keydata["show-solutions"]["keys"]
+        cmd = self.view_solutions
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(cmd)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"View solutions\t{key}", cmd)
+
+        (key,) = keydata["tag-paper"]["keys"]
+        cmd = self.manage_tags
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(cmd)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Tag paper...\t{key}", cmd)
+
+        m.addSeparator()
+
+        (key,) = keydata["prev-task-in-list"]["keys"]
+        command = self._prev_task_in_list
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Previous task\t{key}", command)
+
+        (key,) = keydata["next-task-in-list"]["keys"]
+        command = self._next_task_in_list
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Next task\t{key}", command)
+
         m.addSeparator()
 
         x = m.addAction("Show technical debugging info")
         x.setCheckable(True)
         x.triggered.connect(self.show_hide_technical)
         self._show_hide_technical_action = x
+
+        x = m.addAction("Experimental features")
+        x.setCheckable(True)
+        if self.is_experimental():
+            x.setChecked(True)
+        x.triggered.connect(self.toggle_experimental)
+        self._experimental_mode_checkbox = x
+
+        x = m.addAction("Save-&&-next moves to unmarked task")
+        x.setCheckable(True)
+        x.setChecked(True)
+        # x.triggered.connect(self.meh)
+        self._save_and_next_moves_to_unmarked_task = x
+
         m.addSeparator()
 
         m.addAction("Help", self.show_help)
@@ -571,15 +660,13 @@ class MarkerClient(QWidget):
 
         m.addSeparator()
 
-        self._store_QShortcuts = []
-
         key = "ctrl+w"
         command = self._close_but_dont_quit
         sc = QShortcut(QKeySequence(key), self)
         sc.activated.connect(command)
         self._store_QShortcuts.append(sc)
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Disconnect\t{key}", command)
+        m.addAction(f"Change question or server\t{key}", command)
 
         key = "ctrl+q"
         command = self.close
@@ -590,6 +677,26 @@ class MarkerClient(QWidget):
         m.addAction(f"Quit\t{key}", command)
 
         return m
+
+    def _prev_task_in_list(self) -> None:
+        prIndex = self.ui.tableView.selectedIndexes()
+        if len(prIndex) == 0:
+            return
+        new_row = prIndex[0].row() - 1
+        if new_row < 0:
+            return
+        task_id_str = self.prxM.getPrefix(new_row)
+        self.switch_task(task_id_str)
+
+    def _next_task_in_list(self) -> None:
+        prIndex = self.ui.tableView.selectedIndexes()
+        if len(prIndex) == 0:
+            return
+        new_row = prIndex[0].row() + 1
+        if new_row >= self.prxM.rowCount():
+            return
+        task_id_str = self.prxM.getPrefix(new_row)
+        self.switch_task(task_id_str)
 
     def _close_but_dont_quit(self):
         # unpleasant hackery but gets job done
@@ -641,13 +748,23 @@ class MarkerClient(QWidget):
         """
         InfoMsg(self, s).exec()
 
-    def _exit_annotate_mode(self):
+    def _react_to_annotator_close(self) -> None:
         # Careful with this: its currently more "in reaction to annotr closing"
         # rather than "tell/force the annotator to close".
         self._annotator = None
         self.testImg.setVisible(True)
         self.ui.viewModeFrame.setVisible(True)
         self.ui.tableView.clicked.disconnect()
+
+    def leave_annotate_mode_wo_saving(self) -> None:
+        """Tell/force annotator to close (without asking the user about saving work).
+
+        If there is no Annotator, this does nothing.
+        """
+        if not self._annotator:
+            return
+        self._annotator.close_current_task()
+        self._annotator.close()
 
     def change_tag_range_options(self):
         all_tags = [tag for key, tag in self.msgr.get_all_tags()]
@@ -697,42 +814,13 @@ class MarkerClient(QWidget):
         self.getMoreButton.setText(button_text)
         self.getMoreButton.setToolTip("\n".join(tips))
 
-    def loadMarkedList(self):
-        """Loads the list of previously marked papers into self.examModel.
-
-        Returns:
-            None
-
-        Deprecated: only called on legacy servers.
-
-        Note: this tries to update the history between sessions; we don't
-        try to do that on the new server, partially b/c the ordering seems
-        fragile and I'm not sure its necessary.
-        """
-        # Ask server for list of previously marked papers
-        markedList = self.msgr.MrequestDoneTasks(self.question_idx, self.version)
-        self.marking_history = []
-        for x in markedList:
-            # TODO: might not the "markedList" have some other statuses?
-            self.examModel.add_task(
-                x[0],
-                src_img_data=[],
-                status="marked",
-                mark=x[1],
-                marking_time=x[2],
-                tags=x[3],
-                integrity_check=x[4],
-                username=self.msgr.username,
-            )
-            self.marking_history.append(x[0])
-
     def get_files_for_previously_annotated(self, task: str) -> bool:
-        """Loads the annotated image, the plom file, and the original source images.
+        """Downloads the annotated image, the plom file, and the original source images.
 
         TODO: maybe it could not aggressively download the src images: sometimes
         people just want to look at the annotated image.
 
-        Note that the local source image data will be replaced by data
+        Note that any local source image data will be replaced by data
         extracted from the Plom file.
 
         Args:
@@ -741,7 +829,7 @@ class MarkerClient(QWidget):
 
         Returns:
             True if the src_img_data, and the annotation files exist,
-            False if not.  User will have seen an error message if
+            False if not.  User may have seen an error message if
             False is returned.
 
         Raises:
@@ -868,8 +956,7 @@ class MarkerClient(QWidget):
         status = self.prxM.getStatus(pr)
 
         # next we try to download annotated image for certain hardcoded states
-        if status.casefold() in ("complete", "marked"):
-            # Note: "marked" is only on legacy servers
+        if status.casefold() == "complete":
             r = self.get_files_for_previously_annotated(task)
             if not r:
                 return
@@ -1095,8 +1182,11 @@ class MarkerClient(QWidget):
             except PlomTakenException as err:
                 log.info("will keep trying as task already taken: {}".format(err))
                 continue
+            except PlomNoPermission as err:
+                WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
+                return
         if update_select:
-            self.moveSelectionToTask(task)
+            self._moveSelectionToTask(task)
         if enter_annotate_mode_if_possible:
             self.annotate_task()
 
@@ -1155,6 +1245,7 @@ class MarkerClient(QWidget):
             None
 
         Raises:
+            PlomNoPermission
             PlomTakenException
             PlomVersionMismatchException
         """
@@ -1190,8 +1281,11 @@ class MarkerClient(QWidget):
                 username=self.msgr.username,
             )
 
-    def moveSelectionToTask(self, task: str) -> None:
+    def _moveSelectionToTask(self, task: str) -> None:
         """Update the selection in the list of papers.
+
+        Non-interactive: this isn't going to ask if you're sure.
+        You might want :method:`switch_task` instead.
 
         Args:
             task: a string such as "0123g13".
@@ -1204,9 +1298,6 @@ class MarkerClient(QWidget):
         # this might redraw it twice: oh well this is not common operation
         # TODO: not sure, it may be more common now...
         self._updateCurrentlySelectedRow()
-        # Clean up the table
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def background_download_finished(self, img_id, md5, filename):
         log.debug(f"PageCache has finished downloading {img_id} to {filename}")
@@ -1367,22 +1458,19 @@ class MarkerClient(QWidget):
             self._show_only_my_tasks()
 
     def refresh_server_data(self):
-        """Refresh various server data including the current task last from the server."""
+        """Refresh various server data including the current task list from the server."""
         info = self.msgr.get_exam_info()
         self.max_papernum = info["current_largest_paper_num"]
         # legacy won't provide this; fallback to a static value
         self.annotatorSettings["feedback_rules"] = info.get(
             "feedback_rules", static_feedback_rules_data
         )
-        if not self.msgr.is_legacy_server():
-            # TODO: in future, I think I prefer a rules-based framework
-            # Not "you are lead marker" but "you can view all tasks".
-            # To my mind, "lead_marker" etc is some server detail that
-            # could stay on the server.
-            if self.msgr.get_user_role() == "lead_marker":
-                self.annotatorSettings["user_can_view_all_tasks"] = True
-            else:
-                self.annotatorSettings["user_can_view_all_tasks"] = False
+        # TODO: in future, I think I prefer a rules-based framework
+        # Not "you are lead marker" but "you can view all tasks".
+        # To my mind, "lead_marker" etc is some server detail that
+        # could stay on the server.
+        if "lead_marker" in self.msgr.get_user_roles():
+            self.annotatorSettings["user_can_view_all_tasks"] = True
         else:
             self.annotatorSettings["user_can_view_all_tasks"] = False
         if not self.annotatorSettings["user_can_view_all_tasks"]:
@@ -1390,17 +1478,40 @@ class MarkerClient(QWidget):
             self.ui.tasksComboBox.setCurrentIndex(0)
             self._show_only_my_tasks()
 
-        # legacy does it own thing earlier in the workflow
-        if not self.msgr.is_legacy_server():
-            if self.ui.tasksComboBox.currentIndex() == 0:
-                assert self.msgr.username is not None
-                self.download_task_list(username=self.msgr.username)
-            else:
-                self.download_task_list()
+        if self.ui.tasksComboBox.currentIndex() == 0:
+            assert self.msgr.username is not None
+            self.download_task_list(username=self.msgr.username)
+        else:
+            self.download_task_list()
 
         # TODO: re-queue any failed uploads, Issue #3497
 
+        # Note: Issue #5098, we had problems with this happening between dblclicks,
+        # but calling after an explicit server refresh probably ok... (?)
+        # self.ui.tableView.resizeRowsToContents
+
         self.updateProgress()
+        self._update_user_lists()
+
+    def _update_user_lists(self) -> None:
+        try:
+            users = self.msgr.get_user_list()
+        except PlomNoServerSupportException as e:
+            # no server support for api < 115; just leave them empty as per
+            # init (exception handler to be removed when we drop 114 support)
+            log.warning(f"server does not support user lists: {e}")
+            return
+        lead_markers = []
+        other_markers = []
+        for u, group_list in users.items():
+            if "lead_marker" in group_list:
+                lead_markers.append(u)
+            elif "marker" in group_list:
+                other_markers.append(u)
+        lead_markers.sort()
+        other_markers.sort()
+        self._cached_user_list_lead_markers = lead_markers
+        self._cached_user_list_other_markers = other_markers
 
     def download_task_list(self, *, username: str = "") -> bool:
         """Download and fill/update the task list.
@@ -1588,6 +1699,7 @@ class MarkerClient(QWidget):
         try:
             self.claim_task_and_trigger_downloads(task)
         except (
+            PlomNoPermission,
             PlomTakenException,
             PlomRangeException,
             PlomVersionMismatchException,
@@ -1595,20 +1707,19 @@ class MarkerClient(QWidget):
             WarnMsg(self, f"Cannot get task {task}.", info=err).exec()
             return
 
-    def defer_task(self, *, advance_to_next: bool = True) -> None:
-        """Mark task as "defer" - to be skipped until later.
-
-        You'll still have to do it.
-
-        Keyword Args:
-            advance_to_next: whether to also advance to the next task
-                (default).
-        """
+    def defer_current_task(self) -> None:
+        """Recommend the currently highlighted task for someone else and surrender the task."""
         task = self.get_current_task_id_or_none()
         if not task:
             return
-        if self.examModel.getStatusByTask(task) == "deferred":
-            return
+        self.defer_task(task)
+
+    def defer_task(self, task: str) -> None:
+        """Recommend a task for someone else and surrender the task.
+
+        Args:
+            task: which task?
+        """
         if not self.examModel.is_our_task(task, self.msgr.username):
             s = f"Cannot defer task {task} b/c it isn't yours"
             user = self.examModel.get_username_by_task(task)
@@ -1636,17 +1747,71 @@ class MarkerClient(QWidget):
                         return
                     # TODO: maybe Ann needs a "revert" option?
                     self._annotator.close_current_task()
-        self.examModel.deferPaper(task)
-        if advance_to_next:
-            # TODO: maybe we really need request_one_more_if_necessary
-            # TODO: or that someone would just notice we're not far enough ahead
-            # TODO: problem with current approach is if you "get more" til you
-            # TODO: have 4 untouched, each defer will get one more untouhed.
-            # TODO: IMHO, I'd rather this only happen when there is less than 2 untouched
+
+        if (
+            not self._cached_user_list_lead_markers
+            and not self._cached_user_list_other_markers
+        ):
+            WarnMsg(self, "Server older than API 115: too old for this feature").exec()
+            return
+
+        d = DeferToDialog(
+            self,
+            task,
+            self._cached_user_list_lead_markers,
+            self._cached_user_list_other_markers,
+            checked=self._last_time_defer_to_users,
+        )
+        if not d.exec():
+            return
+        defer_to_users = d.get_chosen_users()
+        self._last_time_defer_to_users = defer_to_users
+
+        # Note: unconditional surrender is considered unacceptable: you are
+        # expected to nominate someone!  (The dialog should've enforced this
+        # so this case shouldn't actually happen).
+        if not defer_to_users:
+            return
+
+        self._defer_task_to_users(task, defer_to_users)
+        self.refresh_server_data()
+        self.request_more_tasks_if_necessary()
+
+    def request_more_tasks_if_necessary(self, *, background: bool = True) -> None:
+        """If there are not a minimum of claimed task, get some more.
+
+        Keyword Args:
+            background: its not urgent; we can hand off to the background
+                downloader.  Currently not implemented; always happens in
+                foreground.
+        """
+        # TODO: should we loop and keep trying?  subtle near the end of marking
+        if self.examModel.count_local_ready_to_mark() < 2:
             self.request_one_more()
-            self.moveToNextUnmarkedTask()
-            # alternatively or if we want to search "forward" of current:
-            # self.moveToNextUnmarkedTask(task)
+
+    def _defer_task_to_users(self, task: str, user_list: list[str]) -> None:
+        """Tag some users, and surrender a task.
+
+        Args:
+            task: a task code.
+            user_list: a list of usernames to alert to this task by tagging.
+        """
+        # untag ourselves, unless we're explicitly in the list!
+        try:
+            self.msgr.remove_single_tag(task, "@" + self.msgr.username)
+        except PlomConflict:
+            pass
+        for u in user_list:
+            self.msgr.add_single_tag(task, "@" + u)
+        try:
+            self.msgr.surrender_task(task)
+        except PlomNoPaper as e:
+            WarnMsg(self, f"Unexpected could not find task: {e}").exec()
+            return
+        except (PlomNoServerSupportException, PlomConflict) as e:
+            WarnMsg(self, f"Task tagged for others but cannot surrender: {e}").exec()
+            return
+        # TODO: optionally lower the priority
 
     def reset_task(self, task: str | None = None) -> None:
         """Reset this task, outdating all annotations and putting it back into the pool.
@@ -1693,12 +1858,12 @@ class MarkerClient(QWidget):
             return
         self.refresh_server_data()
 
-    def startTheAnnotator(self, initialData) -> None:
+    def startTheAnnotator(self, initialData: list | tuple) -> None:
         """This fires up the annotation widget for user annotation + marking.
 
         Args:
-            initialData (list): containing things documented elsewhere
-                in :method:`getDataForAnnotator`
+            initialData: containing things documented elsewhere
+                in :method:`get_data_for_annotator`
                 and :func:`plom.client.annotator.Annotator.__init__`.
 
         Returns:
@@ -1713,6 +1878,7 @@ class MarkerClient(QWidget):
         annotator.annotator_upload.connect(self.callbackAnnWantsUsToUpload)
         annotator.annotator_done_closing.connect(self.callbackAnnDoneClosing)
         annotator.annotator_done_reject.connect(self.callbackAnnDoneCancel)
+        annotator.annotator_next_task.connect(self.callbackAnnNextTask)
         # manages the "*" in the titlebar when the pagescene is dirty
         annotator.cleanChanged.connect(self.clean_changed)
 
@@ -1752,30 +1918,20 @@ class MarkerClient(QWidget):
                 if msg.exec() != QMessageBox.StandardButton.Yes:
                     return
             if self.examModel.getStatusByTask(task) == "To Do":
-                InfoMsg(
-                    self,
-                    f"Task {task} may not be assigned to you. "
-                    "If you want to look at it, close the annotator "
-                    'and change to read-only "view-mode".  '
-                    "If you want to mark this paper, you can try to claim it.",
-                ).exec()
-                # TODO: QoL says put a "claim" button in the dialog
-                # TODO: or easier yes/no: "Do you want to claim it?"
-                return
+                # leave edit mode automatically (we already asked user about saving)
+                log.debug("Leaving edit mode to look at 'To Do' task %s", task)
+                self.leave_annotate_mode_wo_saving()
             if self.examModel.getStatusByTask(task) == "Complete":
                 if not self.examModel.is_our_task(task, self.msgr.username):
-                    InfoMsg(
-                        self,
-                        # TODO: useful to say what username here
-                        f"Task {task} is not our task. "
-                        "If you want to look at it, close the annotator "
-                        'and change to read-only "view-mode".  '
-                        "(If you want to edit this task, you'll need to "
-                        "reassign the task to yourself).",
-                    ).exec()
-                    return
-            self._annotator.close_current_task()
-        self.moveSelectionToTask(task)
+                    log.debug(
+                        "Leaving edit mode to look at someone's 'Complete' task %s",
+                        task,
+                    )
+                    self.leave_annotate_mode_wo_saving()
+
+            if self._annotator:
+                self._annotator.close_current_task()
+        self._moveSelectionToTask(task)
 
     def annotate_task(self, task: str | None = None) -> None:
         """Annotate a particular task, or currently-selected task, starting Annotator if necessary."""
@@ -1797,30 +1953,44 @@ class MarkerClient(QWidget):
                     # task list.  A lot to dislike here; lots of signals are going to happen
                     # for example.  And its yet another piece of spaghetti...
                     old_task = self._annotator.task
-                    self.moveSelectionToTask(old_task)
+                    self._moveSelectionToTask(old_task)
                     return
             self._annotator.close_current_task()
 
         self._annotate_task(task)
 
     def _annotate_task(self, task: str | None = None) -> None:
-        """Lower-level non-interactive start/switch Annotator."""
+        """Lower-level somewhat non-interactive start/switch Annotator.
+
+        If the task is "To Do", try to claim it.
+
+        If the task belongs to someone else, ask the user before
+        reassigning to ourselves, b/c users otherwise might be unaware
+        they are taking tasks from others.
+        """
         if not task:
             task = self.get_current_task_id_or_none()
         if not task:
             return
 
-        if self.examModel.getStatusByTask(task) == "To Do":
-            log.warn("Ignored attempt to annotate 'To Do' task %s", task)
-            return
-        if self.examModel.getStatusByTask(task) == "Complete":
+        status = self.examModel.getStatusByTask(task).casefold()
+        if status == "to do":
+            self.claim_task(task)
+            log.info("Claiming 'To Do' task %s so we can annotate it...", task)
+        elif status == "complete":
             if not self.examModel.is_our_task(task, self.msgr.username):
-                log.warn(
-                    "Ignored attempt to annotate 'Complete' task %s, not our's", task
+                user = self.examModel.get_username_by_task(task)
+                msg = SimpleQuestion(
+                    self,
+                    f"Task {task} belongs to {user}.  If you want "
+                    "to edit it, you can try to take it for yourself.",
+                    question="Do you want to reassign the task to yourself?",
                 )
-                return
+                if msg.exec() == QMessageBox.StandardButton.No:
+                    return
+                self.reassign_task_to_me(task)
 
-        inidata = self.getDataForAnnotator(task)
+        inidata = self.get_data_for_annotator(task)
         if inidata is None:
             return
 
@@ -1833,13 +2003,14 @@ class MarkerClient(QWidget):
 
         if self.allowBackgroundOps:
             # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
+            if self.examModel.count_local_ready_to_mark() < 2:
                 self.request_one_more()
 
         if self._annotator:
-            self._annotator.load_new_question(*inidata)
+            self._annotator.load_new_task(*inidata)
         else:
             self.startTheAnnotator(inidata)
+        self._moveSelectionToTask(task)
 
     def marker_has_reached_task_limit(self, *, use_cached: bool = True) -> bool:
         """Check whether a marker has reached their task limit if applicable.
@@ -1856,8 +2027,12 @@ class MarkerClient(QWidget):
             self.updateProgress()
         return self._user_reached_quota_limit
 
-    def getDataForAnnotator(self, task: str) -> tuple | None:
+    def get_data_for_annotator(self, task: str) -> tuple | None:
         """Get the data the Annotator will need for a particular task.
+
+        Tries to download whatever data is needed, including previous annotations.
+        Not entirely sure at the moment what happens if those downloads take a long
+        time, or fail etc.
 
         Args:
             task: the task id.  If original XXXXgYY, then annotated
@@ -1866,6 +2041,7 @@ class MarkerClient(QWidget):
         Returns:
             A tuple of data or None.  In the case of None, the user has already
             been shown a dialog, or parhaps choose a course of action already.
+            Maybe they this doesn't show dialogs in all unexpected error cases.
         """
         if not self.examModel.is_our_task(task, self.msgr.username):
             InfoMsg(
@@ -1887,9 +2063,8 @@ class MarkerClient(QWidget):
         assert not task.startswith("q")
         paperdir = Path(tempfile.mkdtemp(prefix=task + "_", dir=self.workingDirectory))
         log.debug("create paperdir %s for annotating", paperdir)
-        Gtask = "G" + task
         # note no extension yet
-        aname = paperdir / Gtask
+        aname = paperdir / ("G" + task)
         pdict = None
 
         # TODO: prevent reannotating when its still uploading?
@@ -1902,7 +2077,20 @@ class MarkerClient(QWidget):
             if not msg.exec() == QMessageBox.StandardButton.Yes:
                 return None
         if status.casefold() in ("complete", "marked", "uploading...", "failed upload"):
+            # If it was our task, we probably already have an plom file (and annotated image, etc)
             oldpname = self.examModel.getPlomFileByTask(task)
+            if str(oldpname) == ".":
+                # Probably it was complete but belonged to another user; if we
+                # recently reassigned it to us (for example) then it doesn't yet
+                # have this data.  Try to download it now...
+                if not self.get_files_for_previously_annotated(task):
+                    # failed, not sure what to do?
+                    return None
+                oldpname = self.examModel.getPlomFileByTask(task)
+                if str(oldpname) == ".":
+                    # still not here?  give up!
+                    return None
+
             with open(oldpname, "r") as fh:
                 pdict = json.load(fh)
 
@@ -2025,7 +2213,7 @@ class MarkerClient(QWidget):
             rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
         )
 
-    def getSolutionImage(self) -> Path | None:
+    def _getSolutionImage(self) -> Path | None:
         """Get the file from disc if it exists, else grab from server."""
         f = self.workingDirectory / f"solution.{self.question_idx}.{self.version}.png"
         if f.is_file():
@@ -2048,6 +2236,23 @@ class MarkerClient(QWidget):
             except FileNotFoundError:
                 pass
             return None
+
+    def view_solutions(self):
+        solutionFile = self._getSolutionImage()
+        if solutionFile is None:
+            InfoMsg(self, "No solution has been uploaded").exec()
+            return
+
+        if self.solutionView is None:
+            self.solutionView = SolutionViewer(self, solutionFile)
+        self.solutionView.show()
+        # Issue #5090: get it back it back to the top
+        # On Gnome, `activateWindow` works with shortcut key but
+        # clicking with the mouse requires `raise` as well, except
+        # TODO: it doesn't work, perhaps b/c they do not share a parent
+        self.solutionView.activateWindow()
+        self.solutionView.raise_()
+        # TODO: test on other desktops and OSes
 
     def saveTabStateToServer(self, tab_state):
         """Upload a tab state to the server."""
@@ -2072,7 +2277,7 @@ class MarkerClient(QWidget):
         """
         # update image view b/c its image might have changed
         self._updateCurrentlySelectedRow()
-        self._exit_annotate_mode()
+        self._react_to_annotator_close()
 
     @pyqtSlot(str)
     def callbackAnnDoneClosing(self, task: str) -> None:
@@ -2163,39 +2368,28 @@ class MarkerClient(QWidget):
         # now update the marking history with the task.
         self.marking_history.append(task)
 
-    def getMorePapers(self, old_task: str) -> tuple | None:
-        """Loads more tests.
+    def callbackAnnNextTask(self, old_task: str) -> None:
+        """A call-back mechanism from Annotator, indicating it has saved and would like the next task.
 
         Args:
             old_task: the task code with no leading "q" for the previous
                 thing marked.
 
-        Returns:
-            The data for the annotator or None as described in
-            :method:`getDataForAnnotator`.
+        TODO: similarly, ctrl-N should just skip rather than ask to save annotations?
         """
-        log.debug("Annotator wants more (w/o closing)")
+        if self._save_and_next_moves_to_unmarked_task.isChecked():
+            want_next_unmarked = True
+        else:
+            want_next_unmarked = False
+
+        log.debug(f"Annotator wants more: want_next_unmarked={want_next_unmarked}")
         if not self.allowBackgroundOps:
+            # the uploader code would've requested more in the default background case
             self.request_one_more()
-        if not self.moveToNextUnmarkedTask(old_task if old_task else None):
-            return None
-        task_id_str = self.get_current_task_id_or_none()
-        if not task_id_str:
-            return None
-        data = self.getDataForAnnotator(task_id_str)
-        if data is None:
-            return None
-
-        assert task_id_str == data[0]
-        pdict = data[8]  # eww, hardcoded numbers
-        assert pdict is None, "Annotator should not pull a regrade"
-
-        if self.allowBackgroundOps:
-            # If just one in the queue (which we are grading) then ask for more
-            if self.examModel.countReadyToMark() <= 1:
-                self.request_one_more()
-
-        return data
+        if want_next_unmarked:
+            self.moveToNextUnmarkedTask(old_task if old_task else None)
+        else:
+            self._next_task_in_list()
 
     def backgroundUploadFinished(
         self, task: str, progress_info: dict[str, Any]
@@ -2212,10 +2406,7 @@ class MarkerClient(QWidget):
         stat = self.examModel.getStatusByTask(task)
         # maybe it changed while we waited for the upload
         if stat == "uploading...":
-            if self.msgr.is_legacy_server():
-                self.examModel.setStatusByTask(task, "marked")
-            else:
-                self.examModel.setStatusByTask(task, "Complete")
+            self.examModel.setStatusByTask(task, "Complete")
         self.updateProgress(info=progress_info)
 
     def backgroundUploadFailed(
@@ -2390,7 +2581,16 @@ class MarkerClient(QWidget):
                     if event:
                         event.ignore()
                     return
-            self._exit_annotate_mode()
+
+            # Maybe this is better than just .close, to avoid asking user twice
+            self.leave_annotate_mode_wo_saving()
+            # self.close()
+
+        log.debug("Clean up any lingering solution-views etc")
+        if self.solutionView:
+            log.debug("Cleaning a solution-view")
+            self.solutionView.close()
+            self.solutionView = None
 
         while not self.Qapp.downloader.stop(500):
             if (
@@ -2602,24 +2802,14 @@ class MarkerClient(QWidget):
         task_id_str = self.prxM.getPrefix(pr)
         return task_id_str
 
-    def manage_tags(self, task: str | None = None):
-        """Manage the tags of the a task, or the currently selected task.
+    def manage_tags(
+        self, task: str | None = None, *, parent: QWidget | None = None
+    ) -> None:
+        """Manage the tags of a task, or the currently selected task.
 
         Args:
-            task: a string like `"0123g5"` or try to use the current
-                selection if None or omitted.
-        """
-        if not task:
-            task = self.get_current_task_id_or_none()
-        if not task:
-            return
-        self.manage_task_tags(task)
-
-    def manage_task_tags(self, task: str, parent: QWidget | None = None) -> None:
-        """Manage the tags of a task.
-
-        Args:
-            task: A string like "q0003g2" for paper 3 question 2.
+            task: A string like `"0003g2"` for paper 3 question 2 or try
+                to use the current selection if None or omitted.
 
         Keyword Args:
             parent: Which window should be dialog's parent?
@@ -2631,6 +2821,11 @@ class MarkerClient(QWidget):
         Returns:
             None
         """
+        if not task:
+            task = self.get_current_task_id_or_none()
+        if not task:
+            return
+
         if not parent:
             parent = self
 
@@ -2684,8 +2879,6 @@ class MarkerClient(QWidget):
         except ValueError:
             # we might not own the task for which we've have been managing tags
             pass
-        self.ui.tableView.resizeColumnsToContents()
-        self.ui.tableView.resizeRowsToContents()
 
     def setFilter(self):
         """Sets a filter tag."""

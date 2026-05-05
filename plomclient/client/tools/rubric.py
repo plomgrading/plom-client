@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Bryan Tanady
@@ -48,7 +48,7 @@ class CommandRubric(CommandTool):
             None
         """
         super().__init__(scene)
-        self.gdt = RubricItem(pt, rubric, _scene=scene, style=scene.style)
+        self.obj = RubricItem(pt, rubric, _scene=scene, style=scene.style)
         self.setText("Rubric")
 
     @classmethod
@@ -62,17 +62,6 @@ class CommandRubric(CommandTool):
             raise ValueError("wrong length of pickle data")
         # knows to latex it if needed.
         return cls(scene, QPointF(X[1], X[2]), X[3])
-
-    def get_undo_redo_animation_shape(self):
-        return self.gdt.shape()
-
-    def redo(self):
-        self.scene.addItem(self.gdt)
-        self.redo_animation()
-
-    def undo(self):
-        self.scene.removeItem(self.gdt)
-        self.undo_animation()
 
 
 class RubricItem(UndoStackMoveMixin, QGraphicsItemGroup):

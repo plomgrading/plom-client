@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 
 from math import sqrt
@@ -18,6 +18,12 @@ class CommandPenArrow(CommandPen):
         super().__init__(scene, path)
         self.obj = PenArrowItem(path, scene.style)
         self.setText("PenArrow")
+
+    def get_undo_redo_animation_shape(self) -> QPainterPath:
+        # PenArrowItem uses a QGraphicsItemGroup so it would animate only
+        # the bounding box.  To be more like "PenItem", we animate the
+        # original path instead of the default .shape of the group.
+        return self.obj._original_path
 
 
 class PenArrowItem(UndoStackMoveMixin, QGraphicsItemGroup):

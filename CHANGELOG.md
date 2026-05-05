@@ -9,13 +9,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* The "New Rubric" dialog tries to pre-fill data based on previously created rubrics.
 
 ### Removed
 
 ### Changed
+* Defer has been revamped: it is now used to hand off tasks to other users, typically when you're unsure about a task; "defer" as in "deferential".
 
 ### Fixed
 
+
+
+## [0.20.2] - 2026-03-09
+
+### Added
+* pgup and pgdown keys move within the task list on the right.
+* The behaviour of save-and-next can be changed: by default it skips marked tasks and looks for unmarked tasks; this can be toggled in the Marker hamburger menu on the right.
+
+### Removed
+* Plom-client no longer records the annotation colour in the data if the default colour is used.
+
+### Changed
+* "hold crop" is no longer experimental, although the behaviour is still being tweaked.
+* Experimental mode toggle moved to the right-hand menu of Marker.
+
+### Fixed
+* no longer crashes when starting with a corrupt/unreadable config file.
+* rare crashes when rapidly switching tasks should be even more rare but perhaps not eliminated.
+
+
+
+## [0.20.0] - 2026-01-25
+
+### Added
+* Client can create fractional rubrics (if they are enabled on the server).
+
+### Removed
+* Support for "legacy" servers.
+
+### Fixed
+* Fixed a memory leak when changing between papers in annotate mode.
+
+
+
+## [0.19.4] - 2025-12-09
+
+### Changed
+* Adding a rubric while a custom tab is select automatically adds the rubric to that tab.
+* Automatically move between edit and view mode in more cases, and only when possible.
+* Generally, double-clicking a task indicates "I want to mark this one" and single click means "I want to look at this".
+
+### Fixed
+* Fixes rare crashes involving double-click events over two tasks.
+* Don't auto resize the task list so much, as that was jarring in the middle of a double-click, for example.
+
+
+
+## [0.19.3] - 2025-10-24
+
+### Changed
+* Marker: renamed "disconnect" to "change question or server" to clarify why someone might want to click it.
+* Identifier: improved display of progress to clarify we are confirming predictions.
+* Identifier: display info about predictions.
+
+### Fixed
+* Identifier: fix crash when server has no "MLLAP" prediction.
+* Fix crash when user leaves and re-enters edit mode, with "compact UI" enabled.
 
 
 
@@ -105,7 +164,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.19.2...main
+[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.20.2...main
+[0.20.2]: https://gitlab.com/plom/plom-client/-/compare/v0.20.0...v0.20.2
+[0.20.0]: https://gitlab.com/plom/plom-client/-/compare/v0.19.4...v0.20.0
+[0.19.4]: https://gitlab.com/plom/plom-client/-/compare/v0.19.3...v0.19.4
+[0.19.3]: https://gitlab.com/plom/plom-client/-/compare/v0.19.2...v0.19.3
 [0.19.2]: https://gitlab.com/plom/plom-client/-/compare/v0.19.1...v0.19.2
 [0.19.1]: https://gitlab.com/plom/plom-client/-/compare/v0.19.0...v0.19.1
 [0.19.0]: https://gitlab.com/plom/plom-client/-/compare/v0.18.1...v0.19.0

@@ -9,15 +9,10 @@
 
 from __future__ import annotations
 
-__copyright__ = "Copyright (C) 2018-2023 Andrew Rechnitzer, Colin B. Macdonald, et al"
-__credits__ = "The Plom Project Developers"
-__license__ = "AGPL-3.0-or-later"
-
 import logging
 from pathlib import Path
 import sys
 import tempfile
-from typing import Union
 
 if sys.version_info >= (3, 9):
     from importlib import resources
@@ -37,14 +32,22 @@ from PyQt6.QtCore import (
 from PyQt6.QtWidgets import (
     QCompleter,
     QDialog,
+    QLabel,
+    QMenu,
     QMessageBox,
+    QPushButton,
+    QSizePolicy,
+    QSpacerItem,
+    QToolButton,
     QWidget,
 )
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from plomclient.plom_exceptions import (
     PlomBenignException,
     PlomConflict,
     PlomNoClasslist,
+    PlomNoPermission,
     PlomSeriousException,
     PlomTakenException,
 )
@@ -52,6 +55,7 @@ from plomclient.rules import isValidStudentID
 from plomclient.rules import censorStudentName as censorName
 
 from . import ui_files
+from .about_dialog import show_about_dialog
 from .image_view_widget import ImageViewWidget
 from .useful_classes import (
     BlankIDBox,
@@ -74,19 +78,30 @@ safe_green_style = "background-color: #00FA9A; color: #000;"
 notice_blue_style = "background-color: #89CFF0; color: #000"
 
 
-class Paper:
-    """A simple container for storing a test's idgroup code (tgv) and associated filename for the image.
+# future translation support
+def _(x: str) -> str:
+    return x
 
+
+class Paper:
+    """A container for storing information about a paper.
+
+    Includes and associated filename for the ID image, etc.
     Once identified also store the studentName and ID-number.
     """
 
     def __init__(
-        self, test, fname=None, *, orientation=0, stat="unidentified", id="", name=""
-    ):
-        # tgv = t0000p00v0
-        # ... = 0123456789
+        self,
+        papernum: int,
+        fname=None,
+        *,
+        orientation=0,
+        stat="unidentified",
+        id="",
+        name="",
+    ) -> None:
         # The test number
-        self.test = test
+        self.test = papernum
         # Set status as unid'd
         self.status = stat
         # no name or id-number yet.
@@ -98,20 +113,6 @@ class Paper:
     def setStatus(self, st):
         self.status = st
 
-    def setReverted(self):
-        # reset the test as unidentified and no ID or name.
-        self.status = "unidentified"
-        self.sid = ""
-        self.sname = ""
-
-    def setID(self, sid, sname):
-        # tgv = t0000p00v0
-        # ... = 0123456789
-        # Set the test as ID'd and store name / number.
-        self.status = "identified"
-        self.sid = sid
-        self.sname = sname
-
 
 class ExamModel(QAbstractTableModel):
     """A tablemodel for handling the test-ID-ing data."""
@@ -120,11 +121,10 @@ class ExamModel(QAbstractTableModel):
         QAbstractTableModel.__init__(self, parent)
         # Data stored in this ordered list.
         self.paperList = []
-        # Headers.
-        self.header = ["Test", "Status", "ID", "Name"]
+        self.header = ["Papernum", "Status", "ID", "Name"]
 
     def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
-        # Columns are [code, status, ID and Name]
+        # Columns are [papernum, status, ID and Name]
         # Put data in appropriate box when setting.
         if role != Qt.ItemDataRole.EditRole:
             return False
@@ -216,8 +216,6 @@ class IDClient(QWidget):
         uic.loadUi(resources.files(ui_files) / "identifier.ui", self)
         # TODO: temporary workaround
         self.ui = self
-        self.ui.explainButton0.setText("FAQ:\nwhy confirm\nprenames?")
-        self.ui.explainButton0.clicked.connect(self.prenamed_help)
 
         # instance vars that get initialized later
         # Save the local temp directory for image files and the class list.
@@ -225,6 +223,11 @@ class IDClient(QWidget):
             tmpdir = tempfile.mkdtemp(prefix="plom_")
         self.workdir = Path(tmpdir)
         self.msgr = None
+
+        self._store_QShortcuts = []
+
+        # controls default behaviour on titlebar close button
+        self._hack_prevent_shutdown = True
 
     def setup(self, messenger):
         """Performs setup procedure for the IDClient.
@@ -237,8 +240,7 @@ class IDClient(QWidget):
         self.msgr = messenger
         # List of papers we have to ID.
         self.paperList = []
-        # Paste username into the GUI (TODO: but why?)
-        self.ui.userLabel.setText(self.msgr.username)
+        self.ui.userLabel.setText("logged in as " + self.msgr.username)
         # Exam model for the table of papers - associate to table in GUI.
         self.exM = ExamModel()
         self.ui.tableView.setModel(self.exM)
@@ -247,7 +249,16 @@ class IDClient(QWidget):
         self.testImg = ImageViewWidget(self)
         self.ui.rightPaneLayout.addWidget(self.testImg, 10)
 
-        self.ui.closeButton.clicked.connect(self.close)
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
+        self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
+        self.ui.hamMenuButton.setToolTip("Menu (F10)")
+        self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+        sc = QShortcut(QKeySequence("F10"), self)
+        sc.activated.connect(self.ui.hamMenuButton.animateClick)
+        self._store_QShortcuts.append(sc)
+
+        self.ui.closeButton.clicked.connect(self._close_but_dont_quit)
 
         # Get the classlist from server for name/ID completion.
         try:
@@ -270,7 +281,6 @@ class IDClient(QWidget):
         self.ui.saveButton.clicked.connect(self.enterID)
         self.ui.nextButton.clicked.connect(self.skipOnClick)
         self.ui.predButton0.clicked.connect(self.acceptPrediction0)
-        self.ui.predButton1.clicked.connect(self.acceptPrediction1)
         self.ui.blankButton.clicked.connect(self.blankPaper)
         self.ui.viewButton.clicked.connect(self.viewWholePaper)
 
@@ -294,6 +304,47 @@ class IDClient(QWidget):
         # Create variable to store ID/Name conf window position
         # Initially set to top-left corner of window
         self.msgGeometry = None
+
+    def build_hamburger(self):
+        m = QMenu()
+
+        # TODO: use \N{CLOCKWISE OPEN CIRCLE ARROW} as the icon
+        # m.addAction("Refresh task list", self.refresh_server_data)
+        m.addAction("View whole paper...", self.viewWholePaper)
+        m.addSeparator()
+
+        # m.addAction("Help", self.show_help)
+        m.addAction("About Plom", lambda: show_about_dialog(self))
+
+        m.addSeparator()
+
+        key = "ctrl+w"
+        command = self._close_but_dont_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Change task or server\t{key}", command)
+
+        key = "ctrl+q"
+        command = self._close_and_quit
+        sc = QShortcut(QKeySequence(key), self)
+        sc.activated.connect(command)
+        self._store_QShortcuts.append(sc)
+        key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
+        m.addAction(f"Quit\t{key}", command)
+
+        return m
+
+    def _close_but_dont_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = True
+        self.close()
+
+    def _close_and_quit(self):
+        # unpleasant hackery but gets job done
+        self._hack_prevent_shutdown = False
+        self.close()
 
     def skipOnClick(self):
         """Skip the current, moving to the next or loading a new one."""
@@ -344,6 +395,19 @@ class IDClient(QWidget):
     def getPredictions(self):
         """Send request for prediction list to server."""
         self.predictions = self.msgr.IDgetPredictions()
+        if not self.predictions:
+            self.ui.predictionsLabel.setWordWrap(True)
+            self.ui.predictionsLabel.setText(
+                _("Server did not provide any predictions: have you run the AutoIDer?")
+            )
+        else:
+            self.ui.predictionsLabel.setText(
+                _(
+                    "Server provided {num_predictions} predictions".format(
+                        num_predictions=len(self.predictions)
+                    )
+                )
+            )
 
     def setCompleters(self):
         """Set up the studentname + studentID line-edit completers.
@@ -374,7 +438,9 @@ class IDClient(QWidget):
         log.debug("Something has triggered a shutdown event")
         log.debug("Revoking login token")
         self.msgr.closeUser(revoke_token=True)
-        self.my_shutdown_signal.emit(1)
+        log.debug("Emitting Identifier shutdown signal")
+        retval = 2 if self._hack_prevent_shutdown else 1
+        self.my_shutdown_signal.emit(retval)
         if event:
             event.accept()
         log.debug("Identifier: goodbye!")
@@ -469,89 +535,91 @@ class IDClient(QWidget):
         fnt = self.font()
         fnt.setPointSize(fnt.pointSize() * 2)
         self.ui.pNameLabel0.setFont(fnt)
-        self.ui.pNameLabel1.setFont(fnt)
         # also tweak size of "accept prediction" button font
         self.ui.predButton0.setFont(fnt)
-        self.ui.predButton1.setFont(fnt)
         # make the SID larger still.
         fnt.setPointSizeF(fnt.pointSize() * 1.5)
         self.ui.pSIDLabel0.setFont(fnt)
-        self.ui.pSIDLabel1.setFont(fnt)
         self.ui.pSIDLabel0.setText("")
         self.ui.pNameLabel0.setText("")
         self.ui.predictionBox0.setTitle("No prediction")
         self.ui.predictionBox0.setStyleSheet(no_style)
         self.ui.predButton0.hide()
         self.ui.predictionBox0.hide()
-        self.ui.pSIDLabel1.setText("")
-        self.ui.pNameLabel1.setText("")
         self.ui.predictionBox1.setTitle("No prediction")
         self.ui.predictionBox1.setStyleSheet(no_style)
-        self.ui.predButton1.hide()
-        self.ui.extraInfoLabel.setText("")
+        # remove the old widgets
+        lay = self.ui.predictionBox1.layout()
+        for i in reversed(range(lay.count())):
+            # print(f"deleting i={i}")
+            w = lay.itemAt(i).widget()
+            if w:
+                w.deleteLater()
+            del w
+        del lay
         self.ui.predictionBox1.hide()
         self.ui.explainButton0.hide()
 
-        # Handle case-by-case depending on how many predictions
+        # # Debugging
+        # if len(all_predictions) >= 1:
+        #     from random import random
+        #
+        #     if random() > 0.7:
+        #         all_predictions[0]["student_id"] = "12345678"
+        #     if len(all_predictions) > 1:
+        #         if random() > 0.7:
+        #             all_predictions[1]["student_id"] = "12345678"
+        #     if len(all_predictions) > 2:
+        #         if random() > 0.7:
+        #             all_predictions[2]["student_id"] = "12345678"
+
         if not all_predictions:
             pass
-        elif len(all_predictions) == 1:
+        elif (
+            len(all_predictions) == 1
+            and all_predictions[0]["predictor"].casefold() == "prename"
+        ):
             (pred,) = all_predictions
             predicted_name = get_name_from_id(pred["student_id"])
 
+            try:
+                self.ui.explainButton0.clicked.disconnect()
+            except TypeError:
+                pass
+            self.ui.explainButton0.clicked.connect(self.confirm_prenamed_help)
+            # TRANSLATOR: multiple-line text for this large button
+            self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\nprenames?"))
+            self.ui.explainButton0.show()
+
             self.ui.predictionBox0.show()
-            self.ui.predButton0.show()
-            if not predicted_name:
-                self.ui.predButton0.hide()
 
             self.ui.pSIDLabel0.setText(pred["student_id"])
-            self.ui.pNameLabel0.setText(predicted_name)
-            if pred["predictor"] == "prename":
-                self.ui.predictionBox0.setTitle(
-                    "Prenamed paper: is it signed?  if not signed, is it blank?"
-                )
-                self.ui.predButton0.setText("Confirm\n&Prename")
-                self.ui.predictionBox0.setStyleSheet(notice_blue_style)
-                self.ui.explainButton0.show()
-            elif pred["predictor"] in ("MLLAP", "MLGreedy"):
-                self.ui.predictionBox0.setTitle(
-                    f"Prediction by {pred['predictor']} with certainty {round(pred['certainty'], 3)}"
-                )
-                self.ui.predButton0.setText("&Accept\nPrediction")
-                if pred["certainty"] < 0.3:
-                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
-                else:
-                    self.ui.predictionBox0.setStyleSheet(safe_green_style)
-            else:
-                raise RuntimeError(
-                    f"Found unexpected predictions by predictor {pred['predictor']}, which should not be here."
-                )
-
-        else:  # len(all_predictions) >= 2:
-            pred0 = None
-            pred1 = None
-            others = []
-            # look for special predictions we expected
-            for p in all_predictions:
-                if p["predictor"] == "MLLAP":
-                    pred0 = p
-                elif p["predictor"] == "MLGreedy":
-                    pred1 = p
-                else:
-                    others.append(p)
-
-            # TODO: softer failure here might be wise!
-            assert pred0, "Could not find the MLLAP prediction"
-            assert pred1, "Could not find the MLGreedy prediction"
-
-            if all(p["student_id"] == pred0["student_id"] for p in all_predictions):
-                # show just one bar
-                self.ui.predictionBox0.show()
+            if predicted_name:
+                self.ui.pNameLabel0.setText(predicted_name)
                 self.ui.predButton0.show()
+            else:
+                self.ui.pNameLabel0.setText("<b>[" + _("Not in classlist!") + "]</b>")
+                self.ui.predButton0.hide()
+
+            self.ui.predictionBox0.setTitle(
+                "Prenamed paper: is it signed?  if not signed, is it blank?"
+            )
+            self.ui.predButton0.setText("Confirm\n&Prename")
+            self.ui.predictionBox0.setStyleSheet(notice_blue_style)
+
+        else:
+            pred0 = all_predictions[0]
+            if all(p["student_id"] == pred0["student_id"] for p in all_predictions):
+                self.ui.predictionBox0.show()
                 self.ui.pSIDLabel0.setText(pred0["student_id"])
                 predicted_name = get_name_from_id(pred0["student_id"])
-                self.ui.pNameLabel0.setText(predicted_name)
-                if not predicted_name:
+                if predicted_name:
+                    self.ui.pNameLabel0.setText(predicted_name)
+                    self.ui.predButton0.show()
+                else:
+                    self.ui.pNameLabel0.setText(
+                        "<b>[" + _("Not in classlist!") + "]</b>"
+                    )
                     self.ui.predButton0.hide()
                 self.ui.predictionBox0.setTitle(
                     "All predictions agree: "
@@ -562,55 +630,123 @@ class IDClient(QWidget):
                         ]
                     )
                 )
+
+                try:
+                    self.ui.explainButton0.clicked.disconnect()
+                except TypeError:
+                    pass
+                self.ui.explainButton0.clicked.connect(self.confirm_prediction_help)
+                # TRANSLATOR: multiple-line text for this large button
+                self.ui.explainButton0.setText(_("FAQ:\nwhy confirm\npredictions?"))
+                self.ui.explainButton0.show()
+
                 # only single option shown, so keep alt-a shortcut
                 self.ui.predButton0.setText("&Accept\nPrediction")
-                if pred0["certainty"] < 0.3 or pred1["certainty"] < 0.3:
-                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
-                else:
+                if all(p["certainty"] >= 0.3 for p in all_predictions):
                     self.ui.predictionBox0.setStyleSheet(safe_green_style)
+                else:
+                    self.ui.predictionBox0.setStyleSheet(angry_orange_style)
+
             else:
-                # show at most two bars, with overflow list of other predictions
-                if others:
-                    self.ui.extraInfoLabel.setText(
-                        "Others predictions: "
-                        + "; ".join(
-                            [
-                                f"{p['student_id']} by {p['predictor']}"
-                                + f" w/ certainty {round(p['certainty'], 3)}"
-                                for p in others
-                            ]
-                        )
+                warn = False
+                serious_warn = False
+
+                # so meta, so annoying!
+                def _func_factory(zelf, sid, name):
+                    def f():
+                        zelf.accept_prediction(sid, name)
+
+                    return f
+
+                lay = self.ui.predictionBox1.layout()
+                lay.setSpacing(12)
+
+                # messy proprocessing to get histgram-like representation of duplicate predictions
+                preds_dup_dict = {}
+                for i, p in enumerate(all_predictions):
+                    sid = p["student_id"]
+                    if sid in preds_dup_dict.keys():
+                        continue
+                    preds_dup_dict[sid] = []
+                    for j, q in enumerate(all_predictions):
+                        if j < i:
+                            continue
+                        if q["student_id"] == sid:
+                            preds_dup_dict[sid].append(q)
+                preds_hist = [(len(pl), pl) for k, pl in preds_dup_dict.items()]
+                preds_hist.sort(reverse=True, key=lambda x: x[0])
+                # discard the counts
+                preds_hist = [pl for (count, pl) in preds_hist]
+
+                # The plan was not to have the client care too much about "predictors"
+                # but we are experimenting with some of this fragile messy logic
+                # Try not to make too much more of it please!
+                if (
+                    len(preds_hist) == 2
+                    and len(preds_hist[1]) == 1
+                    and preds_hist[1][0]["predictor"].casefold() == "mlbestguess"
+                ):
+                    log.debug("Prediction: Only 'MLBestGuess' disagrees so don't warn")
+                else:
+                    warn = True
+
+                for i, predlist in enumerate(preds_hist):
+                    sid = predlist[0]["student_id"]
+                    name = get_name_from_id(sid)
+                    in_classlist = True
+                    disp_name = name
+                    if not name:
+                        disp_name = "[" + _("Not in classlist!") + "]"
+                        in_classlist = False
+                        if (
+                            len(predlist) == 1
+                            and predlist[0]["predictor"].casefold() == "mlbestguess"
+                        ):
+                            # MLBestGuess doesn't consider the classlist so it often a bit wrong
+                            # (see comments above about fragile messy logic)
+                            pass
+                        else:
+                            # but in other cases, we consider this to be a serious problem
+                            serious_warn = True
+
+                    predstr = "; ".join(
+                        f"{p['predictor']} ({round(p['certainty'], 3)})"
+                        for p in predlist
                     )
+                    lay.addItem(
+                        QSpacerItem(
+                            32,
+                            10,
+                            QSizePolicy.Policy.MinimumExpanding,
+                            QSizePolicy.Policy.Minimum,
+                        ),
+                        i,
+                        0,
+                    )
+                    if not in_classlist:
+                        lay.addWidget(QLabel("<b>*</b>"), i, 1)
+                    lay.addWidget(QLabel(predstr), i, 2)
+                    lay.addWidget(QLabel(sid), i, 3)
+                    lay.addWidget(QLabel(f"<em>{disp_name}</em>"), i, 4)
+                    if in_classlist:
+                        q = QPushButton(f"Accept {sid}")
+                        q.setToolTip(f"Identify this paper as {sid}, {disp_name}")
+                        f = _func_factory(self, sid, name)
+                        q.clicked.connect(f)
+                        fnt = self.font()
+                        fnt.setPointSizeF(fnt.pointSize() * 1.5)
+                        q.setFont(fnt)
+                        lay.addWidget(q, i, 5)
 
-                self.ui.predictionBox0.show()
-                self.ui.predButton0.show()
-                self.ui.predictionBox1.show()
-                self.ui.predButton1.show()
-
-                self.ui.pSIDLabel0.setText(pred0["student_id"])
-                predicted_name = get_name_from_id(pred0["student_id"])
-                self.ui.pNameLabel0.setText(predicted_name)
-                if not predicted_name:
-                    self.ui.predButton0.hide()
-                self.ui.predictionBox0.setTitle(
-                    f"Prediction by {pred0['predictor']} with certainty {round(pred0['certainty'], 3)}"
-                )
-                self.ui.predictionBox1.show()
-                self.ui.predButton1.show()
-                self.ui.pSIDLabel1.setText(pred1["student_id"])
-                predicted_name = get_name_from_id(pred1["student_id"])
-                self.ui.pNameLabel1.setText(predicted_name)
-                if not predicted_name:
-                    self.ui.predButton1.hide()
+                # TODO: "and at least one not in class"?
                 self.ui.predictionBox1.setTitle(
-                    f"Prediction by {pred1['predictor']} with certainty {round(pred1['certainty'], 3)}"
+                    f"Disagreement among {len(all_predictions)} predictors"
                 )
-                # two predictions shown - no alt-a shortcut to make you stop and think
-                self.ui.predButton0.setText("Accept\nPrediction")
-                self.ui.predButton1.setText("Accept\nPrediction")
-
-                self.ui.predictionBox0.setStyleSheet(warning_yellow_style)
-                self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
+                self.ui.predictionBox1.show()
+                if warn:
+                    self.ui.predictionBox1.setStyleSheet(warning_yellow_style)
+                if serious_warn:
+                    self.ui.predictionBox1.setStyleSheet(angry_orange_style)
 
         # now update the snid entry line-edit.
         # if test is already identified then populate the ID-lineedit accordingly
@@ -633,16 +769,21 @@ class IDClient(QWidget):
             self.updateImage(r)
 
     def updateProgress(self):
-        # update progressbars
+        """Update progressbars by calling the server and asking about progress."""
         v, m = self.msgr.IDprogressCount()
         if m == 0:
-            v, m = (0, 1)  # avoid (0, 0) indeterminate animation
-            self.ui.idProgressBar.setFormat("No papers to identify")
-            InfoMsg(self, "No papers to identify.").exec()
+            # v, m = (0, 1)  # avoid (0, 0) indeterminate animation
+            self.ui.progressLabel.setText(_("No papers to identify"))
+            self.ui.idProgressBar.setVisible(False)
+            InfoMsg(self, _("No papers to identify.")).exec()
         else:
-            self.ui.idProgressBar.resetFormat()
+            self.ui.progressLabel.setText(_("Confirmed:"))
+            self.ui.idProgressBar.setVisible(True)
         self.ui.idProgressBar.setMaximum(m)
         self.ui.idProgressBar.setValue(v)
+        self.ui.idProgressBar.setToolTip(
+            _("{done} of {total} confirmed by a human").format(done=v, total=m)
+        )
 
     def requestNext(self):
         """Ask the server for an unID'd paper, get file, add to list, update image."""
@@ -671,11 +812,20 @@ class IDClient(QWidget):
                 raise
 
             try:
-                self.msgr.IDclaimThisTask(test)
+                self.msgr.claim_id_task(test)
                 break
             except PlomTakenException as err:
                 log.info("will keep trying as task already taken: {}".format(err))
                 continue
+            except PlomNoPermission as err:
+                InfoMsg(
+                    self,
+                    "Your account does not have permission to identify papers. "
+                    "You may need to change account settings on the server, "
+                    "or ask your instructor/manager for access.",
+                    info=f"{err}",
+                ).exec()
+                return False
 
         pagedata = self.msgr.get_pagedata(test)
         id_pages = []
@@ -713,12 +863,12 @@ class IDClient(QWidget):
         return True
 
     def acceptPrediction0(self):
-        return self._acceptPrediction(which_one=0)
+        sname = self.ui.pNameLabel0.text()
+        sid = self.ui.pSIDLabel0.text()
+        self.accept_prediction(sid, sname)
 
-    def acceptPrediction1(self):
-        return self._acceptPrediction(which_one=1)
-
-    def _acceptPrediction(self, which_one):
+    def accept_prediction(self, sid: str, sname: str) -> None:
+        log.info("Accepting id=%s, name='%s' from prediction...", sid, sname)
         # first check currently selected paper is unidentified - else do nothing
         index = self.ui.tableView.selectedIndexes()
         status = self.exM.data(index[1])
@@ -729,15 +879,6 @@ class IDClient(QWidget):
                 return
         # code = self.exM.data(index[0])
 
-        if which_one == 0:
-            sname = self.ui.pNameLabel0.text()
-            sid = self.ui.pSIDLabel0.text()
-        elif which_one == 1:
-            sname = self.ui.pNameLabel1.text()
-            sid = self.ui.pSIDLabel1.text()
-        else:
-            return
-
         if not self.identifyStudent(index, sid, sname):
             return
 
@@ -746,25 +887,32 @@ class IDClient(QWidget):
         else:  # else move to the next unidentified paper.
             self.moveToNextUnID()  # doesn't
             self.updateProgress()
-        return
 
     def identifyStudent(
-        self, index, sid, sname, blank=False, no_id=False
-    ) -> Union[bool, None]:
+        self,
+        index,
+        sid: str | None,
+        sname: str,
+        *,
+        blank: bool = False,
+        no_id: bool = False,
+    ) -> bool | None:
         """Push identification of a paper to the server and misc UI table.
 
         User ID's the student of the current paper. Some care around whether
         or not the paper was ID'd previously. Not called directly - instead
-        is called by "enterID" or "acceptPrediction" when user hits return on the line-edit.
+        is called by "enterID" or "accept_prediction" when user hits return on the line-edit.
 
         Args:
             index: an index into the UI table of the currently
                 highlighted row.
-            sname (str): The student name or special placeholder.
-                - note that this should always be non-trivial string.
-            sid (str/None): The student ID or None.
+            sid: The student ID or None.
                 - note that this is either 'None' (but only if blank or no_id is true), or
                 should have passed the 'is_valid_id' test.
+            sname: The student name or special placeholder.
+                - note that this should always be non-trivial string.
+
+        Keyword Args:
             blank (bool): the paper was blank: `sid` must be None and
                 `sname` must be `"Blank paper"`.
             no_id (bool): paper is not blank but student did not fill-in
@@ -774,6 +922,13 @@ class IDClient(QWidget):
         Returns:
             True/False/None: True on success, False/None on failure.
         """
+        log.info(
+            "Identifying id=%s, name='%s', blank=%s, no_id=%s...",
+            sid,
+            sname,
+            blank,
+            no_id,
+        )
         # do some sanity checks on inputs.
         assert isinstance(sname, str), "Student must be a string"
         assert len(sname) > 0, "Student name cannot be empty"
@@ -797,6 +952,14 @@ class IDClient(QWidget):
         self.exM.identifyStudent(index, sid, sname)
         code = self.exM.data(index[0])
         # Return paper to server with the code, ID, name.
+        log.info(
+            "Sending identity to server for code=%s: id=%s, name='%s', blank=%s, no_id=%s",
+            code,
+            sid,
+            sname,
+            blank,
+            no_id,
+        )
         try:
             self.msgr.IDreturnIDdTask(code, sid, sname)
         except PlomConflict as err:
@@ -806,6 +969,11 @@ class IDClient(QWidget):
                 to use the Manager tool to "Un-ID" the other paper.</p>
             """
             WarnMsg(self, str(err), info=hints, info_pre=False).exec()
+            self.exM.revertStudent(index)
+            return False
+        except PlomTakenException as err:
+            log.error("Not allowed to submit ID for %s: %s", code, err)
+            WarnMsg(self, f'Not allowed to submit ID for {code}:\n"{err}"').exec()
             self.exM.revertStudent(index)
             return False
         except PlomBenignException as err:
@@ -980,16 +1148,40 @@ class IDClient(QWidget):
             self.updateProgress()
         return
 
-    def prenamed_help(self) -> None:
+    def confirm_prenamed_help(self) -> None:
         InfoMsg(
             self,
-            "<p>It might seem unnecessary to confirm the prenamed papers "
-            "but there are several situations to watch out for:</p>"
-            "<ul>"
-            "<li>Student X wrote paper N: they likely scratched out the "
-            "name and substituted their own.</li>"
-            "<li>Student X did not sit the assessment, but the prenamed "
-            "paper was accidentally scanned: it will be "
-            "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
-            "</ul>",
+            _(
+                "<p>It might seem unnecessary to confirm the prenamed papers "
+                "but there are several situations to watch out for:</p>"
+                "<ul>"
+                "<li>Student X wrote paper N: they likely scratched out the "
+                "name and substituted their own.</li>"
+                "<li>Student X did not sit the assessment, but the prenamed "
+                "paper was accidentally scanned: it will be "
+                "unsigned&mdash;click the &ldquo;Blank&rdquo; button.</li>"
+                "</ul>",
+            ),
+        ).exec()
+
+    def confirm_prediction_help(self) -> None:
+        InfoMsg(
+            self,
+            _(
+                "<p><b>Why should a human confirm the computer predictions?</b></p>"
+                "<p>The computer vision algorithms to recognize "
+                "handwritten digits are <em>not</em> foolproof.</p>"
+                "<p>It is incredibly unprofessional to return someone "
+                "else's work to a student.</p>"
+                "<hr>"
+                "<p>Pages could be torn or folded, affecting the results.<p>"
+                "<p>Most of the predictions are made by "
+                "comparing to the classlist. "
+                # " (by solving a Linear Assignment Problem). "
+                "Perhaps a student who is not on your classlist has "
+                "written this assesssment; the predictors will still "
+                "pick someone!</p>"
+                "<p>The ID pages are presented in reverse order of "
+                "confidence; we suggest going slow at first.</p>"
+            ),
         ).exec()

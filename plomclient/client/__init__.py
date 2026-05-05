@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 
 """Plom client and supporting functions."""
 
-__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
+__copyright__ = "Copyright (C) 2018-2026 Andrew Rechnitzer, Colin B. Macdonald, et al"
 __credits__ = "The Plom Project Developers"
 __license__ = "AGPL-3.0-or-later"
 
@@ -13,7 +13,7 @@ __license__ = "AGPL-3.0-or-later"
 ScenePixelHeight = 2000
 
 # Also hardcoded in AppImageBuilder.yml
-__version__ = "0.19.3.dev0"
+__version__ = "0.21.0.dev0"
 
 
 from .marker import MarkerClient

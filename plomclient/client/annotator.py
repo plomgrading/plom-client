@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2022 Natalia Accomazzo Scotti
@@ -10,10 +10,6 @@
 # Copyright (C) 2025 Deep Shah
 
 from __future__ import annotations
-
-__copyright__ = "Copyright (C) 2018-2025 Andrew Rechnitzer, Colin B. Macdonald, et al"
-__credits__ = "The Plom Project Developers"
-__license__ = "AGPL-3.0-or-later"
 
 import html
 import json
@@ -73,7 +69,7 @@ from .key_wrangler import get_key_bindings
 from .key_help import KeyHelp
 
 from .pagerearranger import RearrangementViewer
-from .viewers import SolutionViewer, WholeTestView, PreviousPaperViewer
+from .viewers import WholeTestView, PreviousPaperViewer
 from .pagescene import PageScene
 from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
@@ -111,6 +107,7 @@ class Annotator(QWidget):
     annotator_upload = pyqtSignal(str, list)
     annotator_done_closing = pyqtSignal(str)
     annotator_done_reject = pyqtSignal(str)
+    annotator_next_task = pyqtSignal(str)
     cleanChanged = pyqtSignal(bool)
 
     def __init__(self, username: str, parentMarkerUI=None, initialData=None) -> None:
@@ -119,11 +116,12 @@ class Annotator(QWidget):
         Args:
             username (str): username of Marker
             parentMarkerUI (MarkerClient): the parent of annotator UI.
-            initialData (dict): as documented by the arguments to "load_new_question"
+            initialData (dict): as documented by the arguments to :method:`load_new_task`.
         """
         super().__init__()
 
         parentMarkerUI.tags_changed_signal.connect(self.tags_changed)
+        parentMarkerUI.experimental_setting_signal.connect(self.toggle_experimental)
 
         self.username = username
         self.parentMarkerUI = parentMarkerUI
@@ -135,9 +133,6 @@ class Annotator(QWidget):
 
         # a key-value store for local config, including "don't ask me again"
         self._config: Dict[str, Any] = {}
-
-        # a solution view / previous annotation pop-up window - initially set to None
-        self.solutionView = None
 
         self.testName = None
         self.paperDir = None
@@ -225,8 +220,9 @@ class Annotator(QWidget):
         self.setAllIcons()
         # Set up cursors
         self.loadCursors()
-        # set up held_crop_rectangle - if none, then not holding.
-        self.held_crop_rectangle_data = None
+
+        self._crop_enable: None | bool = None
+        self._crop_rectangle: None | tuple[float, float, float, float] = None
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -237,11 +233,10 @@ class Annotator(QWidget):
 
         # unit tests might pass None to avoid mocking support code
         if initialData:
-            self.load_new_question(*initialData)
+            self.load_new_task(*initialData)
             self.rubric_widget.setInitialRubrics()
 
-        # Grab window settings from parent
-        self.loadWindowSettings()
+        self._load_window_settings_early()
 
         # no initial keybindings - get from the marker if non-default
         self.keybinding_name = self.parentMarkerUI.annotatorSettings["keybinding_name"]
@@ -269,13 +264,14 @@ class Annotator(QWidget):
         assert h is not None
         h.setEnabled(False)
 
-        self.ui.hamMenuButton.setMenu(self.buildHamburger())
+        self.ui.hamMenuButton.setMenu(self.build_hamburger())
         # heaven == hamburger? works for me!
         self.ui.hamMenuButton.setText("\N{TRIGRAM FOR HEAVEN}")
         self.ui.hamMenuButton.setToolTip("Menu (F10)")
         self.ui.hamMenuButton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         self.setToolShortCuts()
         self.setMinorShortCuts()
+        self._load_window_settings_late()
 
     def update_attn_bar(
         self, *, tags: list[str] = [], msg: str = "", show: bool = False
@@ -319,59 +315,10 @@ class Annotator(QWidget):
     def getScore(self):
         return self.scene.getScore()
 
-    def toggle_hold_crop(self, checked):
-        if checked:
-            if not self.scene:
-                # unfort. backref instance var: if no scene, prevent checking
-                self._hold_crop_checkbox.setChecked(False)
-                return
-            self.held_crop_rectangle_data = (
-                self.scene.current_crop_rectangle_as_proportions()
-            )
-            log.debug(f"Hold crop for upcoming pages = {self.held_crop_rectangle_data}")
-        else:
-            log.debug("Released crop")
-            self.held_crop_rectangle_data = None
-
-    def toggle_experimental(self, checked):
-        if not checked:
-            self.parentMarkerUI.set_experimental(False)
-            # TODO: some kind of signal/slot, ontoggle...
-            self._hold_crop_checkbox.setVisible(False)
-            if self.scene:
-                self.scene.remove_page_action_buttons()
-            return
-
-        txt = """<p>Enable experimental and/or advanced options?</p>
-            <p>If you are part of a large marking team, you should
-            probably discuss with your manager before enabling.</p>
-        """
-        # features = (
-        #     'None, but you can help us break stuff at <a href="https://gitlab.com/plom/plom">gitlab.com/plom/plom</a>',
-        # )
-        features = (
-            "Spelling checking in rubric creation.",
-            "Persistent held region between papers.",
-        )
-        info = f"""
-            <h4>Current experimental features</h4>
-            <ul>
-              {" ".join("<li>" + x + "</li>" for x in features)}
-            </ul>
-        """
-        # Image by liftarn, public domain, https://freesvg.org/put-your-fingers-in-the-gears
-        res = resources.files(icons) / "fingers_in_gears.svg"
-        pix = QPixmap()
-        pix.loadFromData(res.read_bytes())
-        pix = pix.scaledToHeight(256, Qt.TransformationMode.SmoothTransformation)
-        msg = SimpleQuestion(self, txt, question=info)
-        msg.setIconPixmap(pix)
-        if msg.exec() == QMessageBox.StandardButton.No:
-            self._experimental_mode_checkbox.setChecked(False)
-            return
-        self.parentMarkerUI.set_experimental(True)
-        # TODO: some kind of signal/slot, ontoggle...
-        self._hold_crop_checkbox.setVisible(True)
+    def toggle_experimental(self, checked: bool) -> None:
+        """Whenever the Marker changes the experimental setting, we'll get a call."""
+        # currently just a stub
+        pass
 
     def is_experimental(self) -> bool:
         return self.parentMarkerUI.is_experimental()
@@ -384,7 +331,7 @@ class Annotator(QWidget):
         """
         self.parentMarkerUI.Qapp.processEvents()
 
-    def buildHamburger(self):
+    def build_hamburger(self):
         # TODO: use QAction, share with other UI?
         keydata = self.get_key_bindings()
 
@@ -410,8 +357,10 @@ class Annotator(QWidget):
         m.addSeparator()
         (key,) = keydata["show-solutions"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"View solutions\t{key}", self.viewSolutions)
+        # shortcut key handled in Marker, but keep this menu entry for now?
+        m.addAction(f"View solutions\t{key}", self.parentMarkerUI.view_solutions)
         (key,) = keydata["tag-paper"]["keys"]
+        # shortcut key handled in Marker, but keep this menu entry for now?
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Tag paper...\t{key}", self.tag_paper)
         m.addSeparator()
@@ -420,16 +369,12 @@ class Annotator(QWidget):
         m.addAction(f"Adjust pages\t{key}", self.arrangePages)
         (key,) = keydata["crop-in"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
-        m.addAction(f"Crop to region\t{key}", self.to_crop_mode)
+        m.addAction(f"Crop\t{key}", self.crop_region)
         (key,) = keydata["crop-out"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Uncrop\t{key}", self.uncrop_region)
-        hold_crop = m.addAction("Hold crop between papers")
-        hold_crop.setCheckable(True)
-        hold_crop.triggered.connect(self.toggle_hold_crop)
-        self._hold_crop_checkbox = hold_crop
-        if not self.is_experimental():
-            self._hold_crop_checkbox.setVisible(False)
+        m.addAction("Choose new crop region", self.to_crop_mode)
+
         m.addSeparator()
         subm = m.addMenu("Tools")
         # to make these actions checkable, they need to belong to self.
@@ -476,12 +421,6 @@ class Annotator(QWidget):
             self.change_annotation_colour,
         )
         m.addSeparator()
-        x = m.addAction("Experimental features")
-        x.setCheckable(True)
-        if self.is_experimental():
-            x.setChecked(True)
-        x.triggered.connect(self.toggle_experimental)
-        self._experimental_mode_checkbox = x
         m.addAction("Synchronise rubrics", self.refreshRubrics)
         (key,) = keydata["toggle-wide-narrow"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
@@ -533,6 +472,8 @@ class Annotator(QWidget):
         # after grabbed mode information, reset rubric_widget
         self.rubric_widget.setEnabled(False)
 
+        # this seems to fix a fairly serious memory leak: Issue #5104
+        self.scene.deleteLater()
         del self.scene
         self.scene = None
 
@@ -540,7 +481,7 @@ class Annotator(QWidget):
         """Closes the current question, closes scene and clears instance vars.
 
         As of 2025-Aug, this is something users of the the class can and do call.
-        Its non-interactive: if you user-interactivity such as confirming via
+        Its non-interactive: if you want user-interactivity such as confirming via
         dialog, call something else.
 
         Notes:
@@ -560,7 +501,7 @@ class Annotator(QWidget):
         # feels like a bit of a kludge
         self.view.setHidden(True)
 
-    def load_new_question(
+    def load_new_task(
         self,
         task: str,
         question_label: str,
@@ -667,15 +608,12 @@ class Annotator(QWidget):
         # redo this after all the other rubric stuff initialised
         self.rubric_widget.updateLegalityOfRubrics()
 
-        # Very last thing = unpickle scene from plomDict if there is one
         if plomDict is not None:
-            self.unpickleIt(plomDict)
-            # restoring the scene would've marked it dirty
-            self.scene.reset_dirty()
+            self.restore_from_data(plomDict)
         else:
-            # if there is a held crop rectangle, then use it.
-            if self.held_crop_rectangle_data:
-                self.scene.crop_from_plomfile(self.held_crop_rectangle_data)
+            # if there is a held crop rectangle and user explicitly was cropping, then use it.
+            if self._crop_enable and self._crop_rectangle:
+                self.scene.crop_from_proportions(self._crop_rectangle)
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1141,10 +1079,6 @@ class Annotator(QWidget):
                for each tool.  If needed you could override this.
                (currently unused, semi-deprecated).
 
-        Notes:
-            TODO: this does various other mucking around for legacy
-            reasons: could probably still use some refactoring.
-
         Returns:
             None but modifies self.
         """
@@ -1219,7 +1153,7 @@ class Annotator(QWidget):
 
     @pyqtSlot()
     def saveAndGetNext(self) -> None:
-        """Saves the current annotations, and moves on to the next paper."""
+        """Saves the current annotations, and tells the parent Marker UI that we want the next task."""
         if self.scene:
             if not self.saveAnnotations():
                 return
@@ -1244,17 +1178,9 @@ class Annotator(QWidget):
                 + "papers clear.</p>",
             ).exec()
 
-        # TODO: close_current_task should emit(tmp_task)
-        # TODO: self.caller_give_us_more.emit(tmp_task)
-        stuff = self.parentMarkerUI.getMorePapers(tmp_task)
-        if not stuff:
-            self.update_attn_bar(tags=[], msg="", show=False)
-            InfoMsg(self, "No more to grade?").exec()
-            # Not really safe to give it back? (at least we did the view...)
-            return
-
-        log.debug("saveAndGetNext: new stuff is {}".format(stuff))
-        self.load_new_question(*stuff)
+        # we already emitted "accept" for Marker to upload the task: that takes
+        # care of requesting more tasks in background.
+        self.annotator_next_task.emit(tmp_task)
 
     # TODO: @pyqtSlot()?
     # def revert_changes(self) -> None:
@@ -1320,9 +1246,7 @@ class Annotator(QWidget):
             ("toggle-wide-narrow", self.toggle_compact),
             ("help", self.keyPopUp),
             ("show-whole-paper", self.viewWholePaper),
-            ("show-solutions", self.viewSolutions),
             ("main-menu", self.ui.hamMenuButton.animateClick),
-            ("tag-paper", self.tag_paper),
             ("zoom-in", self.view.zoomIn),
             ("zoom-out", self.view.zoomOut),
             ("next-paper", self.saveAndGetNext),
@@ -1338,7 +1262,7 @@ class Annotator(QWidget):
             ("quick-show-prev-paper", self.show_previous),
             ("increase-annotation-scale", lambda: self.change_annot_scale(1.1)),
             ("decrease-annotation-scale", lambda: self.change_annot_scale(1 / 1.1)),
-            ("crop-in", self.to_crop_mode),
+            ("crop-in", self.crop_region),
             ("crop-out", self.uncrop_region),
         )
         self._store_QShortcuts_minor = []
@@ -1367,28 +1291,43 @@ class Annotator(QWidget):
         self.sekritShortCut = QShortcut(QKeySequence("Ctrl+Shift+o"), self)
         self.sekritShortCut.activated.connect(self.experimental_cycle)
 
-    def to_crop_mode(self):
-        # can't re-crop if the crop is being held
-        if self.held_crop_rectangle_data:
-            WarnMsg(
-                self,
-                "You cannot re-crop while a crop is being held.",
-                info="Unselect 'hold crop' from the menu and then try again.",
-            ).exec()
-        else:
-            self.setToolMode("crop")
+    def to_crop_mode(self) -> None:
+        """Change to crop tool for user to choose a crop, or choose a new crop."""
+        self.setToolMode("crop")
 
-    def uncrop_region(self):
-        if self.held_crop_rectangle_data:
-            WarnMsg(
-                self,
-                "You cannot un-crop while a crop is being held.",
-                info="Unselect 'hold crop' from the menu and then try again.",
-            ).exec()
-            return
+    def toggle_crop_region(self, checked: bool) -> None:
+        if checked:
+            self.crop_region()
+        else:
+            self.uncrop_region()
+
+    def crop_region(self) -> None:
+        """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
-        self.scene.uncrop_underlying_images()
+        if not self._crop_rectangle:
+            log.debug("enabling crop, no existing data, entering interactive crop mode")
+            self.to_crop_mode()
+            self._crop_enable = True
+            return
+        log.debug(f"enabling existing crop: {self._crop_rectangle}")
+        self.scene.crop_from_proportions(self._crop_rectangle)
+        self.view.zoomFitPage(update=True)
+        self._crop_enable = True
+
+    def uncrop_region(self) -> None:
+        if not self.scene:
+            return
+        log.debug("disabling crop")
+        self.scene.uncrop()
+        self.view.zoomFitPage(update=True)
+        self._crop_enable = False
+
+    def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
+        self._crop_rectangle = rect
+        # now set mode to move (just to change it away from crop tool)
+        if self.scene and self.scene.mode == "crop":
+            self.toMoveMode()
 
     def toUndo(self):
         self.ui.undoButton.animateClick()
@@ -1517,13 +1456,21 @@ class Annotator(QWidget):
         """
         self.setToolMode("rubric", rubric=rubric)
 
-    def loadWindowSettings(self):
-        """Loads the window settings."""
+    def _load_window_settings_early(self):
+        """Load the window settings, early stuff."""
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
         if self.parentMarkerUI.annotatorSettings.get("_config"):
             self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
 
+        self._crop_enable = self.parentMarkerUI.annotatorSettings.get(
+            "crop_enable", None
+        )
+        self._crop_rectangle = self.parentMarkerUI.annotatorSettings.get(
+            "crop_rectangle", None
+        )
+
+        # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
         # if zoom-state is none, set it to index 1 (fit page) - but delay.
         if self.parentMarkerUI.annotatorSettings["zoomState"] is None:
             QTimer.singleShot(100, lambda: self.ui.zoomCB.setCurrentIndex(1))
@@ -1547,9 +1494,12 @@ class Annotator(QWidget):
                     self.parentMarkerUI.annotatorSettings["zoomState"]
                 ),
             )
+
+    def _load_window_settings_late(self):
+        """Load the window settings, later stuff."""
         # wide vs compact
         if self.parentMarkerUI.annotatorSettings["compact"] is True:
-            log.debug("compacting UI (b/c of last use setting")
+            log.debug("compacting UI (b/c of last use setting)")
             self.toggle_compact()
 
     def saveWindowSettings(self):
@@ -1565,10 +1515,9 @@ class Annotator(QWidget):
         self.parentMarkerUI.annotatorSettings["zoomState"] = (
             self.ui.zoomCB.currentIndex()
         )
-        if self.is_ui_compact():
-            self.parentMarkerUI.annotatorSettings["compact"] = True
-        else:
-            self.parentMarkerUI.annotatorSettings["compact"] = False
+        self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
+        self.parentMarkerUI.annotatorSettings["crop_enable"] = self._crop_enable
+        self.parentMarkerUI.annotatorSettings["crop_rectangle"] = self._crop_rectangle
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -1887,12 +1836,6 @@ class Annotator(QWidget):
         """
         log.debug("========CLOSE EVENT======: {}".format(self))
 
-        log.debug("Clean up any lingering solution-views etc")
-        if self.solutionView:
-            log.debug("Cleaning a solution-view")
-            self.solutionView.close()
-            self.solutionView = None
-
         self.saveTabStateToServer(self.rubric_widget.get_tab_rubric_lists())
 
         # Save the current window settings for next time annotator is launched
@@ -1968,31 +1911,37 @@ class Annotator(QWidget):
         """
         assert self.scene
         aname = self.scene.save(self.saveName)
-        lst = self.scene.pickleSceneItems()  # newest items first
-        lst.reverse()  # so newest items last
-        # get the crop-rect as proportions of underlying image
-        # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rect_data = self.scene.current_crop_rectangle_as_proportions()
-        # TODO: consider saving colour only if not red?
-        plomData = {
+        plomdata = {
             "base_images": self.scene.get_src_img_data(only_visible=True),
             "saveName": str(aname),
             "maxMark": self.maxMark,
             "currentMark": self.getScore(),
             "sceneScale": self.scene.get_scale_factor(),
-            "annotationColor": self.scene.ink.color().getRgb()[:3],
-            "crop_rectangle_data": crop_rect_data,
-            "sceneItems": lst,
         }
+
+        annot_colour = self.scene.ink.color().getRgb()[:3]
+        if annot_colour != (255, 0, 0):
+            # save the colour explicitly if non-red
+            plomdata.update({"annotationColor": annot_colour})
+
+        # get the crop-rect as proportions of underlying image
+        # is 4-tuple (x,y,w,h) scaled by image width / height
+        crop_rectangle = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rectangle:
+            plomdata.update({"crop_rectangle_data": crop_rectangle})
+
+        lst = self.scene.pickleSceneItems()  # newest items first
+        lst.reverse()  # so newest items last
+        plomdata.update({"sceneItems": lst})
         plomfile = self.saveName.with_suffix(".plom")
 
         with open(plomfile, "w") as fh:
-            json.dump(plomData, fh, indent="  ", default=_json_path_to_str)
+            json.dump(plomdata, fh, indent="  ", default=_json_path_to_str)
             fh.write("\n")
         return aname, plomfile
 
-    def unpickleIt(self, plomData: dict[str, Any]) -> None:
-        """Unpickles the page by calling scene.unpickleSceneItems and sets the page's mark.
+    def restore_from_data(self, plomData: dict[str, Any]) -> None:
+        """Unpackes and restore the scene from data.
 
         Args:
             plomData: a dictionary containing the data for the
@@ -2011,12 +1960,20 @@ class Annotator(QWidget):
         self.scene.unpickleSceneItems(plomData["sceneItems"])
         # set crop rectangle from plom file contains if present
         # else, if use held-crop rectangle if present
-        if plomData.get("crop_rectangle_data", None):
-            self.scene.crop_from_plomfile(plomData["crop_rectangle_data"])
-        else:
-            if self.held_crop_rectangle_data:  # if a crop is being held, use it.
-                self.scene.crop_from_plomfile(self.held_crop_rectangle_data)
+        crop = plomData.get("crop_rectangle_data", None)
+        tol = 0.01
+        if crop:
+            # special case check for files saved near trivial crop
+            # (before 2026 Feb all files were saved (0.0, 0.0, 1.0, 1.0)
+            x, y, w, h = crop
+            if abs(x) > tol or abs(y) > tol or abs(w - 1) > tol or abs(h - 1) > tol:
+                # TODO: note that this overwrites the client's local crop setting
+                # unsure if that is desirable or not
+                log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
+                self.scene.crop_from_proportions(crop)
         self.view.setHidden(False)
+        # restoring the scene would've marked it dirty
+        self.scene.reset_dirty()
 
     def setZoomComboBox(self) -> None:
         """Sets the combo box for the zoom method.
@@ -2158,16 +2115,6 @@ class Annotator(QWidget):
             rid, updated_rubric, minor_change=minor_change, tag_tasks=tag_tasks
         )
 
-    def viewSolutions(self):
-        solutionFile = self.parentMarkerUI.getSolutionImage()
-        if solutionFile is None:
-            InfoMsg(self, "No solution has been uploaded").exec()
-            return
-
-        if self.solutionView is None:
-            self.solutionView = SolutionViewer(self, solutionFile)
-        self.solutionView.show()
-
     def tags_changed(self, task: str, tags: list[str]) -> None:
         """React to possible tag change signals."""
         if task == self.task:
@@ -2185,11 +2132,7 @@ class Annotator(QWidget):
             task = self.task
         if not dialog_parent:
             dialog_parent = self
-        self.parentMarkerUI.manage_task_tags(task, parent=dialog_parent)
-
-    def refreshSolutionImage(self):
-        log.debug("force a refresh")
-        return self.parentMarkerUI.refreshSolutionImage()
+        self.parentMarkerUI.manage_tags(task, parent=dialog_parent)
 
     def show_previous(self):
         log.debug(

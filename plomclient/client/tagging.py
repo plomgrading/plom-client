@@ -1,23 +1,36 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2019-2024 Colin B. Macdonald
+# Copyright (C) 2019-2024, 2026 Colin B. Macdonald
+
+from __future__ import annotations
 
 import html
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QGroupBox,
     QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
     QMessageBox,
+    QScrollArea,
     QSizePolicy,
     QSpacerItem,
     QToolButton,
     QVBoxLayout,
 )
+
+from .useful_classes import InfoMsg
+
+
+# future translation support
+def _(x: str) -> str:
+    return x
 
 
 class AddRemoveTagDialog(QDialog):
@@ -152,3 +165,130 @@ class AddRemoveTagDialog(QDialog):
             return
         self.return_values = ("remove", tag)
         self.accept()
+
+
+class DeferToDialog(QDialog):
+    """Dialog to defer a task to other user(s).
+
+    Args:
+        parent (QWidget): who should parent this modal dialog.
+        task: which task.
+        lead_markers: a list of usernames of the lead markers.
+        other_markers: a list of the usernames of non-lead markers.
+
+    Keyword Args:
+        checked: a list of usernames that should be pre-checked.
+    """
+
+    def __init__(
+        self,
+        parent,
+        task: str,
+        lead_markers: list[str],
+        other_markers: list[str],
+        *,
+        checked: list[str] = [],
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(_("Defer task"))
+
+        dialog_lay = QVBoxLayout()
+        dialog_lay.addWidget(
+            QLabel(_("<b>Who should mark task {task}?</b>").format(task=task))
+        )
+
+        self._checkboxes = []
+
+        if lead_markers:
+            w = QGroupBox(_("&Lead markers:"))
+            w.setFlat(True)
+            w.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            content = QFrame()
+            lay = QVBoxLayout(content)
+            for username in lead_markers:
+                cb = QCheckBox(username)
+                if username in checked:
+                    cb.setChecked(True)
+                lay.addWidget(cb)
+                self._checkboxes.append(cb)
+            lay = QVBoxLayout()
+            if len(lead_markers) <= 8:
+                lay.addWidget(content)
+            else:
+                scroll = QScrollArea()
+                scroll.setWidgetResizable(True)
+                scroll.setWidget(content)
+                scroll.setFrameShape(QFrame.Shape.NoFrame)
+                lay.addWidget(scroll)
+            lay.setContentsMargins(0, 0, 0, 0)
+            w.setLayout(lay)
+            dialog_lay.addWidget(w)
+
+        if other_markers:
+            if lead_markers:
+                w = QGroupBox(_("Other &markers:"))
+            else:
+                w = QGroupBox(_("&Markers:"))
+            w.setFlat(True)
+            w.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            content = QFrame()
+            lay = QVBoxLayout(content)
+            for username in other_markers:
+                cb = QCheckBox(username)
+                if username in checked:
+                    cb.setChecked(True)
+                lay.addWidget(cb)
+                self._checkboxes.append(cb)
+            lay = QVBoxLayout()
+            if len(other_markers) <= 5 or (
+                len(other_markers) <= 8 and len(lead_markers) <= 4
+            ):
+                lay.addWidget(content)
+            else:
+                scroll = QScrollArea()
+                scroll.setWidgetResizable(True)
+                scroll.setWidget(content)
+                scroll.setFrameShape(QFrame.Shape.NoFrame)
+                lay.addWidget(scroll)
+            lay.setContentsMargins(0, 0, 0, 0)
+            w.setLayout(lay)
+            dialog_lay.addWidget(w)
+
+        label = QLabel(
+            _(
+                "Task {task} will be dropped from your task list. "
+                "Any of the users you tag here may receive the task."
+            ).format(task=task)
+        )
+        label.setWordWrap(True)
+
+        dialog_lay.addWidget(label)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        dialog_lay.addWidget(buttons)
+        self.setLayout(dialog_lay)
+
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+    def get_chosen_users(self) -> list[str]:
+        users = []
+        for x in self._checkboxes:
+            if x.isChecked():
+                users.append(x.text().lstrip("@"))
+        return users
+
+    def accept(self):
+        """Override accept to check they selected something."""
+        if not self.get_chosen_users():
+            msg = """
+                <p>You must select one or more users.</p>
+                <p>Plom does not allow you to surrender tasks without
+                suggesting someone else to do it.</p>
+                <small>(If you really want to surrender some tasks,
+                you can logout of the client.)</small>
+            """
+            InfoMsg(self, msg).exec()
+            return
+        super().accept()

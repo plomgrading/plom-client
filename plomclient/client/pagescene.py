@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2025 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Joey Shi
 # Copyright (C) 2024 Aden Chan
@@ -263,7 +263,8 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.outer_rect = outer_rect
         self.inner_rect = inner_rect
         # keep the original inner rectangle for uncropping.
-        self.original_inner_rect = inner_rect
+        self._original_inner_rect = inner_rect
+        self.is_cropped = False
 
         # set rectangles for semi-transparent boundaries - needs some tmp rectangle.
         self.top_bar = QGraphicsRectItem(outer_rect)
@@ -283,7 +284,7 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.right_bar.setPen(QPen(Qt.PenStyle.NoPen))
         self.dotted_boundary.setPen(dotted_pen)
         # now set the size correctly
-        self.set_bars()
+        self._set_bars()
         self.addToGroup(self.top_bar)
         self.addToGroup(self.bottom_bar)
         self.addToGroup(self.left_bar)
@@ -291,15 +292,19 @@ class MaskingOverlay(QGraphicsItemGroup):
         self.addToGroup(self.dotted_boundary)
         self.setZValue(-1)
 
-    def crop_to_focus(self, crop_rect):
+    def crop_to(self, crop_rect: QRectF) -> None:
         self.inner_rect = crop_rect
-        self.set_bars()
+        self.is_cropped = True
+        self._set_bars()
         self.update()
 
-    def get_original_inner_rect(self):
-        return self.original_inner_rect
+    def uncrop(self) -> None:
+        self.inner_rect = self._original_inner_rect
+        self.is_cropped = False
+        self._set_bars()
+        self.update()
 
-    def set_bars(self):
+    def _set_bars(self):
         # reset the dotted boundary rectangle
         self.dotted_boundary.setRect(self.inner_rect)
         # set rectangles using rectangle defined by top-left and bottom-right points.
@@ -495,10 +500,6 @@ class PageScene(QGraphicsScene):
         self.scoreBox.setZValue(10)
         self.addItem(self.scoreBox)
 
-        # make a box around the scorebox where mouse-press-event won't work.
-        # make it fairly wide so that items pasted are not obscured when
-        # scorebox updated and becomes wider
-        self.avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
         # holds the path images uploaded from annotator
         self.tempImagePath = None
 
@@ -531,7 +532,11 @@ class PageScene(QGraphicsScene):
         if self.active_drawer:
             return self.active_drawer.mouse_press(event)
 
-        if self.avoidBox.contains(event.scenePos()):
+        # make a box around the scorebox where mouse-press-event won't work.
+        # make it fairly wide so that items pasted are not obscured when
+        # scorebox updated and becomes wider
+        avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
+        if avoidBox.contains(event.scenePos()):
             return
 
         if self.mode == "line":
@@ -1129,7 +1134,7 @@ class PageScene(QGraphicsScene):
                     )
         return br
 
-    def updateSceneRectangle(self):
+    def updateSceneRectangle(self) -> None:
         self.setSceneRect(self.getSaveableRectangle())
         self.update()
 
@@ -1235,6 +1240,11 @@ class PageScene(QGraphicsScene):
         else:
             jpgname.unlink()
             return pngname
+
+    def deleteLater(self) -> None:
+        # the animations can survive the scene, causing crashes #5105
+        self.squelch_animations()
+        super().deleteLater()
 
     def keyPressEvent(self, event):
         """Changes the focus or cursor based on key presses.
@@ -1572,27 +1582,18 @@ class PageScene(QGraphicsScene):
                 self.undoStack.push(command)
         # now load up the new items
         for X in lst:
-            # Special hack for legacy server data:
-            if X[0] == "GroupDeltaText":
-                assert len(X) == 10
-                r = {
-                    "rid": int(X[3]),
-                    "kind": X[4],
-                    "value": X[5],
-                    "out_of": X[6],
-                    "display_delta": X[7],
-                    "text": X[8],
-                    "tags": X[9],
-                }
-                log.info("Rewrote legacy GroupDeltaText %d as a Rubric", r["rid"])
-                X = ["Rubric", X[1], X[2], r]
-            CmdCls = COMMAND_MAP.get(X[0])
-            if CmdCls and getattr(CmdCls, "from_pickle", None):
-                # TODO: use try-except here?
-                self.undoStack.push(CmdCls.from_pickle(X, scene=self))
-                continue
-            log.error("Could not unpickle whatever this is:\n  {}".format(X))
-            raise ValueError("Could not unpickle whatever this is:\n  {}".format(X))
+            CmdCls = COMMAND_MAP.get(X[0], None)
+            if not CmdCls:
+                err = f"Could not unpickle whatever this is:\n  {X}"
+                log.error(err)
+                raise ValueError(err)
+            if not getattr(CmdCls, "from_pickle", None):
+                err = f"Could not unpickle this b/c it has no 'from_pickle':\n  {X}"
+                log.error(err)
+                raise ValueError(err)
+            # Note the use of the private _from_pickle, necessary to disable animation on redraw
+            # TODO: use try-except here?
+            self.undoStack.push(CmdCls._from_pickle(X, scene=self))
         # now make sure focus is cleared from every item
         for X in self.items():
             X.clearFocus()
@@ -2042,23 +2043,23 @@ class PageScene(QGraphicsScene):
         # return any(flag > 0 for flag in self.__getFlags())
         return self.active_drawer is not None
 
-    # PAGE SCENE CROPPING STUFF
-    def _crop_to_focus(self, crop_rect):
-        # this is called by the actual command-redo.
-        self.overMask.crop_to_focus(crop_rect)
+    def _crop_to(self, crop_rect: QRectF) -> None:
+        self.overMask.crop_to(crop_rect)
         self.scoreBox.setPos(crop_rect.topLeft())
-        self.avoidBox = self.scoreBox.boundingRect().adjusted(-16, -16, 64, 24)
-        # set zoom to "fit-page"
-        self.views()[0].zoomFitPage(update=True)
 
-    def current_crop_rectangle_as_proportions(
+    def _uncrop(self) -> None:
+        self.overMask.uncrop()
+        self.scoreBox.setPos(self.overMask.inner_rect.topLeft())
+
+    def get_current_crop_rectangle_as_proportions(
         self,
-    ) -> tuple[float, float, float, float]:
-        """Return the crop rectangle as proportions of original image."""
+    ) -> None | tuple[float, float, float, float]:
+        """Return the crop rectangle as proportions of original image, or None if uncropped."""
+        if not self.overMask.is_cropped:
+            return None
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         rect_in_pix = self.overMask.inner_rect
-
         rect_as_proportions = (
             rect_in_pix.x() / full_width,
             rect_in_pix.y() / full_height,
@@ -2067,8 +2068,10 @@ class PageScene(QGraphicsScene):
         )
         return rect_as_proportions
 
-    def crop_from_plomfile(self, crop_dat):
-        # crop dat = (x,y,w,h) as proportions of full image, so scale by underlying image width/height
+    def crop_from_proportions(
+        self, crop_dat: tuple[float, float, float, float]
+    ) -> None:
+        """Crop to just part of the page scene."""
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         crop_rect = QRectF(
@@ -2079,15 +2082,36 @@ class PageScene(QGraphicsScene):
         )
         self.trigger_crop(crop_rect)
 
-    def uncrop_underlying_images(self):
-        self.trigger_crop(self.overMask.get_original_inner_rect())
+    def uncrop(self) -> None:
+        """Uncrop, returning to the entire extent of the underlying images."""
+        self._uncrop()
 
-    def trigger_crop(self, crop_rect):
+    def trigger_crop(self, crop_rect: QRectF, *, _keep_crop: bool = True) -> None:
+        """React to a cropping operation to a rectangle.
+
+        Args:
+            crop_rect: A rectangular region to crop to.
+
+        Keyword Args:
+            _keep_crop: If True, and by default, if you set the crop, the client
+                will keep that crop region so it can be reused later.  Pass
+                False if you want to set t the crop in a one-off manner.
+        """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
+
+        # Turned off the undo of crop for Issue #5113.
+        # TODO: delete the code if not restored by say end of 2026
         # pass new crop rect, as well as current one (for undo)
-        command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
-        self.undoStack.push(command)
-        # now set mode to move.
-        self.parent().toMoveMode()
+        # command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
+        # self.undoStack.push(command)
+        self._crop_to(actual_crop)
+
+        _parent = self.parent()
+        assert _parent is not None
+        # MyPy is rightfully unsure parent is an Annotator:
+        # # assert isinstance(_parent, Annotator)
+        # but that's likely a circular import, so just add exceptions below
+        if _keep_crop:
+            _parent.set_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
