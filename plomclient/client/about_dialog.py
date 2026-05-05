@@ -2,13 +2,13 @@
 # Copyright (C) 2021-2026 Colin B. Macdonald
 
 import platform
-from textwrap import dedent
 
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
 from PyQt6.QtWidgets import QMessageBox
 from requests import __version__ as requests_version
 
 from . import __version__
+from .translations import translate as _
 
 # TODO: use resources to important contributors list?
 
@@ -17,9 +17,8 @@ def show_about_dialog(parent):
     QMessageBox.about(
         parent,
         "Plom Client",
-        dedent(
-            f"""
-            <h2>Plom Client {__version__}</h2>
+        _("""
+            <h2>Plom Client {version}</h2>
 
             <p><a href="https://plomgrading.org">https://plomgrading.org</a></p>
 
@@ -38,10 +37,16 @@ def show_about_dialog(parent):
 
             <h3>System info</h3>
             <p>
-            PyQt {PYQT_VERSION_STR} (Qt {QT_VERSION_STR})<br />
+            PyQt {pyqt_version} (Qt {qt_version})<br />
             Requests {requests_version}<br />
-            Python {platform.python_version()}<br />
-            {platform.platform()}</p>
-            """
+            Python {python_version()}<br />
+            {platform_info}</p>
+        """).format(
+            version=__version__,
+            pyqt_version=PYQT_VERSION_STR,
+            qt_version=QT_VERSION_STR,
+            requests_version=requests_version,
+            python_version=platform.python_version,
+            platform_info=platform.platform(),
         ),
     )
