@@ -169,8 +169,7 @@ class RubricTable(QTableWidget):
         self.setGridStyle(Qt.PenStyle.DotLine)
         self.setAlternatingRowColors(False)
         #  negative padding is probably b/c of fontsize changes
-        self.setStyleSheet(
-            """
+        self.setStyleSheet("""
             QHeaderView::section {
                 background-color: palette(window);
                 color: palette(dark);
@@ -181,8 +180,7 @@ class RubricTable(QTableWidget):
             QTableView {
                 border: none;
             }
-        """
-        )
+        """)
         head = self.horizontalHeader()
         if head is not None:
             # it seems during unit tests there isn't one?
