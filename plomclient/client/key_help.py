@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2019-2022 Andrew Rechnitzer
-# Copyright (C) 2021-2025 Colin B. Macdonald
+# Copyright (C) 2021-2026 Colin B. Macdonald
 
 from __future__ import annotations
 
@@ -54,6 +54,11 @@ from .key_wrangler import (
 from .useful_classes import InfoMsg
 
 log = logging.getLogger("keybindings")
+
+
+# future translation support
+def _(x: str) -> str:
+    return x
 
 
 # TODO:
@@ -154,10 +159,11 @@ class KeyHelp(QDialog):
     def interactively_change_key(self, action):
         info = ""
         if self.has_custom_map() and not self.currently_on_custom_map():
-            info = """<p><b>Note:</b> there is already a custom keymap.
+            info = _("""
+                <p><b>Note:</b> there is already a custom keymap.
                 Changing this keybinding will replace it; or you can
                 cancel, select the &ldquo;Custom&rdquo; map and edit.</p>
-            """
+            """)
         dat = self.keydata[action]
         old_key = dat["keys"][0]
         diag = KeyEditDialog(self, label=dat["human"], current_key=old_key, info=info)
@@ -297,10 +303,10 @@ class KeyHelp(QDialog):
         return tables
 
     def about(self):
-        txt = """
+        txt = _("""
             <p>Plom uses spatial keyboard shortcuts with a one hand on
             keyboard, one hand on mouse approach.</p>
-        """
+        """)
         keybindings = get_keybindings_list()
         idx = self._keyLayoutCB.currentIndex()
         kb_specific = keybindings[idx].get("about_html", "")
@@ -518,50 +524,50 @@ class ClickDragPage(QWidget):
         film_label = QLabel()
         film_label.setMovie(film)
 
-        label = QLabel(
-            """<p>
+        label = QLabel(_("""
+            <p>
             Most tools can <b>highlight a region</b>:
             try click-drag-release-move-click to draw a box and connecting line.
             Works with <tt>tick</tt>, <tt>cross</tt>, <tt>rubric</tt> or <tt>text</tt>.
-            </p>"""
-        )
+            </p>
+        """))
         label.setWordWrap(True)
         grid.addSpacing(6)
         grid.addWidget(label)
         grid.addWidget(film_label)
         grid.addSpacing(6)
-        label = QLabel(
-            """<p>
+        label = QLabel(_("""
+            <p>
             Students benefit from this <b>spatial feedback</b>
             as well as specific rubrics.
-            </p>"""
-        )
+            </p>
+        """))
         label.setWordWrap(True)
         grid.addWidget(label)
         grid.addSpacing(6)
-        label = QLabel(
-            """<p>
+        label = QLabel(_("""
+            <p>
             Rubrics are reusable and shared between markers.
             You can organize your rubrics into tabs.
-            </p>"""
-        )
+            </p>
+        """))
         label.setWordWrap(True)
         grid.addWidget(label)
         grid.addSpacing(6)
-        label = QLabel(
-            """<p>
+        label = QLabel(_("""
+            <p>
             Start your text or rubric with &ldquo;<tt>tex:</tt>&rdquo; to
             render mathematics.  Or press ctrl-enter.
-            </p>"""
-        )
+            </p>
+        """))
         label.setWordWrap(True)
         grid.addWidget(label)
         grid.addSpacing(6)
-        label = QLabel(
-            """<p>
+        label = QLabel(_("""
+            <p>
             Try to keep one hand on the keyboard and one on the mouse.
-            </p>"""
-        )
+            </p>
+        """))
         label.setWordWrap(True)
         grid.addWidget(label)
         grid.addSpacing(6)
