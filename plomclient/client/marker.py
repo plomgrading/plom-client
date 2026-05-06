@@ -854,7 +854,7 @@ class MarkerClient(QWidget):
             annot_img_info, annot_img_bytes = self.msgr.get_annotations_image(
                 num, question_idx, edition=data["edition"]
             )
-            plomdata = data["annotations"]
+            plomdata = data["user_agent_data"]
         except PlomNoPaper as e:
             ErrorMsg(None, f"no annotations for task {task}: {e}").exec()
             return False
