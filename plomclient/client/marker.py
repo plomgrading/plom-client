@@ -1499,11 +1499,11 @@ class MarkerClient(QWidget):
             return
         lead_markers = []
         other_markers = []
-        for u, group_list in users.items():
-            if "lead_marker" in group_list:
-                lead_markers.append(u)
-            elif "marker" in group_list:
-                other_markers.append(u)
+        for u in users:
+            if "lead_marker" in u["groups"]:
+                lead_markers.append(u["username"])
+            elif "marker" in u["groups"]:
+                other_markers.append(u["username"])
         lead_markers.sort()
         other_markers.sort()
         self._cached_user_list_lead_markers = lead_markers

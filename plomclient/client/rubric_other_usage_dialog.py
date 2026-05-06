@@ -37,7 +37,7 @@ class RubricOtherUsageDialog(QDialog):
         Args:
             parent: an Annotator instance.
             tasks: a list of dicts with various fields, notably "code"
-               "version", etc.
+               "question_version", "assigned_user".
 
         Keyword Args:
             rubric: the key-value description of the rubric we're discussing.
@@ -62,16 +62,10 @@ class RubricOtherUsageDialog(QDialog):
         # Connect double click to view paper
         self.list_widget.itemDoubleClicked.connect(self._handle_double_click)
 
-        # future-proof a bit for when we don't need to strip the leading q
-        def noq(code):
-            if code.startswith("q"):
-                code = code[1:]
-            return code
-
         # TODO: easy to put "by Jose, 10 minutes ago" here...?
         # TODO: only note version if this is a multiversion test?
         list_of_strings = [
-            f'{noq(t["code"])} by {t["assigned_user"]} (version {t["question_version"]})'
+            f'{t["code"]} by {t["assigned_user"]} (version {t["question_version"]})'
             for t in tasks
         ]
         list_of_strings.sort()
