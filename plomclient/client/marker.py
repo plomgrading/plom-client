@@ -2296,7 +2296,6 @@ class MarkerClient(QWidget):
                 paperDir(dir): Working directory for the current task
                 aname(str): annotated file name
                 plomFileName(str): the name of the .plom file
-                rubric(list[str]): the keys of the rubrics used
                 integrity_check(str): the integrity_check string of the task.
 
         Returns:
@@ -2308,7 +2307,6 @@ class MarkerClient(QWidget):
             paperDir,
             aname,
             plomFileName,
-            rubrics,
             integrity_check,
         ) = stuff
         if not isinstance(grade, (int, float)):
@@ -2339,7 +2337,6 @@ class MarkerClient(QWidget):
             totmtime,  # total marking time (seconds)
             self.question_idx,
             self.version,
-            rubrics,
             integrity_check,
         )
         if self.allowBackgroundOps:

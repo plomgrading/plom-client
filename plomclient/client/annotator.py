@@ -1627,7 +1627,6 @@ class Annotator(QWidget):
             return False
 
         aname, plomfile = self.pickleIt()
-        rubric_ids = self.scene.get_rubric_ids()
 
         log.debug("emitting accept signal")
         tim = self.timer.elapsed() / 1000
@@ -1639,7 +1638,6 @@ class Annotator(QWidget):
             self.paperDir,
             aname,
             plomfile,
-            rubric_ids,
             self.integrity_check,
         ]
         self.annotator_upload.emit(self.task, stuff)

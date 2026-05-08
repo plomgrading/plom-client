@@ -23,6 +23,7 @@ from PyQt6.QtCore import (
     pyqtSignal,
 )
 
+from plomclient.misc_utils import extract_rubric_rid_rev_pairs
 from plomclient.client import __version__
 from plomclient.messenger import Messenger
 from plomclient.plom_exceptions import (
@@ -190,7 +191,6 @@ def synchronous_upload(
     marking_time: float | int,
     question_idx: int,
     ver: int,
-    rubrics: list,
     integrity_check: str,
     failCallback=None,
     successCallback=None,
@@ -207,7 +207,6 @@ def synchronous_upload(
         marking_time: the marking time (s) for this specific question.
         question_idx: the question index number.
         ver: the version number.
-        rubrics: list of rubrics used.
         integrity_check: the integrity_check string of the task.
         failCallback: call this function if we fail.
         successCallback: a function to call when we succeed.
@@ -226,9 +225,11 @@ def synchronous_upload(
                 aname, pname
             )
         )
+
     # TODO: we could just keep all this in memory instead of on disc?
     with pname.open("r") as fh:
         plom_data = json.load(fh)
+    rubrics = extract_rubric_rid_rev_pairs(plom_data)
 
     try:
         progress_info = _msgr.MreturnMarkedTask(
