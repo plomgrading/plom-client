@@ -1665,20 +1665,41 @@ class RubricWidget(QWidget):
     def add_new_rubric(self) -> None:
         """Open a dialog to create a new rubric."""
         w = self.RTW.currentWidget()
-        # Use the most-recently created rubric as seed data for the dialog
-        # TODO: maybe get it on a per-tab basis?
-        # TODO: we could also use the tab contents, when there is no history
-        seed_rubric_data = self._recently_created_rubric
-        if seed_rubric_data:
-            # users will need to add their own text however
-            seed_rubric_data = deepcopy(seed_rubric_data)
-            seed_rubric_data.pop("text", None)
         if w.is_group_tab():
-            self._new_or_edit_rubric(seed_rubric_data, add_to_group=w.shortname)
+            seed_rubric_data = self._get_latest_rubric_from_tab(w)
+            if not seed_rubric_data:
+                # handle empty gracefully (although group tab shouldn't be empty)
+                seed_rubric_data = {"tags": f"group:{w.shortname}"}
         elif w.is_user_tab():
+            seed_rubric_data = self._get_latest_rubric_from_tab(w)
+        else:
+            seed_rubric_data = None
+
+        if not seed_rubric_data:
+            seed_rubric_data = self._recently_created_rubric
+
+        if seed_rubric_data is not None:
+            seed_rubric_data = deepcopy(seed_rubric_data)
+            # users will need to add their own text
+            seed_rubric_data.pop("text", None)
+
+        if w.is_user_tab():
+            # Note if seed has group tags, that might happen in addition to user tab
             self._new_or_edit_rubric(seed_rubric_data, add_to_user_tab=w.shortname)
         else:
             self._new_or_edit_rubric(seed_rubric_data)
+
+    def _get_latest_rubric_from_tab(self, w) -> dict[str, Any]:
+        rlist = w.get_rid_list()
+        if not rlist:
+            return {}
+        dict_of_rubrics = {rub["rid"]: rub for rub in self.rubrics}
+        w_rubrics = [dict_of_rubrics[r] for r in rlist]
+        # is legographic sort of ok?  need to make datetime for compare?
+        w_rubrics.sort(key=lambda x: x["last_modified"])
+        # for r in w_rubrics:
+        #     print((r["rid"], r["last_modified"]))
+        return w_rubrics[-1]
 
     def other_usage(self, rid: int) -> None:
         """Open a dialog showing a list of tasks using the given rubric.
@@ -1826,7 +1847,6 @@ class RubricWidget(QWidget):
             groups=self.get_group_names(),
             reapable=reapable,
             experimental=self._parent.is_experimental(),
-            add_to_group=add_to_group,
             num_uses=num_uses,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:

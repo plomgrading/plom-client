@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 import sys
 from textwrap import shorten
-from typing import Any
+from typing import Any, Sequence
 
 import arrow
 from spellchecker import SpellChecker
@@ -434,10 +434,9 @@ class AddRubricDialog(QDialog):
         com: None | dict[str, Any] = None,
         *,
         edit: bool = False,
-        groups=[],
-        reapable=[],
+        groups: Sequence[str] = [],
+        reapable: Sequence[str] = [],
         experimental=False,
-        add_to_group=None,
         num_uses=0,
     ):
         """Initialize a new dialog to edit/create a comment.
@@ -459,12 +458,9 @@ class AddRubricDialog(QDialog):
 
         Keyword Args:
             edit: we're editing an existing rubric.
-            groups (list): optional list of existing/recommended group
+            groups: optional list of existing/recommended group
                 names that the rubric could be added to.
-            add_to_group (str/None): preselect this group in the scope
-                settings when creating a new rubric.  This must be one
-                of the `groups` list above.
-            reapable (list): these are used to "harvest" plain 'ol text
+            reapable: these are used to "harvest" plain 'ol text
                 annotations and morph them into comments.
             experimental (bool): whether to enable experimental or advanced
                 features.
@@ -843,7 +839,7 @@ class AddRubricDialog(QDialog):
         if com:
             self.TE.insertPlainText(com.get("text", ""))
             self.TEmeta.insertPlainText(com.get("meta", ""))
-            if com["kind"]:
+            if com.get("kind"):
                 if com["kind"] == "neutral":
                     self.typeRB_neutral.setChecked(True)
                 elif com["kind"] == "relative":
@@ -878,10 +874,13 @@ class AddRubricDialog(QDialog):
                 f"You ({self._username}) are creating a new rubric"
             )
 
+        # initializing the scope panel stuff
+        _scope_panel_start_open = False
         if com:
             if com.get("versions"):
                 self.version_specific_cb.setChecked(True)
                 self.version_specific_le.setText(com.get("versions"))
+                _scope_panel_start_open = True
             params = com.get("parameters", [])
             if not params:
                 # in case it was empty string or None or ...
@@ -901,16 +900,20 @@ class AddRubricDialog(QDialog):
                 if g not in groups:
                     self.group_combobox.insertItem(-1, g)
                 self.group_combobox.setCurrentText(g)
+                _scope_panel_start_open = True
             else:
                 self.group_checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
                 self.group_combobox.setEnabled(False)
+                _scope_panel_start_open = True
 
             if len(exclusive_tags) == 0:
                 self.group_excl.setChecked(False)
             elif len(exclusive_tags) == 1:
                 self.group_excl.setChecked(True)
+                _scope_panel_start_open = True
             else:
                 self.group_excl.setCheckState(Qt.CheckState.PartiallyChecked)
+                _scope_panel_start_open = True
 
             if not group_tags and not exclusive_tags:
                 pass
@@ -936,12 +939,8 @@ class AddRubricDialog(QDialog):
                     "Pedagogy tags: " + ", ".join(com["pedagogy_tags"])
                 )
                 self.label_pedagogy_tags.setVisible(True)
-
-        if add_to_group:
-            assert add_to_group in groups, f"{add_to_group} not in groups={groups}"
-            self.group_checkbox.setChecked(True)
-            self.group_combobox.setCurrentText(add_to_group)
-            # show the user we did this by opening the scope panel
+        if _scope_panel_start_open:
+            # if we fiddled with anything above, show it to the user
             self.scopeButton.animateClick()
 
         self.subsRemakeGridUI(params)
