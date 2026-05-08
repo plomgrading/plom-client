@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2018 Elvis Cai
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2022 Edith Coates
 # Copyright (C) 2022 Lior Silberman
@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import pathlib
 import queue
@@ -22,6 +23,8 @@ from PyQt6.QtCore import (
     pyqtSignal,
 )
 
+from plomclient.misc_utils import extract_rubric_rid_rev_pairs
+from plomclient.client import __version__
 from plomclient.messenger import Messenger
 from plomclient.plom_exceptions import (
     PlomConflict,
@@ -188,7 +191,6 @@ def synchronous_upload(
     marking_time: float | int,
     question_idx: int,
     ver: int,
-    rubrics: list,
     integrity_check: str,
     failCallback=None,
     successCallback=None,
@@ -205,7 +207,6 @@ def synchronous_upload(
         marking_time: the marking time (s) for this specific question.
         question_idx: the question index number.
         ver: the version number.
-        rubrics: list of rubrics used.
         integrity_check: the integrity_check string of the task.
         failCallback: call this function if we fail.
         successCallback: a function to call when we succeed.
@@ -224,6 +225,12 @@ def synchronous_upload(
                 aname, pname
             )
         )
+
+    # TODO: we could just keep all this in memory instead of on disc?
+    with pname.open("r") as fh:
+        plom_data = json.load(fh)
+    rubrics = extract_rubric_rid_rev_pairs(plom_data)
+
     try:
         progress_info = _msgr.MreturnMarkedTask(
             task,
@@ -232,9 +239,11 @@ def synchronous_upload(
             grade,
             marking_time,
             aname,
-            pname,
+            plom_data,
             rubrics,
             integrity_check,
+            user_agent="org.plomgrading.PlomClient",
+            user_agent_version=__version__,
         )
     except (PlomTaskChangedError, PlomTaskDeletedError, PlomConflict) as ex:
         failCallback(task, str(ex), True, False)

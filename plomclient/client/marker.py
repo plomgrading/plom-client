@@ -849,20 +849,12 @@ class MarkerClient(QWidget):
         num, question_idx = unpack_task_code(task)
         assert question_idx == self.question_idx, f"wrong qidx={question_idx}"
 
-        # TODO: this integrity is almost certainly not important unless I want
-        # to modify.  If just looking...?  Anyway, non-legacy doesn't enforce it
         try:
-            integrity = self.examModel.getIntegrityCheck(task)
-        except ValueError:
-            return False
-
-        try:
-            plomdata = self.msgr.get_annotations(
-                num, question_idx, edition=None, integrity=integrity
-            )
+            data = self.msgr.get_annotations(num, question_idx, edition=None)
             annot_img_info, annot_img_bytes = self.msgr.get_annotations_image(
-                num, question_idx, edition=plomdata["annotation_edition"]
+                num, question_idx, edition=data["edition"]
             )
+            plomdata = data["user_agent_data"]
         except PlomNoPaper as e:
             ErrorMsg(None, f"no annotations for task {task}: {e}").exec()
             return False
@@ -2304,7 +2296,6 @@ class MarkerClient(QWidget):
                 paperDir(dir): Working directory for the current task
                 aname(str): annotated file name
                 plomFileName(str): the name of the .plom file
-                rubric(list[str]): the keys of the rubrics used
                 integrity_check(str): the integrity_check string of the task.
 
         Returns:
@@ -2316,7 +2307,6 @@ class MarkerClient(QWidget):
             paperDir,
             aname,
             plomFileName,
-            rubrics,
             integrity_check,
         ) = stuff
         if not isinstance(grade, (int, float)):
@@ -2347,7 +2337,6 @@ class MarkerClient(QWidget):
             totmtime,  # total marking time (seconds)
             self.question_idx,
             self.version,
-            rubrics,
             integrity_check,
         )
         if self.allowBackgroundOps:

@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2025 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2023 Julian Lapenna
 # Copyright (C) 2024 Aden Chan
 
-import json
 import random
 import sys
 import tempfile
@@ -20,6 +19,7 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QColor, QPainterPath, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
+from plomclient.client import __version__
 from plomclient.messenger import Messenger
 from plomclient.plom_exceptions import PlomTakenException, PlomExistingLoginException
 
@@ -119,18 +119,14 @@ class SceneParent(QWidget):
         aname = self.scene.save(self.saveName)
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last
-        plomDict = {
+        anndata = {
             "base_images": self.src_img_data,
             "saveName": str(aname),
             "maxMark": self.maxMark,
             "currentMark": self.scene.getScore(),
             "sceneItems": lst,
         }
-        plomfile = self.saveName.with_suffix(".plom")
-        with open(plomfile, "w") as fh:
-            json.dump(plomDict, fh, indent="  ")
-            fh.write("\n")
-        return aname, plomfile
+        return aname, anndata
 
     def rpt(self):
         return QPointF(
@@ -216,8 +212,8 @@ class SceneParent(QWidget):
         )
 
     def doneAnnotating(self) -> tuple:
-        aname, plomfile = self.pickleIt()
-        return self.scene.score, self.scene.get_rubric_ids(), aname, plomfile
+        aname, anndata = self.pickleIt()
+        return self.scene.score, self.scene.get_rubric_ids(), aname, anndata
 
     def refreshDisplayedMark(self, score) -> None:
         # needed for compat with pagescene.py
@@ -279,7 +275,7 @@ def do_random_marking_backend(
             src_img_data = downloader.sync_downloads(src_img_data)
 
             basefile = Path(td) / "argh"
-            score, rubrics, aname, plomfile = annotatePaper(
+            score, rubrics, aname, anndata = annotatePaper(
                 question, maxMark, task, src_img_data, basefile, tags, Qapp=Qapp
             )
             print("Score of {} out of {}".format(score, maxMark))
@@ -290,14 +286,16 @@ def do_random_marking_backend(
                 score,
                 max(0, round(random.gauss(180, 50))),
                 aname,
-                plomfile,
+                anndata,
                 rubrics,
                 integrity_check,
+                user_agent="RandoMarker",
+                user_agent_version=__version__,
             )
 
             # remark every 6th paper
             if (remarking_counter % 6) == 0:
-                score, rubrics, aname, plomfile = annotatePaper(
+                score, rubrics, aname, anndata = annotatePaper(
                     question, maxMark, task, src_img_data, basefile, tags, Qapp=Qapp
                 )
                 print("Remarking to {} out of {}".format(score, maxMark))
@@ -308,9 +306,11 @@ def do_random_marking_backend(
                     score,
                     max(0, round(random.gauss(180, 50))),
                     aname,
-                    plomfile,
+                    anndata,
                     rubrics,
                     integrity_check,
+                    user_agent="RandoMarker",
+                    user_agent_version=__version__,
                 )
         remarking_counter += 1
 
