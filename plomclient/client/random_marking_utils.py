@@ -42,7 +42,6 @@ from .tools import (
 )
 from .downloader import Downloader
 
-
 # comments which will be made into rubrics by pushing them to server and getting back keys
 # need different ones for each question
 negativeComments = [

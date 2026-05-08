@@ -1,0 +1,334 @@
+# Copyright (C) 2025 Ambre G.
+# Copyright (C) 2025 Colin B. Macdonald
+# This file is distributed under the AGPL-3.0-or-later license.
+#
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-08-21 08:37+0000\n"
+"First-Translator: AMBRE G, 2025"
+"Last-Translator: idem"
+"Language: fr-FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: chooser.py:210
+#, fuzzy
+msgid "Only \"marker\" accounts can mark papers!"
+msgstr "Seul.e. s les Évaluateur.trice.s peuvent évalurt une fiche"
+
+#: chooser.py:236
+msgid "Only \"identifier\" accounts can identify papers!"
+msgstr ""
+
+#: chooser.py:281
+#, python-brace-format
+msgid ""
+"\n"
+"                    <p>Cannot read from the config file:</p>\n"
+"                    <blockquote><tt>{config_file}</tt></blockquote>\n"
+"                    <p>Perhaps the file is corrupted?  We can ignore the\n"
+"                    error and continue with default settings.</p>\n"
+"                    <p>You can also try restarting, and if the error\n"
+"                    does not go away, consider manually removing the\n"
+"                    config file from your computer.</p>\n"
+"                    <p>Error message: <tt>{error_message}</tt></p>\n"
+"                "
+msgstr ""
+
+#: chooser.py:313
+#, python-brace-format
+msgid ""
+"\n"
+"                    <p>Cannot write to the config file:</p>\n"
+"                    <blockquote><tt>{config_file}</tt></blockquote>\n"
+"                    <p>Settings will not be saved for future\n"
+"                    sessions.</p>\n"
+"                    <p>Error message: <tt>{error_message}</tt></p>\n"
+"                "
+msgstr ""
+
+#: chooser.py:401
+msgid "SSL error: cannot verify the identity of the server."
+msgstr "Erreur SSL: impossible de vérifier 'indentité du serveur."
+
+#: chooser.py:403
+msgid "Do you want to disable SSL certificate verification? Not recommended."
+msgstr ""
+"Souhaitez-vous désactiver la vérification des certificats SSL? Non-"
+"recommandé."
+
+#: chooser.py:417
+#, python-brace-format
+msgid ""
+"\n"
+"                    <p>Could not connect to server\n"
+"                    &ldquo;{server_url}&rdquo;.\n"
+"                    <br/>\n"
+"                    Check the server address and your internet\n"
+"                    connection?</p>\n"
+"                    <p>The precise error message was:</p>\n"
+"                "
+msgstr ""
+"\n"
+"                    <p>Échec de connexion au serveur\n"
+"                    &laquo; {server_url} &raquo;.\n"
+"                    Vérifiez l'adresse du serveur ainsi que votre\n"
+"                    connexion internet?\n"
+"                    <p>Le message d'erreur exact était:</p>\n"
+"                "
+
+#: chooser.py:433
+msgid "Caution: SSL exception granted."
+msgstr "Attention: exception SSL accordée."
+
+#: chooser.py:444
+#, python-brace-format
+msgid ""
+"Your client version {client_version} cannot connect to unsupported server"
+" {server_version}."
+msgstr ""
+"Votre version du client {client_version} ne peux pas se connected au "
+"serveur non-supporté {server_version}"
+
+#: chooser.py:491
+#, python-brace-format
+msgid ""
+"You have Plom Client {client_version} with API {client_api_version}\n"
+"Server: {server_product}\n"
+"Server version: {server_version}"
+msgstr ""
+"Vous avez la version du client Plom {client_version} avec la version de "
+"l'API {client_api_version}\n"
+"Serveur: {server_product}\n"
+"Version du serveur: {server_version}"
+
+#: chooser.py:503
+#, python-brace-format
+msgid ""
+"\n"
+"                        <p>Your client version {client_version} is\n"
+"                        on the server's reject list:</p>\n"
+"                        <blockquote>{reason}</blockquote>\n"
+"                        <p>It is strongly recommended that you stop and\n"
+"                        download a newer version of the client to\n"
+"                        connect to this server.</p>\n"
+"                    "
+msgstr ""
+
+#: chooser.py:519
+#, python-brace-format
+msgid ""
+"\n"
+"                        <p>Your client version {client_version} is\n"
+"                        blocked by the server, which says:</p>\n"
+"                        <blockquote>{reason}</blockquote>\n"
+"                        <p>You will need to download a newer version of\n"
+"                        the client to connect to this server.</p>\n"
+"                    "
+msgstr ""
+
+#: chooser.py:557
+msgid "You must specify a server address"
+msgstr "Vous devez spécifier une adresse de serveur"
+
+#: chooser.py:577 chooser.py:706
+msgid "Could not connect to server"
+msgstr "ne peux pas se connected au serveur non-supporté"
+
+#: chooser.py:602
+msgid "Authentication error during logout: "
+msgstr "Erreur d'authentification pendant la déconnexion: "
+
+#: chooser.py:606
+msgid "logged out"
+msgstr "déconnecté.e"
+
+#: chooser.py:644
+msgid "Could not authenticate due to API mismatch."
+msgstr "Impossible de s'authentifier à cause d'une discordance dans l'API."
+
+#: chooser.py:645
+msgid "Client version is "
+msgstr "La version du client est "
+
+#: chooser.py:651
+msgid "Could not authenticate: "
+msgstr "Impossible de s'authentifier: "
+
+#: chooser.py:658
+msgid ""
+"<p>You appear to be already logged in!</p><ul><li>Perhaps a previous "
+"session crashed.</li><li>Do you have another client running, e.g., on "
+"another computer?</li></ul><p>We can terminate your other session. This "
+"will crash the other client, but the current session will continue.</p>"
+msgstr ""
+"<p>Il semble que vous soyez déjà connecté.e.s!</p><ul><li>Peut-être "
+"qu'une session précédante s'est terminée brutalement.</li><li>Avez-vous "
+"un autre client en marche, ex., sur un autre ordinateur?</li></ul><p>Nous"
+" pouvons fermer votre autre session. Cela terminera brutalement l'autre "
+"client, mais la présente session continuera.</p>"
+
+#: chooser.py:668
+msgid "Proceed?"
+msgstr "Continuer?"
+
+#: chooser.py:683
+msgid "Could not get authentication token."
+msgstr "Impossible d'obtenir le jeton d'identification."
+
+#: chooser.py:685
+msgid "Unexpected error:"
+msgstr "Erreur innatendue:"
+
+#: chooser.py:697
+msgid ""
+"Server does not yet have a spec, nothing to mark. Perhaps you need to "
+"login to the web-interface to configure the server."
+msgstr ""
+"Le serveur ne possède pas encore de description fixée, rien à évaluer. "
+"Peut-être qu'il est nécessaire de vous connecter à l'interface web pour "
+"configurer le serveur."
+
+#: chooser.py:712
+#, python-brace-format
+msgid "logged in as “{username}”"
+msgstr "connecté.e en tant que « {username} »"
+
+#: chooser.py:723
+#, python-brace-format
+msgid "Choose a task for “{assessment_name}”"
+msgstr "Choisissez une tâche pour « {assessment_name} »"
+
+#: marker.py:386
+#, python-brace-format
+msgid "{what_task} of {assessment_name}"
+msgstr "{what_task} de {assessment_name}"
+
+#: marker.py:552
+msgid "Reset selected task"
+msgstr ""
+
+#: marker.py:553
+msgid "Reassign selected task to me"
+msgstr ""
+
+#: marker.py:554
+msgid "Reassign selected task..."
+msgstr ""
+
+#: marker.py:565 marker.py:598
+msgid "Refresh task list"
+msgstr ""
+
+#: marker.py:599
+msgid "View another paper..."
+msgstr ""
+
+#: annotator.py:197 annotator.py:773
+msgid "Save && Next"
+msgstr ""
+
+#: annotator.py:753
+msgid "Next"
+msgstr ""
+
+#: annotator.py:872
+msgid ""
+"\n"
+"                <p>This can happen with self-submitted work if a student\n"
+"                submits multiple copies of the same page.\n"
+"                Its probably harmless in that case, but if you see this\n"
+"                with scanned work, it might indicate a bug.</p>\n"
+"                <p>The repeated pages are:</p>\n"
+"                <ul>\n"
+"                "
+msgstr ""
+
+#: about_dialog.py:20
+#, python-brace-format
+msgid ""
+"\n"
+"            <h2>Plom Client {version}</h2>\n"
+"\n"
+"            <p>\n"
+"            <a "
+"href=\"https://plomgrading.org\">https://plomgrading.org</a>\n"
+"            </p>\n"
+"\n"
+"            <p>Copyright &copy; 2018-2026 Andrew Rechnitzer,\n"
+"            Colin B. Macdonald, and other contributors.</p>\n"
+"\n"
+"            <p>Plom is Free Software, available under the GNU Affero\n"
+"            General Public License version 3, or at your option, any\n"
+"            later version.</p>\n"
+"\n"
+"            <h3>Contributors</h3>\n"
+"\n"
+"            <p>Plom would not have been possible without the help of\n"
+"            <a "
+"href=\"https://gitlab.com/plom/plom/-/blob/main/CONTRIBUTORS\">our\n"
+"            contributors</a>.</p>\n"
+"\n"
+"            <h3>System info</h3>\n"
+"        "
+msgstr ""
+
+#~ msgid "is on the server's reject list:"
+#~ msgstr "est sur la liste noire du serveur:"
+
+#~ msgid ""
+#~ "It is strongly recommended that you "
+#~ "stop and update your client. Continue"
+#~ " anyway?"
+#~ msgstr ""
+#~ "Il est fortement recommandé que vous "
+#~ "vous arrietiez et mettiez à jour "
+#~ "votre client. Continuer malgré tout?"
+
+#~ msgid "You have Plom Client version"
+#~ msgstr "Vous avez la version du client Plom"
+
+#~ msgid "with API version"
+#~ msgstr "avec la version de l'API"
+
+#~ msgid "Server:"
+#~ msgstr "Serveur:"
+
+#~ msgid "Server version:"
+#~ msgstr "Version du serveur:"
+
+#~ msgid "is blocked by the server:"
+#~ msgstr "est bloquée par le serveur:"
+
+#~ msgid "You will need to update your client to connect to this server."
+#~ msgstr "Vous devez mettre votre client à jour pour vous connecter à ce serveur."
+
+#~ msgid "Only Lead Marker should be identifying papers."
+#~ msgstr ""
+#~ "Seul.e.s les Evaluateur.trice.s en Charge "
+#~ "devrait identifier les fiches."
+
+#~ msgid ""
+#~ "You may want to ask your "
+#~ "Instructor/Manager to promote your account."
+#~ " (In the future this might be "
+#~ "enforced.)"
+#~ msgstr ""
+#~ "Il est possible que vous souhaitiez "
+#~ "demander à votre Instructeur/Responsable de"
+#~ " promouvoir votre compte. (Dans le "
+#~ "futur cela sera peut-être obligatoire.)"
+
+#~ msgid "Cannot write config file:"
+#~ msgstr "Impossible d'écrire le fichier de configuration:"
+
+#~ msgid "Any settings will not be saved for future sessions."
+#~ msgstr "Aucun paramètre ne sera sauvegardé pour les sessions futures"
+
+#~ msgid "Error msg:"
+#~ msgstr "Message d'erreur:"
+
+#~ msgid "Using legacy messenger"
+#~ msgstr "Ancienne messagerie en cours d'utilisation"

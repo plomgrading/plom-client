@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2024 Colin B. Macdonald
+# Copyright (C) 2024, 2026 Colin B. Macdonald
 # Copyright (C) 2024 Bryan Tanady
 
 from __future__ import annotations
@@ -7,7 +7,6 @@ from __future__ import annotations
 from PyQt6.QtWidgets import QWidget
 
 from .useful_classes import InfoMsg, WarnMsg
-
 
 # TODO: more specific link once we have one!
 explain = """

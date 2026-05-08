@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2023 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2022-2023 Natalie Balashov
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2025 Aidan Murphy
@@ -67,7 +67,6 @@ from .useful_classes import (
     WarnMsg,
 )
 from .viewers import WholeTestView
-
 
 log = logging.getLogger("identr")
 

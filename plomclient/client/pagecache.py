@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2022-2024 Colin B. Macdonald
+# Copyright (C) 2022-2024, 2026 Colin B. Macdonald
 
 """Tools for managing the local page cache."""
 
@@ -8,7 +8,6 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Any
-
 
 log = logging.getLogger("PageCache")
 

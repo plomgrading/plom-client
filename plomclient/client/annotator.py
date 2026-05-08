@@ -75,9 +75,10 @@ from .pageview import PageView
 from .useful_classes import ErrorMsg, WarnMsg, InfoMsg
 from .useful_classes import SimpleQuestion, SimpleQuestionCheckBox
 from .useful_classes import _json_path_to_str
-
+from .translations import translate as _
 
 log = logging.getLogger("annotr")
+
 
 # Short descriptions of each tool to display to user.
 tipText = {
@@ -194,7 +195,7 @@ class Annotator(QWidget):
         # add in another save/next button bottom-right
         self._bottom_toolbar = QFrame()
         snb_l = QHBoxLayout()
-        self.another_save_next_button = QPushButton("Save && Next")
+        self.another_save_next_button = QPushButton(_("Save && Next"))
         snb_l.addStretch()
         snb_l.addWidget(self.another_save_next_button)
         self._bottom_toolbar.setLayout(snb_l)
@@ -750,7 +751,7 @@ class Annotator(QWidget):
             # self.rubric_widget.syncB.setVisible(False)
         # self.ui.frameTools.setVisible(False)
         self.ui.helpButton.setText("?")
-        self.ui.saveNextButton.setText("Next")
+        self.ui.saveNextButton.setText(_("Next"))
         # self.ui.arrangePagesButton.setText("\N{PAGES}")
         self.ui.arrangePagesButton.setText("")
         self.setIcon(self.ui.arrangePagesButton, "Rearrange pages", "extra_page.svg")
@@ -770,7 +771,7 @@ class Annotator(QWidget):
             self.rubric_widget.syncB.setVisible(True)
         # self.ui.frameTools.setVisible(True)
         self.ui.helpButton.setText("Key help")
-        self.ui.saveNextButton.setText("Save && Next")
+        self.ui.saveNextButton.setText(_("Save && Next"))
         self.ui.arrangePagesButton.setText("Adjust pages")
         self.ui.arrangePagesButton.setIcon(QIcon())
 
@@ -869,16 +870,14 @@ class Annotator(QWidget):
         repeats = {k: v for k, v in repeats.items() if len(v) > 1}
         if repeats:
             log.warning("Repeated pages in md5sum data: %s", repeats)
-            info = dedent(
-                """
+            info = _("""
                 <p>This can happen with self-submitted work if a student
                 submits multiple copies of the same page.
                 Its probably harmless in that case, but if you see this
                 with scanned work, it might indicate a bug.</p>
                 <p>The repeated pages are:</p>
                 <ul>
-                """
-            )
+            """)
             for md5, pages in repeats.items():
                 info += f"<li>pages {pages} @ md5: {md5}</li>"
             info += "</ul>"
@@ -926,8 +925,7 @@ class Annotator(QWidget):
         #
         for x in image_md5_list:
             if x not in [p["md5"] for p in pagedata]:
-                s = dedent(
-                    f"""
+                s = dedent(f"""
                     Unexpectedly situation!\n
                     There is an image being annotated that is not present in
                     the server's page data.  Probably that is not allowed(?)
@@ -937,8 +935,7 @@ class Annotator(QWidget):
                     Server pagedata is:
                       {pagedata}\n
                     Consider filing a bug with this info!
-                    """
-                ).strip()
+                """).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
 
@@ -966,18 +963,14 @@ class Annotator(QWidget):
             # But if the input already had dupes than its not our problem
             md5_in = [x["md5"] for x in src_img_data]
             if len(set(md5)) != len(md5) and len(set(md5_in)) == len(md5_in):
-                s = dedent(
-                    """
+                s = dedent("""
                     Unexpectedly repeated md5sums: did Adjust Pages somehow
                     dupe a page?  This should not happen!\n
                     Please file an issue with this info!\n
                     perm = {}\n
                     annotr src_img_data = {}\n
                     pagedata = {}
-                    """.format(
-                        perm, src_img_data, pagedata
-                    )
-                ).strip()
+                    """.format(perm, src_img_data, pagedata)).strip()
                 log.error(s)
                 ErrorMsg(self, s).exec()
             self.new_or_permuted_image_data(perm)

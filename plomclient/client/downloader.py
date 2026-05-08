@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2019-2021 Andrew Rechnitzer
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2020 Victoria Schuster
 
 """The background downloader downloads images using threads."""
@@ -29,7 +29,6 @@ from plomclient.plom_exceptions import PlomConnectionError, PlomException
 
 from .pagecache import PageCache
 from . import icons
-
 
 log = logging.getLogger("Downloader")
 

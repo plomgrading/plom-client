@@ -30,6 +30,9 @@ from plomclient.client import __version__
 from plomclient.client import Chooser
 from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
 
+# Issue #5130
+# import plomclient.client.translations
+
 
 def add_popup_to_toplevel_exception_handler() -> None:
     """Muck around with sys's excepthook to popup dialogs on exception and force exit."""
@@ -156,6 +159,10 @@ def main() -> None:
     timer.start(1000)
     # got this solution from
     # https://machinekoder.com/how-to-not-shoot-yourself-in-the-foot-using-python-qt/
+
+    # defines the translate function globally
+    # Issue #5130: turn this on
+    # plomclient.client.translations.setup()
 
     window = Chooser(app)
     window.show()

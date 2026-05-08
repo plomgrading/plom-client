@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2020-2021, 2024-2025 Colin B. Macdonald
+# Copyright (C) 2020-2021, 2024-2026 Colin B. Macdonald
 
 from pytest import raises
 
@@ -9,7 +9,6 @@ from plomclient.misc_utils import (
     unpack_task_code,
 )
 from plomclient.misc_utils import interpolate_questions_over_pages as interp
-
 
 endash = "\N{EN DASH}"
 

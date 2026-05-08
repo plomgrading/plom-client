@@ -35,7 +35,6 @@ from plomclient.plom_exceptions import (
 )
 from .base_messenger import BaseMessenger
 
-
 log = logging.getLogger("messenger")
 # requests_log = logging.getLogger("urllib3")
 # requests_log.setLevel(logging.DEBUG)
