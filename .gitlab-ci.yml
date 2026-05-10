@@ -542,6 +542,7 @@ oldOS_mindeps:
     - python3 -m pip install --upgrade pip setuptools packaging wheel
     - python3 -m pip --version
   script:
+    - python3 -m pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     - python3 -m pip install -r requirements.txt.tempminima
     - python3 -m pip install .
     # First, run the unit tests
@@ -558,6 +559,7 @@ minpy_mindeps:
       make imagemagick g++
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
     - pip install pytest
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install -r requirements.txt.tempminima
     - pip install .
