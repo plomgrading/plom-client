@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# Copyright (C) 2022-2025 Colin B. Macdonald
+# Copyright (C) 2022-2026 Colin B. Macdonald
 # Copyright (C) 2024 Aidan Murphy
 # Copyright (C) 2025 Andrew Rechnitzer
 
@@ -10,7 +10,7 @@ from typing import Any
 
 import arrow
 
-from plomclient.plom_exceptions import PlomInconsistentRubric, PlomInvalidRubric
+from plom.common.exceptions import PlomInconsistentRubric, PlomInvalidRubric
 
 
 def compute_score_naive(rubrics: list[dict[str, Any]], maxscore: int) -> int:
