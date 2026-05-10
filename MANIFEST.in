@@ -15,7 +15,6 @@
 include CHANGELOG.md LICENSE.md
 include requirements.txt
 
-include plomclient/demo_rubrics.toml
 include plomclient/client/default_keys.toml
 include plomclient/client/wasd_keys.toml
 include plomclient/client/ijkl_keys.toml
