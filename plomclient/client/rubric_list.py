@@ -39,7 +39,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient.misc_utils import next_in_longest_subsequence
+from plom.common.misc_utils import next_in_longest_subsequence
 from plomclient.rubric_utils import compute_score, diff_rubric, render_rubric_as_html
 from plom.common.exceptions import (
     PlomConflict,

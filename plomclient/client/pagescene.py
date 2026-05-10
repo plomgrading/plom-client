@@ -51,7 +51,7 @@ from PyQt6.QtWidgets import (
 )
 
 from plom.common.exceptions import PlomInconsistentRubric
-from plomclient.misc_utils import pprint_score
+from plom.common.misc_utils import pprint_score
 from plomclient.rubric_utils import compute_score
 
 from . import ScenePixelHeight

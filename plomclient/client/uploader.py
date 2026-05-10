@@ -23,9 +23,8 @@ from PyQt6.QtCore import (
     pyqtSignal,
 )
 
-from plomclient.misc_utils import extract_rubric_rid_rev_pairs
-from plomclient.client import __version__
 from plom.messenger import Messenger
+from plom.common.misc_utils import extract_rubric_rid_rev_pairs
 from plom.common.exceptions import (
     PlomConflict,
     PlomException,
@@ -34,6 +33,7 @@ from plom.common.exceptions import (
     PlomTaskChangedError,
     PlomTaskDeletedError,
 )
+from plomclient.client import __version__
 
 log = logging.getLogger("marker")
 

@@ -20,7 +20,7 @@ from typing import Any
 from PyQt6.QtCore import QModelIndex, QSortFilterProxyModel
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 
-from plomclient.misc_utils import pprint_score
+from plom.common.misc_utils import pprint_score
 
 from .useful_classes import _json_path_to_str
 

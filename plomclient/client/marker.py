@@ -59,7 +59,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QKeySequence, QPixmap, QShortcut
 
 from . import __version__
-from plomclient.misc_utils import unpack_task_code
+from plom.common.misc_utils import unpack_task_code
 from plom.common.exceptions import (
     PlomAuthenticationException,
     PlomBadTagError,
