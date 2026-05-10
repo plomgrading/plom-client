@@ -79,7 +79,6 @@ from plom.common.exceptions import (
     PlomNoSolutionException,
 )
 from plom.messenger import Messenger
-from plomclient.feedback_rules import feedback_rules as static_feedback_rules_data
 from .question_labels import (
     check_for_shared_pages,
     get_question_label,
@@ -1452,10 +1451,7 @@ class MarkerClient(QWidget):
         """Refresh various server data including the current task list from the server."""
         info = self.msgr.get_exam_info()
         self.max_papernum = info["current_largest_paper_num"]
-        # legacy won't provide this; fallback to a static value
-        self.annotatorSettings["feedback_rules"] = info.get(
-            "feedback_rules", static_feedback_rules_data
-        )
+        self.annotatorSettings["feedback_rules"] = info["feedback_rules"]
         # TODO: in future, I think I prefer a rules-based framework
         # Not "you are lead marker" but "you can view all tasks".
         # To my mind, "lead_marker" etc is some server detail that
