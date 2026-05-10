@@ -40,6 +40,7 @@ variables:
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
   PYINSTALLER_VER: 6.20.0
+  PLOMCOMMON_BRANCHNAME: main
 
 stages:
   - static_analysis
@@ -293,8 +294,10 @@ unittests:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pytest --version
     - pytest -l --pyargs plomclient
@@ -327,8 +330,10 @@ coverage:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.13.5
     - coverage run -m pytest
@@ -361,10 +366,12 @@ pylint:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages astroid~=4.1.2  # codespell:ignore astroid
     - pip install --break-system-packages pylint~=4.0.5
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pylint plomclient
   allow_failure: true
@@ -390,6 +397,7 @@ mypy-type-checking:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -y install python3-tomli  # else mypy fails, unsure why as Python 3.12
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
@@ -397,6 +405,7 @@ mypy-type-checking:
     - pip install --break-system-packages -U pillow
     # mypy 1.17.x cannot check against Python 3.8 code
     - pip install --break-system-packages mypy~=1.16.1
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
