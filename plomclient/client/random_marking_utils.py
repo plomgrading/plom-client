@@ -20,8 +20,8 @@ from PyQt6.QtGui import QColor, QPainterPath, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
 from plomclient.client import __version__
-from plomclient.messenger import Messenger
-from plomclient.plom_exceptions import PlomTakenException, PlomExistingLoginException
+from plom.messenger import Messenger
+from plom.common.exceptions import PlomTakenException, PlomExistingLoginException
 
 from .pageview import PageView
 from .pagescene import PageScene

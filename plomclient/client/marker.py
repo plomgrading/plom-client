@@ -60,7 +60,7 @@ from PyQt6.QtGui import QKeySequence, QPixmap, QShortcut
 
 from . import __version__
 from plomclient.misc_utils import unpack_task_code
-from plomclient.plom_exceptions import (
+from plom.common.exceptions import (
     PlomAuthenticationException,
     PlomBadTagError,
     PlomBenignException,
@@ -78,7 +78,7 @@ from plomclient.plom_exceptions import (
     PlomNoServerSupportException,
     PlomNoSolutionException,
 )
-from plomclient.messenger import Messenger
+from plom.messenger import Messenger
 from plomclient.feedback_rules import feedback_rules as static_feedback_rules_data
 from .question_labels import (
     check_for_shared_pages,

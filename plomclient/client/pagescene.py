@@ -50,7 +50,7 @@ from PyQt6.QtWidgets import (
     QToolButton,
 )
 
-from plomclient.plom_exceptions import PlomInconsistentRubric
+from plom.common.exceptions import PlomInconsistentRubric
 from plomclient.misc_utils import pprint_score
 from plomclient.rubric_utils import compute_score
 

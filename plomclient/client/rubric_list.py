@@ -40,20 +40,19 @@ from PyQt6.QtWidgets import (
 )
 
 from plomclient.misc_utils import next_in_longest_subsequence
-from .useful_classes import SimpleQuestion, ErrorMsg, InfoMsg, WarnMsg
-from .useful_classes import BigMessageDialog
 from plomclient.rubric_utils import compute_score, diff_rubric, render_rubric_as_html
-from .rubric_add_dialog import AddRubricDialog
-from .rubric_other_usage_dialog import RubricOtherUsageDialog
-
-from .rubric_conflict_dialog import RubricConflictDialog
-from plomclient.plom_exceptions import (
+from plom.common.exceptions import (
     PlomConflict,
     PlomInconsistentRubric,
     PlomNoPermission,
     PlomNoRubric,
     PlomNoServerSupportException,
 )
+from .useful_classes import SimpleQuestion, ErrorMsg, InfoMsg, WarnMsg
+from .useful_classes import BigMessageDialog
+from .rubric_add_dialog import AddRubricDialog
+from .rubric_other_usage_dialog import RubricOtherUsageDialog
+from .rubric_conflict_dialog import RubricConflictDialog
 
 log = logging.getLogger("annotr")
 

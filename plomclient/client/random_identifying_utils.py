@@ -7,8 +7,8 @@
 import random
 from typing import Union
 
-from plomclient.messenger import Messenger
-from plomclient.plom_exceptions import (
+from plom.messenger import Messenger
+from plom.common.exceptions import (
     PlomConflict,
     PlomExistingLoginException,
     PlomTakenException,

@@ -43,7 +43,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QKeySequence, QShortcut
 
-from plomclient.plom_exceptions import (
+from plom.common.exceptions import (
     PlomBenignException,
     PlomConflict,
     PlomNoClasslist,
