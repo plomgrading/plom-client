@@ -301,10 +301,6 @@ unittests:
   script:
     - pytest --version
     - pytest -l --pyargs plomclient
-    # TODO how to run only doctests?  here we just ignore-glib on "test_*"
-    # pip install --upgrade pytest
-    - pytest --version
-    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plomclient
 
 
 
