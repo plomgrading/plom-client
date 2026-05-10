@@ -51,8 +51,8 @@ from plom.common.exceptions import (
     PlomSeriousException,
     PlomTakenException,
 )
-from plomclient.rules import isValidStudentID
-from plomclient.rules import censorStudentName as censorName
+from plom.common.rules import isValidStudentID
+from plom.common.rules import censorStudentName as censorName
 
 from . import ui_files
 from .about_dialog import show_about_dialog

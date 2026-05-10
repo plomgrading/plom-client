@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
 )
 
-from plomclient.rubric_utils import render_rubric_as_html
+from plom.common.rubric_utils import render_rubric_as_html
 
 
 class RubricOtherUsageDialog(QDialog):

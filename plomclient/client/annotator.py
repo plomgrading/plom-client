@@ -62,7 +62,7 @@ from PyQt6.QtWidgets import (
 )
 
 from plom.common.misc_utils import pprint_score, unpack_task_code
-from plomclient.rubric_utils import check_for_illadvised
+from plom.common.rubric_utils import check_for_illadvised
 from . import cursors, icons, ui_files
 from .rubric_list import RubricWidget
 from .key_wrangler import get_key_bindings
