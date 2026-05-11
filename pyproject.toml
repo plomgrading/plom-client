@@ -124,14 +124,9 @@ omit = ["*/test_*", "/usr/*", "*/config*"]
 [tool.pytest.ini_options]
 qt_api = "pyqt6"
 
-[tool.djlint]
-# TODO: fix then remove from ignore list: H006, H013
-ignore="H006,H013,H021,H023,H030,H031"
-# indent=2
-
 [tool.mypy]
-# pretty = true
-exclude = []
+pretty = true
+# exclude = []
 
 # These avoid mypy errors: mostly libraries that don't yet have typing
 # Maintenance: try removing X, removing .mypy_cache, uninstalling types-X, and rerunning mypy locally
