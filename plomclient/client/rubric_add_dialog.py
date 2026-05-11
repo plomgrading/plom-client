@@ -61,8 +61,8 @@ from PyQt6.QtWidgets import (
     QSplitter,
 )
 
-from plomclient.plom_exceptions import PlomNoServerSupportException
-from plomclient.misc_utils import next_in_longest_subsequence
+from plom.common.exceptions import PlomNoServerSupportException
+from plom.common.misc_utils import next_in_longest_subsequence
 from . import icons
 from .useful_classes import InfoMsg, WarnMsg, SimpleQuestion
 

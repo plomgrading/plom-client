@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2024 Bryan Tanady
-# Copyright (C) 2024 Colin B. Macdonald
+# Copyright (C) 2024, 2026 Colin B. Macdonald
 # Copyright (C) 2025 Andrew Rechnitzer
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
 )
 
-from plomclient.rubric_utils import render_rubric_as_html
+from plom.common.rubric_utils import render_rubric_as_html
 
 
 class RubricOtherUsageDialog(QDialog):

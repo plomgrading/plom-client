@@ -40,6 +40,7 @@ variables:
   MACBIN_PY_VER: 3.12.9
   QT_QPA_PLATFORM: offscreen
   PYINSTALLER_VER: 6.20.0
+  PLOMCOMMON_BRANCHNAME: main
 
 stages:
   - static_analysis
@@ -73,13 +74,10 @@ wet_no_drift:
   script:
     - echo "Version info duplicated in two places, ensure same"
     - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
-    - export VER1=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/common.py`
-    - export VER2=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
+    - export VER1=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
     - echo $VER0
     - echo $VER1
-    - echo $VER2
     - bash -c "[[ x$VER0 == x$VER1 ]]"
-    - bash -c "[[ x$VER0 == x$VER2 ]]"
 
 
 # By default we assume the target is origin/main but if a MR is open,
@@ -140,7 +138,6 @@ copyright_visible:
 
 
 # to ensure the pypi job works, make sure we can package
-# TODO: we make these again during pypi push: better to use these artifacts?
 build-package:
   image: python:3
   stage: build
@@ -149,11 +146,9 @@ build-package:
     - python3 -m build
     - ls dist
     - md5sum dist/*
-    # mv dist dist_TODO
+    - sha256sum dist/*
   artifacts:
     paths:
-      # dist_TODO/plom*.tar.gz
-      # dist_TODO/plom*.whl
       - dist/
     expire_in: 16 days
 
@@ -296,15 +291,13 @@ unittests:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pytest --version
     - pytest -l --pyargs plomclient
-    # TODO how to run only doctests?  here we just ignore-glib on "test_*"
-    # pip install --upgrade pytest
-    - pytest --version
-    - pytest -l --doctest-modules --doctest-continue-on-failure --ignore-glob="*/test_*.py" plomclient
 
 
 
@@ -330,8 +323,10 @@ coverage:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.13.5
     - coverage run -m pytest
@@ -364,10 +359,12 @@ pylint:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages astroid~=4.1.2  # codespell:ignore astroid
     - pip install --break-system-packages pylint~=4.0.5
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pylint plomclient
   allow_failure: true
@@ -393,6 +390,7 @@ mypy-type-checking:
       python3-platformdirs python3-packaging python3-requests-toolbelt
       python3-tomlkit python3-arrow
       python3-pillow
+      git
     - apt-get -y install python3-tomli  # else mypy fails, unsure why as Python 3.12
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
@@ -400,6 +398,7 @@ mypy-type-checking:
     - pip install --break-system-packages -U pillow
     # mypy 1.17.x cannot check against Python 3.8 code
     - pip install --break-system-packages mypy~=1.16.1
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
@@ -501,6 +500,7 @@ newOS_newdeps_legacy:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
     - apt-get --no-install-recommends --yes install
+      git
       make g++ imagemagick
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
       libxcb-cursor0 libpango-1.0-0 libpangocairo-1.0-0
@@ -510,6 +510,7 @@ newOS_newdeps_legacy:
     # apt-get --no-install-recommends --yes install libimage-exiftool-perl
     - python3 -m pip install --upgrade pip setuptools packaging wheel
     - pip --version
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install .
     # First, run the unit tests
@@ -528,6 +529,7 @@ oldOS_mindeps:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
     - apt-get --no-install-recommends --yes install
+      git
       make g++ imagemagick
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
       libpango-1.0-0 libpangocairo-1.0-0
@@ -540,6 +542,7 @@ oldOS_mindeps:
     - python3 -m pip install --upgrade pip setuptools packaging wheel
     - python3 -m pip --version
   script:
+    - python3 -m pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     - python3 -m pip install -r requirements.txt.tempminima
     - python3 -m pip install .
     # First, run the unit tests
@@ -556,6 +559,7 @@ minpy_mindeps:
       make imagemagick g++
       libgl1-mesa-glx libsm6 libxrender1 libegl1 libxkbcommon0 libdbus-1-3
     - pip install pytest
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install -r requirements.txt.tempminima
     - pip install .
@@ -728,6 +732,7 @@ linuxbin_ubuntu2204:
       libxkbcommon0 libgl1 libegl1
       libgl1-mesa-glx libsm6 libxrender1 libdbus-1-3
       libxcb-cursor0 libpango-1.0-0 libpangocairo-1.0-0
+      git  # temporary; we need plom-common dependency from git repo
     - pip install --upgrade pip
     - pip install pyinstaller~=$PYINSTALLER_VER
     - pip install . --no-deps  # pyinstaller spec needs version

@@ -22,7 +22,7 @@ import sys
 
 from stdiomask import getpass
 
-from plomclient.common import Default_Port
+from plom.common import Default_Port
 
 from .random_marking_utils import (
     build_random_rubrics,

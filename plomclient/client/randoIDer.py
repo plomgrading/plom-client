@@ -16,7 +16,7 @@ import sys
 
 from stdiomask import getpass
 
-from plomclient.common import Default_Port
+from plom.common import Default_Port
 
 from .random_identifying_utils import do_rando_identifying
 

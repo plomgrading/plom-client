@@ -50,9 +50,9 @@ from PyQt6.QtWidgets import (
     QToolButton,
 )
 
-from plomclient.plom_exceptions import PlomInconsistentRubric
-from plomclient.misc_utils import pprint_score
-from plomclient.rubric_utils import compute_score
+from plom.common.exceptions import PlomInconsistentRubric
+from plom.common.misc_utils import pprint_score
+from plom.common.rubric_utils import compute_score
 
 from . import ScenePixelHeight
 from .image_view_widget import mousewheel_delta_to_scale

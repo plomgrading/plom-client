@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: FSFAP
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2022 Elizabeth Xiao
 # Copyright (C) 2024 Bryan Tanady
 #
@@ -16,6 +16,7 @@ importlib-resources==6.4.5
 packaging==24.2
 Pillow==10.4.0
 platformdirs==4.3.6
+plom-common==0.21.2
 pyspellchecker==0.8.2
 requests==2.32.3
 requests-toolbelt==1.0.0

@@ -24,8 +24,8 @@ else:
 # from PyQt6.QtCore import QThread
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
-from plomclient.messenger import BaseMessenger, Messenger
-from plomclient.plom_exceptions import PlomConnectionError, PlomException
+from plom.messenger import BaseMessenger, Messenger
+from plom.common.exceptions import PlomConnectionError, PlomException
 
 from .pagecache import PageCache
 from . import icons

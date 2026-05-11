@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2021 Andrew Rechnitzer
-# Copyright (C) 2019-2025 Colin B. Macdonald
+# Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2024 Aden Chan
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from plomclient.rules import isValidStudentID
+from plom.common.rules import isValidStudentID
 
 
 # little helper to jsonify pathlib.Path to str

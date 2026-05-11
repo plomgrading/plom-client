@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020-2022 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 
 """Randomly ID papers for testing purposes."""
 
 import random
 from typing import Union
 
-from plomclient.messenger import Messenger
-from plomclient.plom_exceptions import (
+from plom.messenger import Messenger
+from plom.common.exceptions import (
     PlomConflict,
     PlomExistingLoginException,
     PlomTakenException,
