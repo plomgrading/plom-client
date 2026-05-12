@@ -6,18 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.21.0] - 2026-05-11
 
 ### Added
 * The "New Rubric" dialog tries to pre-fill data based on previously created rubrics.
 
-### Removed
-
 ### Changed
 * Defer has been revamped: it is now used to hand off tasks to other users, typically when you're unsure about a task; "defer" as in "deferential".
 * Plom-client now depends on the new `plom-common` package.
-
-### Fixed
 
 
 
@@ -165,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Various fixes for crashes.
 
 
-[Unreleased]: https://gitlab.com/plom/plom-client/-/compare/v0.20.2...main
+[0.21.0]: https://gitlab.com/plom/plom-client/-/compare/v0.20.2...v0.21.0
 [0.20.2]: https://gitlab.com/plom/plom-client/-/compare/v0.20.0...v0.20.2
 [0.20.0]: https://gitlab.com/plom/plom-client/-/compare/v0.19.4...v0.20.0
 [0.19.4]: https://gitlab.com/plom/plom-client/-/compare/v0.19.3...v0.19.4
