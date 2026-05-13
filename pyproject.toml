@@ -51,7 +51,7 @@ dependencies = [
     "packaging",
     "Pillow>=7.0.0",  # Consider >=10.2 for Issue #3216
     "platformdirs>=3.0.0",
-    "plom-common>=0.21.2",
+    "plom-common>=0.21.3",
     "pyspellchecker>=0.8.1",
     "pytest>=7.2.0",
     "pytest-qt>=4.2.0",
