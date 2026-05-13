@@ -852,11 +852,11 @@ class MarkerClient(QWidget):
         assert question_idx == self.question_idx, f"wrong qidx={question_idx}"
 
         try:
-            data = self.msgr.get_annotations(num, question_idx, edition=None)
+            _data = self.msgr.get_annotations(num, question_idx, edition=None)
             annot_img_info, annot_img_bytes = self.msgr.get_annotations_image(
-                num, question_idx, edition=data["edition"]
+                num, question_idx, edition=_data["edition"]
             )
-            plomdata = data["user_agent_data"]
+            plomdata = _data["user_agent_data"]
         except PlomNoPaper as e:
             ErrorMsg(None, f"no annotations for task {task}: {e}").exec()
             return False
