@@ -37,9 +37,9 @@ variables:
   DOCKER_DRIVER: overlay2
   PLOM_NO_SSL_VERIFY: 1
   MACBIN_PY_MAJOR_MINOR_VER: "3.12"
-  MACBIN_PY_VER: 3.12.9
+  MACBIN_PY_VER: 3.12.10
   QT_QPA_PLATFORM: offscreen
-  PYINSTALLER_VER: 6.20.0
+  PYINSTALLER_VER: 6.21.0
   PLOMCOMMON_BRANCHNAME: main
 
 stages:
@@ -266,7 +266,7 @@ black:
   stage: static_analysis
   image: python:3.12
   before_script:
-    - pip3 install "black~=26.3.1"
+    - pip3 install "black~=26.5.1"
   script:
     - black --check --diff .
   allow_failure: true
@@ -328,7 +328,7 @@ coverage:
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.13.5
+    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.15.0
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -363,7 +363,7 @@ pylint:
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
     - pip install --break-system-packages astroid~=4.1.2  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=4.0.5
+    - pip install --break-system-packages pylint~=4.0.6
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pylint plomclient
@@ -427,7 +427,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.407
+    - pip install --break-system-packages pyright~=1.1.411
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -451,7 +451,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.12
+    - python3 -m pip install ruff~=0.15.20
   script:
     - ruff check .
     # ruff format .
@@ -462,7 +462,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.12
+    - python3 -m pip install ruff~=0.15.20
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
@@ -472,7 +472,7 @@ count-no-docstring:
     - ruff check --select $EXCEPTIONS --statistics --exit-zero
     - echo "Total $HOWMANY things without docstrings, please don't increase it"
     # Dear hackers: please try to decrease this number
-    - bash -c "[[ $HOWMANY -le 402 ]]"
+    - bash -c "[[ $HOWMANY -le 361 ]]"
   allow_failure: true
 
 
@@ -584,8 +584,8 @@ binary_upload:
 
       #### macOS versions
 
-      We build binaries for macOS using macOS 14.  They might also work on macOS 13.
-      Users of older versions of macOS will need to upgrade their OS.
+      We build binaries for macOS using macOS 15.  Untested on older macOS versions
+      Probably users of older versions of macOS will need to upgrade their OS.
 
       #### Changes in this release
 
@@ -598,12 +598,12 @@ binary_upload:
     - echo $VER
     - export LINKNAME0="Plom Client for GNU/Linux (AppImage)"
     - export LINKNAME1="Plom Client for Windows (Windows ≥ 10, x86-64)"
-    - export LINKNAME2="Plom Client for older Mac (x86_64, macOS ≥ 14)"
-    - export LINKNAME3="Plom Client for newer Mac (arm64, macOS ≥ 14)"
+    - export LINKNAME2="Plom Client for older Mac (x86_64, macOS ≥ 15)"
+    - export LINKNAME3="Plom Client for newer Mac (arm64, macOS ≥ 15)"
     - export FILENAME0="PlomClient-$VER-x86_64.AppImage"
     - export FILENAME1="PlomClient-$VER.exe"
-    - export FILENAME2="PlomClient-$VER-macos14-x86_64.zip"
-    - export FILENAME3="PlomClient-$VER-macos14-arm64.zip"
+    - export FILENAME2="PlomClient-$VER-macos15-x86_64.zip"
+    - export FILENAME3="PlomClient-$VER-macos15-arm64.zip"
     - echo "#### artifact md5 hashes" >> "release_desc.md"
     - echo "" >> "release_desc.md"
     - md5sum dist/plom*.tar.gz | sed -e "s/^/    /" | sed -e "s/dist\///" >> "release_desc.md"
@@ -767,8 +767,8 @@ linuxbin_ubuntu2204:
 #   Also "--enable-shared", but it seems to work without any of these things?
 # - macOS <= 10.14: older asdf, use `asdf local` not `asdf shell`
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
-macos14_universal_client:
-  image: macos-14-xcode-15
+macos15_universal_client:
+  image: macos-15-xcode-16
   tags:
   - saas-macos-medium-m1
   rules:
@@ -783,7 +783,7 @@ macos14_universal_client:
     HOMEBREW_NO_AUTO_UPDATE: 1
     HOMEBREW_NO_INSTALL_CLEANUP: 1
     HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
-    MINIMUM_MACOS_VER: 14
+    MINIMUM_MACOS_VER: 15
   script:
   - pwd
   - sw_vers
@@ -830,127 +830,11 @@ macos14_universal_client:
   - echo "Extracted version string '$VER'"
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
-  - export ZIPNAME=PlomClient-$VER-macos14.zip
+  - export ZIPNAME=PlomClient-$VER-macos15.zip
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-universal2.app
   - zip -r $ZIPNAME PlomClient-$VER.app
-  - popd
-  - mv dist/$ZIPNAME $ZIPNAME
-  - md5 $ZIPNAME > md5sum
-  - ls $ZIPNAME
-  - cat md5sum
-  artifacts:
-    paths:
-    - PlomClient*.zip
-    - md5sum
-    expire_in: 16 days
-
-
-macos14_arm64_client:
-  image: macos-14-xcode-15
-  tags:
-  - saas-macos-medium-m1
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    when: never
-  - if: $CI_PROJECT_PATH == "plom/plom-client"
-  stage: packaging
-  variables:
-    # Maybe it works on macOS 13...?
-    MINIMUM_MACOS_VER: 13
-  script:
-  - pwd
-  - sw_vers
-  - uname -a
-  - uname -m
-  - echo $SHELL
-  - which python
-  - python --version
-  - pip --version
-  - uname -m
-  - /usr/bin/python3 -m pip --version
-  - curl https://www.python.org/ftp/python/$MACBIN_PY_VER/python-$MACBIN_PY_VER-macos11.pkg --output python.pkg
-  - sudo installer -pkg python.pkg -target /
-  - python3 --version
-  - /usr/bin/python3 --version
-  - /usr/local/bin/python3 --version
-  - /usr/local/bin/python3 -m pip install --upgrade pip
-  - /usr/local/bin/python3 -m pip install -r requirements.txt
-  - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
-  - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
-  - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
-  - echo "Extracted version string '$VER'"
-  # ensure its not empty
-  - if [[ -z "$VER" ]]; then exit 1; fi
-  - export ZIPNAME=PlomClient-$VER-macos14-arm64.zip
-  - pushd dist
-  - ls
-  - ls -sklR PlomClient-$VER-arm64.app
-  - zip -r $ZIPNAME PlomClient-$VER-arm64.app
-  - popd
-  - mv dist/$ZIPNAME $ZIPNAME
-  - md5 $ZIPNAME > md5sum
-  - ls $ZIPNAME
-  - cat md5sum
-  artifacts:
-    paths:
-    - PlomClient*.zip
-    - md5sum
-    expire_in: 16 days
-
-
-macos14_x86_64_client:
-  image: macos-14-xcode-15
-  tags:
-  - saas-macos-medium-m1
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    when: never
-  - if: $CI_PROJECT_PATH == "plom/plom-client"
-  stage: packaging
-  variables:
-    # 2025-10-07: Colin tested on x86_64 macOS 13.7.4.
-    MINIMUM_MACOS_VER: 13
-  script:
-  - pwd
-  - sw_vers
-  - uname -a
-  - uname -m
-  - echo $SHELL
-  - which python
-  - python --version
-  - pip --version
-  - uname -m
-  - arch -x86_64 uname -m
-  # quite likely the built-in python would work...  but below we install latest
-  - arch -x86_64 /usr/bin/python3 --version
-  # install specific python
-  - curl https://www.python.org/ftp/python/$MACBIN_PY_VER/python-$MACBIN_PY_VER-macos11.pkg --output python.pkg
-  - sudo installer -pkg python.pkg -target /
-  - python3 --version
-  - /usr/bin/python3 --version
-  - /usr/local/bin/python3 --version
-  - arch -x86_64 /usr/local/bin/python3 --version
-  - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
-  # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
-  - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
-  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
-  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
-  - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
-  - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
-  - echo "Extracted version string '$VER'"
-  # ensure its not empty
-  - if [[ -z "$VER" ]]; then exit 1; fi
-  - export ZIPNAME=PlomClient-$VER-macos14-x86_64.zip
-  - pushd dist
-  - ls
-  - ls -sklR PlomClient-$VER-x86_64.app
-  - zip -r $ZIPNAME PlomClient-$VER-x86_64.app
   - popd
   - mv dist/$ZIPNAME $ZIPNAME
   - md5 $ZIPNAME > md5sum
@@ -1001,6 +885,122 @@ macos15_arm64_client:
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
   - export ZIPNAME=PlomClient-$VER-macos15-arm64.zip
+  - pushd dist
+  - ls
+  - ls -sklR PlomClient-$VER-arm64.app
+  - zip -r $ZIPNAME PlomClient-$VER-arm64.app
+  - popd
+  - mv dist/$ZIPNAME $ZIPNAME
+  - md5 $ZIPNAME > md5sum
+  - ls $ZIPNAME
+  - cat md5sum
+  artifacts:
+    paths:
+    - PlomClient*.zip
+    - md5sum
+    expire_in: 16 days
+
+
+macos15_x86_64_client:
+  image: macos-15-xcode-16
+  tags:
+  - saas-macos-medium-m1
+  rules:
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
+  - if: $CI_PROJECT_PATH == "plom/plom-client"
+  stage: packaging
+  variables:
+    # 2025-10-07: Colin tested the macOS 14 build on x86_64 macOS 13.7.4.
+    # TODO: needs testing now that we build on macOS 15...
+    MINIMUM_MACOS_VER: 13
+  script:
+  - pwd
+  - sw_vers
+  - uname -a
+  - uname -m
+  - echo $SHELL
+  - which python
+  - python --version
+  - pip --version
+  - uname -m
+  - arch -x86_64 uname -m
+  # quite likely the built-in python would work...  but below we install latest
+  - arch -x86_64 /usr/bin/python3 --version
+  # install specific python
+  - curl https://www.python.org/ftp/python/$MACBIN_PY_VER/python-$MACBIN_PY_VER-macos11.pkg --output python.pkg
+  - sudo installer -pkg python.pkg -target /
+  - python3 --version
+  - /usr/bin/python3 --version
+  - /usr/local/bin/python3 --version
+  - arch -x86_64 /usr/local/bin/python3 --version
+  - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
+  # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
+  - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
+  - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
+  - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
+  - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
+  - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
+  - ls dist/
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
+  - export ZIPNAME=PlomClient-$VER-macos15-x86_64.zip
+  - pushd dist
+  - ls
+  - ls -sklR PlomClient-$VER-x86_64.app
+  - zip -r $ZIPNAME PlomClient-$VER-x86_64.app
+  - popd
+  - mv dist/$ZIPNAME $ZIPNAME
+  - md5 $ZIPNAME > md5sum
+  - ls $ZIPNAME
+  - cat md5sum
+  artifacts:
+    paths:
+    - PlomClient*.zip
+    - md5sum
+    expire_in: 16 days
+
+
+macos26_arm64_client:
+  image: macos-26-xcode-26
+  tags:
+  - saas-macos-medium-m1
+  rules:
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    when: never
+  - if: $CI_PROJECT_PATH == "plom/plom-client"
+  stage: packaging
+  variables:
+    MINIMUM_MACOS_VER: 15
+  script:
+  - pwd
+  - sw_vers
+  - uname -a
+  - uname -m
+  - echo $SHELL
+  - which python
+  - python --version
+  - pip --version
+  - uname -m
+  - /usr/bin/python3 -m pip --version
+  - curl https://www.python.org/ftp/python/$MACBIN_PY_VER/python-$MACBIN_PY_VER-macos11.pkg --output python.pkg
+  - sudo installer -pkg python.pkg -target /
+  - python3 --version
+  - /usr/bin/python3 --version
+  - /usr/local/bin/python3 --version
+  - /usr/local/bin/python3 -m pip install --upgrade pip
+  - /usr/local/bin/python3 -m pip install -r requirements.txt
+  - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
+  - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
+  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - ls dist/
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - echo "Extracted version string '$VER'"
+  # ensure its not empty
+  - if [[ -z "$VER" ]]; then exit 1; fi
+  - export ZIPNAME=PlomClient-$VER-macos26-arm64.zip
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-arm64.app
