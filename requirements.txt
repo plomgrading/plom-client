@@ -13,15 +13,15 @@ PyQt6-Qt6==6.10.2
 PyQt6-sip==13.11.1
 arrow==1.4.0
 cryptography==48.0.0  # Note: 49 breaking macOS x86_64 builds?
-importlib-resources==6.5.2
+importlib-resources==7.1.0
 packaging==26.2
-platformdirs==4.9.6
+Pillow==12.3.0
+platformdirs==4.10.0
 plom-common==0.21.3
-Pillow==12.2.0
 pyspellchecker==0.9.0
-requests==2.33.1
+requests==2.34.2
 requests-toolbelt==1.0.0
 stdiomask==0.0.6
 tomli==2.4.1
-tomlkit==0.14.0
+tomlkit==0.15.0
 urllib3==2.7.0
