@@ -8,8 +8,8 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without any warranty.
 
-PyQt6==6.10.2
-PyQt6-Qt6==6.10.2
+PyQt6==6.11.0
+PyQt6-Qt6==6.11.1
 PyQt6-sip==13.11.1
 arrow==1.4.0
 cryptography==48.0.0  # Note: 49 breaking macOS x86_64 builds?
