@@ -79,6 +79,7 @@ Changelog = "https://gitlab.com/plom/plom-client/-/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = [
+    "plom",
     "plom.client",
     "plom.client.ui_files",
     "plom.client.tools",
