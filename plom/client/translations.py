@@ -7,7 +7,7 @@
 ## Notes on how to updates:
 
 # keeping things up-to-date after changing python code:
-cd plomclient/client
+cd plom/client
 pybabel extract chooser.py marker.py annotator.py about_dialog.py -o messages.pot
 pybabel update -i messages.pot -d locales/
 pybabel compile -d locales/
@@ -30,7 +30,7 @@ def setup():
 
     # localization parameters
     # filename_stem = Path(__file__).stem
-    localedir = "./plomclient/client/locales"
+    localedir = "./plom/client/locales"
     usr_locale = locale.getlocale()  # pair (lang, encoding)
 
     print(usr_locale)

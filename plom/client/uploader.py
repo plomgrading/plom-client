@@ -33,7 +33,7 @@ from plom.common.exceptions import (
     PlomTaskChangedError,
     PlomTaskDeletedError,
 )
-from plomclient.client import __version__
+from plom.client import __version__
 
 log = logging.getLogger("marker")
 

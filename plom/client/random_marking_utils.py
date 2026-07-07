@@ -19,10 +19,10 @@ from PyQt6.QtCore import QPointF, QRectF
 from PyQt6.QtGui import QColor, QPainterPath, QPen
 from PyQt6.QtWidgets import QApplication, QWidget
 
-from plomclient.client import __version__
 from plom.messenger import Messenger
 from plom.common.exceptions import PlomTakenException, PlomExistingLoginException
 
+from plom.client import __version__
 from .pageview import PageView
 from .pagescene import PageScene
 from .tools import (

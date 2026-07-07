@@ -42,7 +42,7 @@ AppDir:
     # Note version hardcoded here!
     version: 0.22.0.dev0
     exec: usr/bin/python3
-    exec_args: -m plomclient.client $@
+    exec_args: -m plom.client $@
   files:
     include: []
     exclude:

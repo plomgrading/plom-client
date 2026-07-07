@@ -26,12 +26,12 @@ from PyQt6.QtWidgets import QApplication, QMessageBox, QStyleFactory
 
 from plom.common import Default_Port
 from plom.common.misc_utils import utc_now_to_string
-from plomclient.client import __version__
-from plomclient.client import Chooser
-from plomclient.client.useful_classes import ErrorMsg, WarningQuestion
+from plom.client import __version__
+from plom.client import Chooser
+from plom.client.useful_classes import ErrorMsg, WarningQuestion
 
 # Issue #5130
-# import plomclient.client.translations
+# import plom.client.translations
 
 
 def add_popup_to_toplevel_exception_handler() -> None:
@@ -162,7 +162,7 @@ def main() -> None:
 
     # defines the translate function globally
     # Issue #5130: turn this on
-    # plomclient.client.translations.setup()
+    # plom.client.translations.setup()
 
     window = Chooser(app)
     window.show()

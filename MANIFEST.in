@@ -15,15 +15,15 @@
 include CHANGELOG.md LICENSE.md
 include requirements.txt
 
-include plomclient/client/default_keys.toml
-include plomclient/client/wasd_keys.toml
-include plomclient/client/ijkl_keys.toml
-include plomclient/client/esdf_french_keys.toml
+include plom/client/default_keys.toml
+include plom/client/wasd_keys.toml
+include plom/client/ijkl_keys.toml
+include plom/client/esdf_french_keys.toml
 
-include plomclient/client/ui_files/*.ui
-include plomclient/client/ui_files/*.png
-include plomclient/client/cursors/*.png
-include plomclient/client/icons/*.svg
-include plomclient/client/icons/*.png
-include plomclient/client/help_img/nav*.png
-include plomclient/client/help_img/click_drag.gif
+include plom/client/ui_files/*.ui
+include plom/client/ui_files/*.png
+include plom/client/cursors/*.png
+include plom/client/icons/*.svg
+include plom/client/icons/*.png
+include plom/client/help_img/nav*.png
+include plom/client/help_img/click_drag.gif

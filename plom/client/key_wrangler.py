@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2021 Andrew Rechnitzer
-# Copyright (C) 2021-2025 Colin B. Macdonald
+# Copyright (C) 2021-2026 Colin B. Macdonald
 
 from __future__ import annotations
 
@@ -30,8 +30,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-import plomclient.client
-
+import plom.client
 from .useful_classes import WarnMsg
 
 log = logging.getLogger("keybindings")
@@ -98,7 +97,7 @@ def get_keybindings_list() -> list[dict[str, Any]]:
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            with open(resources.files(plomclient.client) / f, "rb") as fh:
+            with open(resources.files(plom.client) / f, "rb") as fh:
                 overlay = tomllib.load(fh)
         metadata = overlay.pop("__metadata__", {})
         for k, v in metadata.items():
@@ -117,7 +116,7 @@ def get_keybinding_overlay(name: str) -> dict[str, Any]:
         overlay = {}
     else:
         log.info("Loading keybindings from %s", f)
-        with open(resources.files(plomclient.client) / f, "rb") as fh:
+        with open(resources.files(plom.client) / f, "rb") as fh:
             overlay = tomllib.load(fh)
     # note copy unnecessary as we have fresh copy from file
     overlay.pop("__metadata__", None)
@@ -147,7 +146,7 @@ def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
     """
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
-    with (resources.files(plomclient.client) / f).open("rb") as fh:
+    with (resources.files(plom.client) / f).open("rb") as fh:
         default_keydata = tomllib.load(fh)
     default_keydata.pop("__metadata__")
 
@@ -161,7 +160,7 @@ def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            with open(resources.files(plomclient.client) / f, "rb") as fh:
+            with open(resources.files(plom.client) / f, "rb") as fh:
                 overlay = tomllib.load(fh)
             overlay.pop("__metadata__", None)
         # keymap["overlay"] = overlay
