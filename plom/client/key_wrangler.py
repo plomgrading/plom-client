@@ -30,13 +30,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-import plom.client
 from .useful_classes import WarnMsg
 
 log = logging.getLogger("keybindings")
 
 
 stringOfLegalKeys = "qwertyuiop[]asdfghjkl;'zxcvbnm,./"
+
 
 actions_with_changeable_keys = [
     "prev-rubric",
@@ -90,6 +90,8 @@ _keybindings_list: list[dict[str, Any]] = [
 
 
 def get_keybindings_list() -> list[dict[str, Any]]:
+    import plom.client
+
     it = deepcopy(_keybindings_list)
     for kb in it:
         f = kb["file"]
@@ -109,6 +111,8 @@ def get_keybindings_list() -> list[dict[str, Any]]:
 
 def get_keybinding_overlay(name: str) -> dict[str, Any]:
     """An overlay is has only the changes compared to the basic shortcut keys."""
+    import plom.client
+
     _keybindings_dict = {x["name"]: x for x in _keybindings_list}
     keymap = _keybindings_dict[name]
     f = keymap["file"]
@@ -144,6 +148,8 @@ def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
     Could be refactored to cache the base data and non-custom overlays,
     if it is too slow.
     """
+    import plom.client
+
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
     with (resources.files(plom.client) / f).open("rb") as fh:
