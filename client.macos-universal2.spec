@@ -1,29 +1,29 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2018-2022 Andrew Rechnitzer
-# Copyright (C) 2020-2025 Colin B. Macdonald
+# Copyright (C) 2020-2026 Colin B. Macdonald
 # Copyright (C) 2024 Bryan Tanady
 
 import os
 from pathlib import Path
 
 import spellchecker
-from plomclient.client import __version__
+from plom.client import __version__
 
 block_cipher = None
 dict_path = spellchecker.__path__[0] + '/resources'
 
 # Notes: https://github.com/Ousret/charset_normalizer/issues/253
-a = Analysis(['plomclient/client/__main__.py'],
+a = Analysis(['plom/client/__main__.py'],
              pathex=['./'],
              binaries=[(dict_path, 'spellchecker/resources')],
              datas=[
-                 ('plomclient/client/icons/*.svg', 'plomclient/client/icons'),
-                 ('plomclient/client/icons/*.png', 'plomclient/client/icons'),
-                 ('plomclient/client/cursors/*.png', 'plomclient/client/cursors'),
-                 ('plomclient/client/ui_files/*.ui', 'plomclient/client/ui_files'),
-                 ('plomclient/client/help_img/nav*.png', 'plomclient/client/help_img'),
-                 ('plomclient/client/help_img/click_drag.gif', 'plomclient/client/help_img'),
-                 ('plomclient/client/*keys.toml', 'plomclient/client/'),
+                 ('plom/client/icons/*.svg', 'plom/client/icons'),
+                 ('plom/client/icons/*.png', 'plom/client/icons'),
+                 ('plom/client/cursors/*.png', 'plom/client/cursors'),
+                 ('plom/client/ui_files/*.ui', 'plom/client/ui_files'),
+                 ('plom/client/help_img/nav*.png', 'plom/client/help_img'),
+                 ('plom/client/help_img/click_drag.gif', 'plom/client/help_img'),
+                 ('plom/client/*keys.toml', 'plom/client/'),
              ],
              hiddenimports=["charset_normalizer.md__mypyc"],
              hookspath=[],
