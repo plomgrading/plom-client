@@ -125,6 +125,7 @@ qt_api = "pyqt6"
 
 [tool.mypy]
 pretty = true
+explicit_package_bases = true
 # exclude = []
 
 # These avoid mypy errors: mostly libraries that don't yet have typing
