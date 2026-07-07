@@ -22,7 +22,6 @@ from PyQt6.QtWidgets import QApplication, QWidget
 from plom.messenger import Messenger
 from plom.common.exceptions import PlomTakenException, PlomExistingLoginException
 
-from plom.client import __version__
 from .pageview import PageView
 from .pagescene import PageScene
 from .tools import (
@@ -236,6 +235,9 @@ def annotatePaper(
 def do_random_marking_backend(
     question: int, version: int, *, Qapp: QApplication, messenger, partial: float
 ) -> None:
+    # having this here instead of the top somehow helping circular imports
+    from plom.client import __version__
+
     maxMark = messenger.getMaxMark(question)
     remarking_counter = 0
 
