@@ -73,7 +73,7 @@ wet_no_drift:
     - apk add bash
   script:
     - echo "Version info duplicated in two places, ensure same"
-    - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+    - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
     - export VER1=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
     - echo $VER0
     - echo $VER1
@@ -130,11 +130,11 @@ copyright_visible:
     - YEAR=`date +"%Y"`
     - echo $YEAR
     - echo "Each new year, must bump some copyright notices"
-    - grep "&copy; ....-${YEAR}" plomclient/client/about_dialog.py
-    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plomclient/client/__init__.py
-    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plomclient/client/__main__.py
-    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plomclient/client/randoIDer.py
-    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plomclient/client/randoMarker.py
+    - grep "&copy; ....-${YEAR}" plom/client/about_dialog.py
+    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plom/client/__init__.py
+    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plom/client/__main__.py
+    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plom/client/randoIDer.py
+    - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plom/client/randoMarker.py
 
 
 # to ensure the pypi job works, make sure we can package
@@ -252,7 +252,7 @@ tag_matches_ver:
   rules:
    - if: $CI_COMMIT_TAG
   script:
-    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
     - echo "Extracted version string '$VER'"
     - echo "Now comparing to CI_COMMIT_TAG '$CI_COMMIT_TAG'"
     - echo $VER
@@ -297,7 +297,7 @@ unittests:
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pytest --version
-    - pytest -l --pyargs plomclient
+    - pytest -l --pyargs plom
 
 
 
@@ -366,7 +366,7 @@ pylint:
     - pip install --break-system-packages pylint~=4.0.6
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
-    - pylint plomclient
+    - pylint plom
   allow_failure: true
 
 
@@ -402,8 +402,8 @@ mypy-type-checking:
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
-    - mypy plomclient --python-ver 3.8 --install-types --non-interactive || true
-    - mypy plomclient --python-ver 3.8
+    - mypy plom --python-ver 3.8 --install-types --non-interactive || true
+    - mypy plom --python-ver 3.8
   allow_failure: true
 
 
@@ -514,7 +514,7 @@ newOS_newdeps_legacy:
   script:
     - pip install .
     # First, run the unit tests
-    - pytest-3 -l --pyargs plomclient
+    - pytest-3 -l --pyargs plom
 
 
 # Ensure minimum listed dependency versions actually work on older system
@@ -546,7 +546,7 @@ oldOS_mindeps:
     - python3 -m pip install -r requirements.txt.tempminima
     - python3 -m pip install .
     # First, run the unit tests
-    - pytest -l --pyargs plomclient
+    - pytest -l --pyargs plom
 
 
 # Minimum Python, minimum deps
@@ -563,7 +563,7 @@ minpy_mindeps:
   script:
     - pip install -r requirements.txt.tempminima
     - pip install .
-    - pytest -l --pyargs plomclient
+    - pytest -l --pyargs plom
 
 
 # upload binaries are generic gitlab packages
@@ -673,7 +673,7 @@ linux_client_appimage:
   script:
     - docker build --tag appimagebuilder_tmp -f AppImageBuilder.Containerfile .
     - docker create -ti --name dummy appimagebuilder_tmp bash
-    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
     - export NAME=PlomClient-$VER-x86_64.AppImage
     - docker cp dummy:/app/$NAME .
     - docker rm -f dummy
@@ -704,7 +704,7 @@ linuxbin_ubuntu2004:
   script:
     - pip install -r requirements.txt
     - pyinstaller client.linux.spec
-    - export VER=$(python3 -c "from plomclient.client import __version__; print(__version__)")
+    - export VER=$(python3 -c "from plom.client import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
     - export NAME=PlomClient-$VER-linux-ubuntu2004.bin
     - mv dist/PlomClient*.bin $NAME
@@ -739,7 +739,7 @@ linuxbin_ubuntu2204:
   script:
     - pip install -r requirements.txt
     - pyinstaller client.linux.spec
-    - export VER=$(python3 -c "from plomclient.client import __version__; print(__version__)")
+    - export VER=$(python3 -c "from plom.client import __version__; print(__version__)")
     - echo "Extracted version string '$VER'"
     # ensure its not empty
     - if [[ -z "$VER" ]]; then exit 1; fi
@@ -826,7 +826,7 @@ macos15_universal_client:
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
@@ -880,7 +880,7 @@ macos15_arm64_client:
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
@@ -942,7 +942,7 @@ macos15_x86_64_client:
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
@@ -996,7 +996,7 @@ macos26_arm64_client:
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
   - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
   - ls dist/
-  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plomclient/client/__init__.py`
+  - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
   # ensure its not empty
   - if [[ -z "$VER" ]]; then exit 1; fi
@@ -1040,9 +1040,9 @@ windows-client:
   - refreshenv
   - c:\python314\python -m pip install . --no-deps  # pyinstaller spec needs version
   - refreshenv
-  - c:\python314\python -m plomclient.client -h
+  - c:\python314\python -m plom.client -h
   - c:\python314\scripts\pyinstaller client.windows.spec
-  - $VER = &"c:\python314\python" -c "from plomclient.client import __version__; print(__version__)"
+  - $VER = &"c:\python314\python" -c "from plom.client import __version__; print(__version__)"
   - echo "Extracted version string '$VER'"
   - $NAME = "PlomClient-$VER.exe"
   - move dist\PlomClient*.exe $NAME
