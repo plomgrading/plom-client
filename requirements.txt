@@ -12,7 +12,7 @@ PyQt6==6.11.0
 PyQt6-Qt6==6.11.1
 PyQt6-sip==13.11.1
 arrow==1.4.0
-cryptography==48.0.1  # Note: 49 breaking macOS x86_64 builds?
+cryptography==48.0.1  # Note: 49 breaking macOS x86_64 builds, Issue #5139
 importlib-resources==7.1.0
 packaging==26.2
 Pillow==12.3.0
