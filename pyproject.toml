@@ -79,13 +79,13 @@ Changelog = "https://gitlab.com/plom/plom-client/-/blob/main/CHANGELOG.md"
 
 [tool.setuptools]
 packages = [
-    "plomclient",
-    "plomclient.client",
-    "plomclient.client.ui_files",
-    "plomclient.client.tools",
-    "plomclient.client.icons",
-    "plomclient.client.cursors",
-    "plomclient.client.help_img",
+    "plom",
+    "plom.client",
+    "plom.client.ui_files",
+    "plom.client.tools",
+    "plom.client.icons",
+    "plom.client.cursors",
+    "plom.client.help_img",
 ]
 
 # somewhat deprecated?  not supposed to package things into share?
@@ -96,10 +96,10 @@ packages = [
 "share/icons/hicolor/128x128/apps" = ["org.plomgrading.PlomClient.png"]
 
 [tool.setuptools.dynamic]
-version = {attr = 'plomclient.client.__version__'}
+version = {attr = 'plom.client.__version__'}
 
 [project.scripts]
-plom-client = "plomclient.client.__main__:main"
+plom-client = "plom.client.__main__:main"
 
 
 # Tooling configuration
@@ -126,6 +126,7 @@ qt_api = "pyqt6"
 
 [tool.mypy]
 pretty = true
+explicit_package_bases = true
 # exclude = []
 
 # These avoid mypy errors: mostly libraries that don't yet have typing
@@ -142,7 +143,7 @@ ignore_missing_imports = true
 #   - tool.py has pyqtProperty stuff that is also confusing to me
 [[tool.mypy.overrides]]
 module = [
-    'plomclient.client.tools.tool',
+    'plom.client.tools.tool',
 ]
 ignore_errors = true
 

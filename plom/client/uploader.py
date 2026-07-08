@@ -33,7 +33,6 @@ from plom.common.exceptions import (
     PlomTaskChangedError,
     PlomTaskDeletedError,
 )
-from plomclient.client import __version__
 
 log = logging.getLogger("marker")
 
@@ -219,6 +218,9 @@ def synchronous_upload(
             the same exam, which would indicate a programming error and
             should not happen.
     """
+    # having this here instead of the top somehow helping circular imports
+    from plom.client import __version__
+
     if not (aname.stem == f"G{task}" and pname.name == f"G{task}.plom"):
         raise PlomSeriousException(
             "Upload file names mismatch [{}, {}] - this should not happen".format(
