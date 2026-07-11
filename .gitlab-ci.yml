@@ -586,8 +586,8 @@ binary_upload:
 
       #### macOS versions
 
-      We build binaries for macOS using macOS 15.  Untested on older macOS versions
-      Probably users of older versions of macOS will need to upgrade their OS.
+      We build binaries for macOS using macOS 15.  They might also work on macOS 13 and 14.
+      Users of older versions of macOS will need to upgrade their OS.
 
       #### Changes in this release
 
