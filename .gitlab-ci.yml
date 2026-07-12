@@ -823,8 +823,7 @@ macos15_universal_client:
   - ls
   - /usr/local/bin/python3 -m delocate.cmd.delocate_merge pillow-12.3.0-cp314-cp314-macosx_11_0_arm64.whl  pillow-12.3.0-cp314-cp314-macosx_10_15_x86_64.whl
   - ls
-  - /usr/local/bin/python3 -m pip install Pillow
-  - delocate-merge --help
+  - /usr/local/bin/python3 -m pip install pillow-12.3.0-cp314-cp314-macosx_10_15_universal2.whl
   - /usr/local/bin/python3 -m pip install tomli --no-binary ":all:"
   # /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
   - /usr/local/bin/python3 -m pip install -r requirements.txt
