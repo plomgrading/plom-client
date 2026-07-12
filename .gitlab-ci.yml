@@ -762,6 +762,9 @@ linuxbin_ubuntu2204:
 # - June 2023, we now have only M1 (arm64) runners:
 #     - goal remains universal2 binary: Issue #1655
 #     - for now, we use Rosetta2 to cross compile onto x86_64
+#     - hangup is building Pillow which doesn't ship universal2 binaries:
+#         - however, their docs mention "delocate" to fuse two whls:
+#         - https://pillow.readthedocs.io/en/stable/installation/basic-installation.html
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
 macos15_universal_client:
   image: macos-15-xcode-16
