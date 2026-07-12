@@ -817,8 +817,16 @@ macos15_universal_client:
   # arch -x86_64 /usr/local/bin/python3 -m pip install Pillow --no-binaries
   # numpy fails complaining about blas, try from brew instead?
   # /usr/local/bin/python3 -m pip install numpy --no-binary ":all:"
-  - /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
+  - /usr/local/bin/python3 -m pip install delocate
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_x86_64 Pillow
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_arm64 Pillow
+  - ls
+  - /usr/local/bin/python3 -m delocate.cmd.delocate_merge pillow-12.3.0-cp314-cp314-macosx_11_0_arm64.whl  pillow-12.3.0-cp314-cp314-macosx_10_15_x86_64.whl
+  - ls
+  - /usr/local/bin/python3 -m pip install Pillow
+  - delocate-merge --help
   - /usr/local/bin/python3 -m pip install tomli --no-binary ":all:"
+  # /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
