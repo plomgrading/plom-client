@@ -759,12 +759,12 @@ linuxbin_ubuntu2204:
 
 
 # Notes on macOS client builds
-# - June 2023, we now have only M1 (arm64) runners:
+# - July 2026, we have only M1 (arm64) runners:
+#     - we use Rosetta2 to cross compile onto x86_64
 #     - goal remains universal2 binary: Issue #1655
-#     - for now, we use Rosetta2 to cross compile onto x86_64
-#     - hangup is building Pillow which doesn't ship universal2 binaries:
-#         - however, their docs mention "delocate" to fuse two whls:
-#         - https://pillow.readthedocs.io/en/stable/installation/basic-installation.html
+#     - for libraries that don't provide universal2 "fat wheels"
+#       we use "delocate" to fuse the arm64 and x86_64 wheels
+#       https://pillow.readthedocs.io/en/stable/installation/basic-installation.html
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
 macos15_universal_client:
   image: macos-15-xcode-16
