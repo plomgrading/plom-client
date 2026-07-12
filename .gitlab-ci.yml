@@ -830,7 +830,7 @@ macos15_universal_client:
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos-universal2.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -884,7 +884,7 @@ macos15_arm64_client:
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -946,7 +946,7 @@ macos15_x86_64_client:
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
+  - arch -x86_64 /usr/local/bin/python3 -m PyInstaller client.macos-x86_64.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -1000,7 +1000,7 @@ macos26_arm64_client:
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
