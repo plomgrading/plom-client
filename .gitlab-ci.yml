@@ -828,6 +828,7 @@ macos15_universal_client:
   - /usr/local/bin/python3 -m pip install fused_wheels/cffi*.whl
   - /usr/local/bin/python3 -m pip install fused_wheels/pillow*.whl
   - /usr/local/bin/python3 -m pip install tomli --no-binary ":all:"
+  # process requirements twice, as arm64 and x86_64: not sure this is needed or useful
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
