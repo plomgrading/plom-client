@@ -813,7 +813,6 @@ macos15_universal_client:
   - otool -l /usr/local/bin/python3 | grep LC_BUILD -A 4
   # arch -x86_64 /usr/local/bin/python3 -m pip install Pillow --no-binaries
   # numpy fails complaining about blas, try from brew instead?
-  - /usr/local/bin/python3 -m pip install charset_normalizer
   # /usr/local/bin/python3 -m pip install numpy --no-binary ":all:"
   # make "fused wheels" using delocate/lipo/etc for libraries that don't provide universal2
   - /usr/local/bin/python3 -m pip install delocate
@@ -945,7 +944,6 @@ macos15_x86_64_client:
   - /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
-  - arch -x86_64 /usr/local/bin/python3 -m pip install charset_normalizer
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
