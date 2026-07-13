@@ -185,6 +185,6 @@ convention = "google"
 'plom*/**/test*.py' = ['D100', 'D101', 'D102', 'D103', 'D104']
 
 [tool.appimage.build]
-python_version = "3.12"
+python = "3.12"
 icon = "org.plomgrading.PlomClient.png"
 desktop = "org.plomgrading.PlomClient.desktop"
