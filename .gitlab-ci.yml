@@ -710,6 +710,7 @@ linux_client_appimage_new:
       python3-pillow
       git
       wget
+      file
       fuse
     - apt-get -yq autoclean
     - export PIP_BREAK_SYSTEM_PACKAGES=1
