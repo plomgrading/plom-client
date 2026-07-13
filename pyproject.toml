@@ -189,4 +189,4 @@ python = "3.12"
 icon = "org.plomgrading.PlomClient.png"
 desktop = "org.plomgrading.PlomClient.desktop"
 # CI should ensure this is in-place
-appimagetool = "./appimagetool"
+#appimagetool = "./appimagetool"
