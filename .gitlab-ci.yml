@@ -713,8 +713,12 @@ linux_client_appimage_new:
     - pip install pyspellchecker stdiomask
     - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     - pip install appimage
+    - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+    - chmod 755 appimagetool-x86_64.AppImage
+    - ln -s appimagetool-x86_64.AppImage appimagetool
   script:
     - ls
+    - python3 -m appimage.build --check
     - python3 -m appimage.build
     - ls
     - ls build
