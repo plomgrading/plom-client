@@ -708,8 +708,9 @@ linux_client_appimage_new:
       python3-pillow
       git
     - apt-get -yq autoclean
-    - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - pip install pyspellchecker stdiomask
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     - pip install appimage
   script:
     - ls
