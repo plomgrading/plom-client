@@ -784,9 +784,12 @@ linux_AppImage_pyinstaller:
     # Assemble the AppDir
     - mkdir -p PlomClient.AppDir/usr/bin
     - mkdir -p PlomClient.AppDir/usr/share/metainfo
+    - mkdir -p PlomClient.AppDir/usr/share/applications
     - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir/
+    - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir/usr/share/applications
     - cp org.plomgrading.PlomClient.png PlomClient.AppDir/
-    - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/
+    # appimagetool seems unhappy with our "metainfo.xml", rename to appdata.xml
+    # cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/
     - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/org.plomgrading.PlomClient.appdata.xml
     - cp PlomClient-*-linux-ubuntu2204.bin PlomClient.AppDir/usr/bin/
     - pushd PlomClient.AppDir
