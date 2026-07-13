@@ -756,8 +756,8 @@ linux_AppImage_wip:
 
 
 # AppImage based on PyInstaller.  First prepare pyinstaller-based binary, generally on
-# "older" system.  This job then assembles the AppImage from those binaries.  I'm assuming
-# this system can be newer but might have that wrong, if so, do this on ubuntu:22 as well.
+# "older" system.  This job then assembles the AppImage from those binaries.
+# TODO: I'm assuming this system can be newer but might have that wrong...
 linux_AppImage_pyinstaller:
   stage: packaging
   needs: ["linuxbin_ubuntu2204"]
