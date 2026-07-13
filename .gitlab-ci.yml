@@ -689,6 +689,8 @@ linux_client_appimage:
     expire_in: 16 days
 
 
+# The [appimage tool](https://appimage.readthedocs.io/en/latest/index.html)
+# seems reasonably maintained...
 linux_client_appimage_new:
   # stage: packaging
   needs: []
@@ -716,8 +718,11 @@ linux_client_appimage_new:
     - pip install appimage
     - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
     - chmod 755 appimagetool-x86_64.AppImage
+    - ./appimagetool-x86_64.AppImage --version
+    - pwd
     - ln -s appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
     - ln -s appimagetool-x86_64.AppImage /usr/local/bin/appimagetool-x86_64.AppImage
+    - ls -al /usr/local/bin
     - appimagetool --version
   script:
     - ls
