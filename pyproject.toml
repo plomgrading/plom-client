@@ -183,13 +183,3 @@ convention = "google"
 '__init__.py' = ['F401', 'E402', 'I001']
 # tests don't need docstrings
 'plom*/**/test*.py' = ['D100', 'D101', 'D102', 'D103', 'D104']
-
-# TODO: this is used by the "linux_AppImage_wip" CI job: delete this block
-# when that is removed
-[tool.appimage.build]
-python = "3.12"
-icon = "org.plomgrading.PlomClient.png"
-desktop = "org.plomgrading.PlomClient.desktop"
-# CI should ensure this is in-place
-# appimagetool = "/usr/local/bin/appimagetool"
-appimagetool = "/builds/plom/plom-client/appimagetool-x86_64.AppImage"
