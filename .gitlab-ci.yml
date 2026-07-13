@@ -689,6 +689,51 @@ linux_client_appimage:
     expire_in: 16 days
 
 
+linux_client_appimage_new:
+  # stage: packaging
+  needs: []
+  image: ubuntu:24.04
+  before_script:
+    - apt-get -y update
+    - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
+    - apt-get --no-install-recommends -y install
+      libpango-1.0-0 libpangocairo-1.0-0
+      python3
+      python3-pip
+      python3-setuptools
+      python3-wheel
+      python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
+      python3-platformdirs python3-packaging python3-requests-toolbelt
+      python3-tomlkit python3-arrow
+      python3-pillow
+      git
+    - apt-get -yq autoclean
+    - pip install --break-system-packages pyspellchecker stdiomask
+    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
+    - pip install appimage
+  script:
+    - ls
+    - python3 -m appimage.build
+    - ls
+    - ls build
+    - ls dist
+    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
+    - export NAME=PlomClient-$VER-new-x86_64.AppImage
+    - pushd dist
+    - mv plom-client-x86_64.AppImage $NAME
+    - md5sum $NAME > md5sum
+    - ls $NAME
+    - cat md5sum
+    - mv md5sum ..
+    - mv $NAME ..
+    - popd
+  artifacts:
+    paths:
+    - PlomClient*.AppImage
+    - md5sum
+    expire_in: 16 days
+
+
 # TODO: broken by the upgrade to PyQt6, currently set to manual
 linuxbin_ubuntu2004:
   stage: packaging
