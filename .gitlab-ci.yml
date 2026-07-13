@@ -765,6 +765,7 @@ linuxbin_ubuntu2204:
 #     - for libraries that don't provide universal2 "fat wheels"
 #       we use "delocate" to fuse the arm64 and x86_64 wheels
 #       https://pillow.readthedocs.io/en/stable/installation/basic-installation.html
+#     - 2026-07: tried this on an old x86 macOS 13 and shows a line through the icon :(
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
 macos15_universal_client:
   image: macos-15-xcode-16
@@ -774,6 +775,8 @@ macos15_universal_client:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     when: never
   - if: $CI_PROJECT_PATH == "plom/plom-client"
+    when: manual
+  allow_failure: true
   stage: packaging
   needs: []
   variables:
