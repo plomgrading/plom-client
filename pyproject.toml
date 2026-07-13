@@ -184,6 +184,8 @@ convention = "google"
 # tests don't need docstrings
 'plom*/**/test*.py' = ['D100', 'D101', 'D102', 'D103', 'D104']
 
+# TODO: this is used by the "linux_AppImage_wip" CI job: delete this block
+# when that is removed
 [tool.appimage.build]
 python = "3.12"
 icon = "org.plomgrading.PlomClient.png"
