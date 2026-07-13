@@ -692,9 +692,10 @@ linux_client_appimage:
 # The [appimage tool](https://appimage.readthedocs.io/en/latest/index.html)
 # seems reasonably maintained...
 linux_client_appimage_new:
-  # stage: packaging
+  stage: packaging
   needs: []
   image: ubuntu:24.04
+  allow_failure: true
   before_script:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
@@ -838,6 +839,7 @@ linuxbin_ubuntu2004:
 
 linuxbin_ubuntu2204:
   stage: packaging
+  needs: []
   image: ubuntu:22.04
   before_script:
     - apt-get update
