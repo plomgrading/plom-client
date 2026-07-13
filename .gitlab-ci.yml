@@ -66,18 +66,18 @@ codespell:
 
 
 # sometimes we write everything twice: this job ensures dupe file/info stay same
-wet_no_drift:
-  stage: static_analysis
-  image: alpine
-  before_script:
-    - apk add bash
-  script:
-    - echo "Version info duplicated in two places, ensure same"
-    - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
-    - export VER1=`sed -nr 's/^\s+version. (.+)/\1/p' AppImageBuilder.yml`
-    - echo $VER0
-    - echo $VER1
-    - bash -c "[[ x$VER0 == x$VER1 ]]"
+# wet_no_drift:
+#   stage: static_analysis
+#   image: alpine
+#   before_script:
+#     - apk add bash
+#   script:
+#     - echo "Version info duplicated in two places, ensure same"
+#     - export VER0=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
+#     - export VER1=...
+#     - echo $VER0
+#     - echo $VER1
+#     - bash -c "[[ x$VER0 == x$VER1 ]]"
 
 
 # By default we assume the target is origin/main but if a MR is open,
@@ -665,27 +665,6 @@ binary_upload:
       - release_desc.md
     reports:
       dotenv: release_info.env
-    expire_in: 16 days
-
-
-# Build Client Binaries
-# These are run once tests pass: to change re-add `needs: []`
-linux_AppImage_legacy:
-  stage: packaging
-  script:
-    - docker build --tag appimagebuilder_tmp -f AppImageBuilder.Containerfile .
-    - docker create -ti --name dummy appimagebuilder_tmp bash
-    - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
-    - export NAME=PlomClient-$VER-x86_64.AppImage
-    - docker cp dummy:/app/$NAME .
-    - docker rm -f dummy
-    - md5sum $NAME > md5sum
-    - ls $NAME
-    - cat md5sum
-  artifacts:
-    paths:
-    - PlomClient*.AppImage
-    - md5sum
     expire_in: 16 days
 
 

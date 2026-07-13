@@ -12,7 +12,7 @@ __license__ = "AGPL-3.0-or-later"
 # TODO: this should be a default and the PageScene should have a physical size.
 ScenePixelHeight = 2000
 
-# Also hardcoded in AppImageBuilder.yml
+
 __version__ = "0.22.0.dev0"
 
 
