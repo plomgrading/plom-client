@@ -670,7 +670,7 @@ binary_upload:
 
 # Build Client Binaries
 # These are run once tests pass: to change re-add `needs: []`
-linux_client_appimage:
+linux_AppImage_legacy:
   stage: packaging
   script:
     - docker build --tag appimagebuilder_tmp -f AppImageBuilder.Containerfile .
@@ -691,7 +691,7 @@ linux_client_appimage:
 
 # The [appimage tool](https://appimage.readthedocs.io/en/latest/index.html)
 # seems reasonably maintained...  But I can't get it working, ignoring for now
-linux_client_appimage_new:
+linux_AppImage_wip:
   stage: packaging
   needs: []
   when: manual
@@ -755,10 +755,10 @@ linux_client_appimage_new:
     expire_in: 16 days
 
 
-# Idea is to prepare the pyinstaller-based binary, generally on "older" systems
-# This job then assembles the AppImage from those binaries.  I'm assuming this
-# system can be newer but might have that wrong, if so do this ubuntu22 as well.
-linux_client_appimage_from_pyinstaller:
+# AppImage based on PyInstaller.  First prepare pyinstaller-based binary, generally on
+# "older" system.  This job then assembles the AppImage from those binaries.  I'm assuming
+# this system can be newer but might have that wrong, if so, do this on ubuntu:22 as well.
+linux_AppImage_pyinstaller:
   stage: packaging
   needs: ["linuxbin_ubuntu2204"]
   image: ubuntu:24.04
@@ -766,20 +766,22 @@ linux_client_appimage_from_pyinstaller:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
     - apt-get --no-install-recommends -y install
-      wget curl ca-certificates
+      binutils wget curl ca-certificates
       file gnupg2 appstream
     - apt-get -yq autoclean
     - pwd
+    # TODO: this doesn't feel like a canonical URL
     - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
     - chmod 755 appimagetool-x86_64.AppImage
-    - ./appimagetool-x86_64.AppImage --version
     - ln -s appimagetool-x86_64.AppImage appimagetool
-    - ls
     - ./appimagetool --version
   script:
     - pwd
     - ls
     - ls PlomClient-*
+    # some indication of which glibc we might need
+    - strings PlomClient-* | grep '^GLIBC_' | sort -V | uniq
+    # Assemble the AppDir
     - mkdir -p PlomClient.AppDir/usr/bin
     - mkdir -p PlomClient.AppDir/usr/share/metainfo
     - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir/
@@ -789,6 +791,7 @@ linux_client_appimage_from_pyinstaller:
     - pushd PlomClient.AppDir
     - ln -s usr/bin/PlomClient-*-linux-ubuntu2204.bin AppRun
     - popd
+    # Build the AppDir into an AppImage
     - ./appimagetool PlomClient.AppDir
     - ls
     - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
