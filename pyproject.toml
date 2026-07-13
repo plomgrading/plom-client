@@ -42,7 +42,7 @@ classifiers=[
     "Programming Language :: Python :: 3.13",
 ]
 dynamic = ['version']
-requires-python = '>=3.9'
+requires-python = '>=3.8'
 # pyopenssl is not a direct dependency but old versions caused trouble: Issue #3150
 dependencies = [
     "arrow>=1.1.1",
