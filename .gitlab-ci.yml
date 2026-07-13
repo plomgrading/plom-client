@@ -786,6 +786,9 @@ linux_client_appimage_from_pyinstaller:
     - cp org.plomgrading.PlomClient.png PlomClient.AppDir/
     - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/
     - cp PlomClient-*-linux-ubuntu2204.bin PlomClient.AppDir/usr/bin/
+    - pushd PlomClient.AppDir
+    - ln -s usr/bin/PlomClient-*-linux-ubuntu2204.bin AppRun
+    - popd
     - ./appimagetool PlomClient.AppDir
     - ls
     - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
