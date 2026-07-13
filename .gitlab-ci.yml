@@ -694,6 +694,7 @@ linux_client_appimage:
 linux_client_appimage_new:
   stage: packaging
   needs: []
+  when: manual
   image: ubuntu:24.04
   allow_failure: true
   before_script:
@@ -785,11 +786,9 @@ linux_client_appimage_from_pyinstaller:
     - ls
     - ./appimagetool --version
   script:
-    - ls
     - pwd
-    - ls build
-    - ls dist
-    - mkdir PlomClient.AppDir
+    - ls
+    - ls PlomClient-*
     - mkdir -p PlomClient.AppDir/usr/bin
     - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir
     - cp org.plomgrading.PlomClient.png PlomClient.AppDir
@@ -798,6 +797,10 @@ linux_client_appimage_from_pyinstaller:
     - ls
     - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
     - export NAME=PlomClient-$VER-new-x86_64.AppImage
+    - mv Plom_Client-x64_64.AppImage $NAME
+    - md5sum $NAME > md5sum
+    - ls $NAME
+    - cat md5sum
   artifacts:
     paths:
     - PlomClient*.AppImage
