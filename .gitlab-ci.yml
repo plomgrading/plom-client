@@ -755,12 +755,14 @@ linux_client_appimage_new:
     expire_in: 16 days
 
 
+# Idea is to prepare the pyinstaller-based binary, generally on "older" systems
+# This job then assembles the AppImage from those binaries.  I'm assuming this
+# system can be newer but might have that wrong, if so do this ubuntu22 as well.
 linux_client_appimage_from_pyinstaller:
   stage: packaging
   needs: ["linuxbin_ubuntu2204"]
   image: ubuntu:24.04
   before_script:
-    - ls
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
     - apt-get --no-install-recommends -y install
@@ -769,15 +771,10 @@ linux_client_appimage_from_pyinstaller:
       python3-pip
       python3-setuptools
       python3-wheel
-      python3-pyqt6 python3-pyqt6.qtsvg pyqt6-dev-tools
-      python3-platformdirs python3-packaging python3-requests-toolbelt
-      python3-tomlkit python3-arrow
-      python3-pillow
-      git
       wget
+      file
       fuse
     - apt-get -yq autoclean
-    - export PIP_BREAK_SYSTEM_PACKAGES=1
     - pwd
     - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
     - chmod 755 appimagetool-x86_64.AppImage
