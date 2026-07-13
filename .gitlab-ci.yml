@@ -787,6 +787,7 @@ linux_AppImage_pyinstaller:
     - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir/
     - cp org.plomgrading.PlomClient.png PlomClient.AppDir/
     - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/
+    - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/org.plomgrading.PlomClient.appdata.xml
     - cp PlomClient-*-linux-ubuntu2204.bin PlomClient.AppDir/usr/bin/
     - pushd PlomClient.AppDir
     - ln -s usr/bin/PlomClient-*-linux-ubuntu2204.bin AppRun
