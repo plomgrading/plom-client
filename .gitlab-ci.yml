@@ -766,11 +766,11 @@ linux_client_appimage_from_pyinstaller:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
     - apt-get --no-install-recommends -y install
-      curl
+      wget curl ca-certificates
       file gnupg2 appstream
     - apt-get -yq autoclean
     - pwd
-    - curl https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+    - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
     - chmod 755 appimagetool-x86_64.AppImage
     - ./appimagetool-x86_64.AppImage --version
     - ln -s appimagetool-x86_64.AppImage appimagetool
