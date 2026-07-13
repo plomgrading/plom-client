@@ -723,7 +723,7 @@ linux_client_appimage_new:
     - ln -s appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
     - ln -s appimagetool-x86_64.AppImage /usr/local/bin/appimagetool-x86_64.AppImage
     - ls -al /usr/local/bin
-    - appimagetool --version
+    - /usr/local/bin/appimagetool --version
   script:
     - ls
     - pwd
