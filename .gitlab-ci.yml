@@ -766,7 +766,8 @@ linux_client_appimage_from_pyinstaller:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
     - apt-get --no-install-recommends -y install
-      wget file
+      wget
+      file gnupg2 appstream
     - apt-get -yq autoclean
     - pwd
     - wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
@@ -780,8 +781,10 @@ linux_client_appimage_from_pyinstaller:
     - ls
     - ls PlomClient-*
     - mkdir -p PlomClient.AppDir/usr/bin
-    - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir
-    - cp org.plomgrading.PlomClient.png PlomClient.AppDir
+    - mkdir -p PlomClient.AppDir/usr/share/metainfo
+    - cp org.plomgrading.PlomClient.desktop PlomClient.AppDir/
+    - cp org.plomgrading.PlomClient.png PlomClient.AppDir/
+    - cp org.plomgrading.PlomClient.metainfo.xml PlomClient.AppDir/usr/share/metainfo/
     - cp PlomClient-*-linux-ubuntu2204.bin PlomClient.AppDir/usr/bin/
     - ./appimagetool PlomClient.AppDir
     - ls
