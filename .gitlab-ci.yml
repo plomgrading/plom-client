@@ -759,15 +759,13 @@ linuxbin_ubuntu2204:
 
 
 # Notes on macOS client builds
-# - June 2023, we now have only M1 (arm64) runners:
+# - July 2026, we have only M1 (arm64) runners:
+#     - we use Rosetta2 to cross compile onto x86_64
 #     - goal remains universal2 binary: Issue #1655
-#     - for now, we use Rosetta2 to cross compile onto x86_64
-# - Aug 2021, based on https://github.com/danhper/asdf-python/issues/38 we used:
-#     - PYTHON_CONFIGURE_OPTS="--enable-framework" asdf install python $MACBIN_PY_VER
-#   Not sure what this was for but it broke in 2023-Jan (Issue #2478).  I tried:
-#   "--enable-framework=/Users/gitlab/.asdf/installs/Library/Frameworks" asdf ...
-#   Also "--enable-shared", but it seems to work without any of these things?
-# - macOS <= 10.14: older asdf, use `asdf local` not `asdf shell`
+#     - for libraries that don't provide universal2 "fat wheels"
+#       we use "delocate" to fuse the arm64 and x86_64 wheels
+#       https://pillow.readthedocs.io/en/stable/installation/basic-installation.html
+#     - 2026-07: tried this on an old x86 macOS 13 and shows a line through the icon :(
 # - to get hardcoded path: verbose `pip install -v -v pyinstaller`
 macos15_universal_client:
   image: macos-15-xcode-16
@@ -815,18 +813,31 @@ macos15_universal_client:
   - which pip
   - which pip3
   - pip --version
-  # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
-  - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
-  # /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
+  - otool -l /usr/local/bin/python3 | grep LC_BUILD -A 4
   # arch -x86_64 /usr/local/bin/python3 -m pip install Pillow --no-binaries
   # numpy fails complaining about blas, try from brew instead?
   # /usr/local/bin/python3 -m pip install numpy --no-binary ":all:"
-  - /usr/local/bin/python3 -m pip install Pillow --no-binary ":all:"
+  # make "fused wheels" using delocate/lipo/etc for libraries that don't provide universal2
+  - /usr/local/bin/python3 -m pip install delocate
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_x86_64 cffi
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_arm64 cffi
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_x86_64 Pillow
+  - /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_arm64 Pillow
+  - ls
+  - /usr/local/bin/python3 -m delocate.cmd.delocate_merge cffi-*.whl -w fused_wheels
+  - /usr/local/bin/python3 -m delocate.cmd.delocate_merge pillow-*.whl -w fused_wheels
+  - ls
+  - ls fused_wheels
+  - /usr/local/bin/python3 -m pip install fused_wheels/cffi*.whl
+  - /usr/local/bin/python3 -m pip install fused_wheels/pillow*.whl
+  # libraries that need some special treatment but not fusing
+  - /usr/local/bin/python3 -m pip install tomli --no-binary ":all:"
+  # process requirements twice, as arm64 and x86_64: not sure this is needed or useful
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-universal2.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos-universal2.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -836,7 +847,7 @@ macos15_universal_client:
   - pushd dist
   - ls
   - ls -sklR PlomClient-$VER-universal2.app
-  - zip -r $ZIPNAME PlomClient-$VER.app
+  - zip -r $ZIPNAME PlomClient-$VER-universal2.app
   - popd
   - mv dist/$ZIPNAME $ZIPNAME
   - md5 $ZIPNAME > md5sum
@@ -880,7 +891,7 @@ macos15_arm64_client:
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -937,12 +948,10 @@ macos15_x86_64_client:
   - /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
-  # hacks for charset_normalizer, following https://github.com/machawk1/wail/pull/562/
-  - arch -x86_64 /usr/local/bin/python3 -m pip install "charset_normalizer<3.0"
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - arch -x86_64 /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos-x86_64.spec
+  - arch -x86_64 /usr/local/bin/python3 -m PyInstaller client.macos-x86_64.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
@@ -996,7 +1005,7 @@ macos26_arm64_client:
   - /usr/local/bin/python3 -m pip install -r requirements.txt
   - /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
-  - /Library/Frameworks/Python.framework/Versions/${MACBIN_PY_MAJOR_MINOR_VER}/bin/pyinstaller client.macos.spec
+  - /usr/local/bin/python3 -m PyInstaller client.macos.spec
   - ls dist/
   - export VER=`sed -nr 's/^__version__ = \"(.+)\"/\1/p' plom/client/__init__.py`
   - echo "Extracted version string '$VER'"
