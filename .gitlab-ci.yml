@@ -707,6 +707,7 @@ linux_client_appimage_new:
       python3-tomlkit python3-arrow
       python3-pillow
       git
+      wget
       fuse
     - apt-get -yq autoclean
     - export PIP_BREAK_SYSTEM_PACKAGES=1
