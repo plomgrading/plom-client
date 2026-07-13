@@ -767,7 +767,7 @@ linux_AppImage_pyinstaller:
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
     - apt-get --no-install-recommends -y install
       binutils wget curl ca-certificates
-      file gnupg2 appstream
+      file gnupg2 appstream fuse
     - apt-get -yq autoclean
     - pwd
     # TODO: this doesn't feel like a canonical URL
