@@ -8,8 +8,6 @@
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2025 Deep Shah
 
-from __future__ import annotations
-
 from datetime import datetime
 import logging
 import random  # optionally used for debugging

@@ -10,8 +10,6 @@
 
 """The Plom Marker client."""
 
-from __future__ import annotations
-
 from collections import defaultdict
 import html
 import json

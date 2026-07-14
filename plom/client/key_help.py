@@ -2,8 +2,6 @@
 # Copyright (C) 2019-2022 Andrew Rechnitzer
 # Copyright (C) 2021-2026 Colin B. Macdonald
 
-from __future__ import annotations
-
 from copy import deepcopy
 import logging
 import sys

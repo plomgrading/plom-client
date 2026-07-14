@@ -12,8 +12,6 @@
 
 """Plom's Chooser dialog."""
 
-from __future__ import annotations
-
 from pathlib import Path
 import logging
 import shutil
