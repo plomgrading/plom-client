@@ -93,7 +93,7 @@ def get_keybindings_list() -> list[dict[str, Any]]:
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            overlay = tomllib.load((resources.files(plom.client) / f).read_bytes())
+            overlay = tomllib.loads((resources.files(plom.client) / f).read_text())
         metadata = overlay.pop("__metadata__", {})
         for k, v in metadata.items():
             kb[k] = v
@@ -113,7 +113,7 @@ def get_keybinding_overlay(name: str) -> dict[str, Any]:
         overlay = {}
     else:
         log.info("Loading keybindings from %s", f)
-        overlay = tomllib.load((resources.files(plom.client) / f).read_butes())
+        overlay = tomllib.loads((resources.files(plom.client) / f).read_text())
     # note copy unnecessary as we have fresh copy from file
     overlay.pop("__metadata__", None)
     return overlay
@@ -144,7 +144,7 @@ def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
 
     f = "default_keys.toml"
     log.info("Loading keybindings from %s", f)
-    default_keydata = tomllib.load((resources.files(plom.client) / f).read_bytes())
+    default_keydata = tomllib.loads((resources.files(plom.client) / f).read_text())
     default_keydata.pop("__metadata__")
 
     _keybindings_dict = {x["name"]: x for x in _keybindings_list}
@@ -157,7 +157,7 @@ def get_key_bindings(name: str, custom_overlay: dict = {}) -> dict:
             overlay = {}
         else:
             log.info("Loading keybindings from %s", f)
-            overlay = tomllib.load((resources.files(plom.client) / f).read_bytes())
+            overlay = tomllib.loads((resources.files(plom.client) / f).read_text())
             overlay.pop("__metadata__", None)
         # keymap["overlay"] = overlay
     # note copy unnecessary as we have fresh copy from file
