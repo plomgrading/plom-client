@@ -879,11 +879,12 @@ class AddRubricDialog(QDialog):
                 # in case it was empty string or None or ...
                 params = []
             tags = com.get("tags", "").split()
-            # TODO: Python >= 3.9: t.removeprefix("exclusive:")
             exclusive_tags = [
-                t[len("exclusive:") :] for t in tags if t.startswith("exclusive:")
+                t.removeprefix("exclusive:") for t in tags if t.startswith("exclusive:")
             ]
-            group_tags = [t[len("group:") :] for t in tags if t.startswith("group:")]
+            group_tags = [
+                t.removeprefix("group:") for t in tags if t.startswith("group:")
+            ]
 
             if len(group_tags) == 0:
                 self.group_checkbox.setChecked(False)
