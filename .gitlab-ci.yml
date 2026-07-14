@@ -277,6 +277,8 @@ unittests:
   stage: test
   needs: []
   image: ubuntu:24.04
+  variables:
+    PIP_BREAK_SYSTEM_PACKAGES: 1
   before_script:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
@@ -293,8 +295,8 @@ unittests:
       python3-pillow
       git
     - apt-get -yq autoclean
-    - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
+    - pip install pyspellchecker stdiomask
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pytest --version
     - pytest -l --pyargs plom
@@ -308,6 +310,8 @@ coverage:
   stage: test
   needs: []
   image: ubuntu:24.04
+  variables:
+    PIP_BREAK_SYSTEM_PACKAGES: 1
   before_script:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
@@ -325,10 +329,10 @@ coverage:
       python3-pillow
       git
     - apt-get -yq autoclean
-    - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
+    - pip install pyspellchecker stdiomask
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
-    - pip install --break-system-packages pytest pytest-cov coverage[toml]~=7.15.0
+    - pip install pytest pytest-cov coverage[toml]~=7.15.0
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -379,7 +383,7 @@ mypy-type-checking:
   needs: []
   image: ubuntu:24.04
   variables:
-    - PIP_BREAK_SYSTEM_PACKAGES: "1"
+    PIP_BREAK_SYSTEM_PACKAGES: 1
   before_script:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
@@ -499,7 +503,7 @@ newOS_newdeps:
   image: ubuntu:26.04
   allow_failure: true
   variables:
-    - PIP_BREAK_SYSTEM_PACKAGES: "1"
+    PIP_BREAK_SYSTEM_PACKAGES: 1
   before_script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
