@@ -398,14 +398,13 @@ mypy-type-checking:
     - pip install --break-system-packages pyspellchecker stdiomask
     # mypy was failing with the Ubuntu built-in one
     - pip install --break-system-packages -U pillow
-    # mypy 1.17.x cannot check against Python 3.8 code
-    - pip install --break-system-packages mypy~=1.16.1
+    - pip install --break-system-packages mypy~=1.20.2
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
-    - mypy plom --python-ver 3.8 --install-types --non-interactive || true
-    - mypy plom --python-ver 3.8
+    - mypy plom --python-ver 3.9 --install-types --non-interactive || true
+    - mypy plom --python-ver 3.9
   allow_failure: true
 
 
@@ -554,7 +553,7 @@ oldOS_mindeps:
 # Minimum Python, minimum deps
 minpy_mindeps:
   stage: test
-  image: python:3.8
+  image: python:3.9
   before_script:
     - apt-get update
     - apt-get --no-install-recommends --yes install

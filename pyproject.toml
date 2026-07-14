@@ -26,15 +26,12 @@ authors = [
     {name = 'Andrew Rechnitzer'},
     {name = 'Colin B. Macdonald'},
 ]
-# TODO: maybe Python 3.8 is blocking the new format?
-# license = "AGPL-3.0-or-later"
-license = {text = 'AGPLv3+'}
+license = "AGPL-3.0-or-later"
 classifiers=[
     "Topic :: Education :: Testing",
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -42,12 +39,10 @@ classifiers=[
     "Programming Language :: Python :: 3.13",
 ]
 dynamic = ['version']
-requires-python = '>=3.8'
-# pyopenssl is not a direct dependency but old versions caused trouble: Issue #3150
+requires-python = '>=3.9'
 dependencies = [
     "arrow>=1.1.1",
     "cryptography>=41.0.3",
-    'importlib_resources>=5.0.7 ; python_version<"3.9"',  # until we drop 3.8
     "packaging",
     "Pillow>=7.0.0",  # Consider >=10.2 for Issue #3216
     "platformdirs>=3.0.0",
