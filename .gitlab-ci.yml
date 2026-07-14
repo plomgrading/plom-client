@@ -403,8 +403,8 @@ mypy-type-checking:
   script:
     - mypy --version
     - export PIP_BREAK_SYSTEM_PACKAGES=1
-    - mypy plom --python-ver 3.9 --install-types --non-interactive || true
-    - mypy plom --python-ver 3.9
+    - mypy plom --python-ver 3.10 --install-types --non-interactive || true
+    - mypy plom --python-ver 3.10
   allow_failure: true
 
 
@@ -551,7 +551,7 @@ oldOS_mindeps:
 # Minimum Python, minimum deps
 minpy_mindeps:
   stage: test
-  image: python:3.9
+  image: python:3.10
   before_script:
     - apt-get update
     - apt-get --no-install-recommends --yes install
