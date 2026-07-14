@@ -378,6 +378,8 @@ mypy-type-checking:
   stage: test
   needs: []
   image: ubuntu:24.04
+  variables:
+    - PIP_BREAK_SYSTEM_PACKAGES: "1"
   before_script:
     - apt-get -y update
     - DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata
@@ -402,7 +404,6 @@ mypy-type-checking:
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - mypy --version
-    - export PIP_BREAK_SYSTEM_PACKAGES=1
     - mypy plom --python-ver 3.10 --install-types --non-interactive || true
     - mypy plom --python-ver 3.10
   allow_failure: true
@@ -497,6 +498,8 @@ newOS_newdeps:
   stage: test
   image: ubuntu:26.04
   allow_failure: true
+  variables:
+    - PIP_BREAK_SYSTEM_PACKAGES: "1"
   before_script:
     - apt-get update
     - DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata curl
@@ -507,9 +510,9 @@ newOS_newdeps:
       libxcb-cursor0 libpango-1.0-0 libpangocairo-1.0-0
       python3-pytest python3-dev python3-pip
       iproute2 psmisc file
-    # python3 -m pip install --break-system-packages --upgrade pip setuptools packaging wheel
+    # python3 -m pip install --upgrade pip setuptools packaging wheel
     - pip --version
-    - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
+    - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - pip install .
     # First, run the unit tests
