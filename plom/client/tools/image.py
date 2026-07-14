@@ -45,7 +45,7 @@ class CommandImage(CommandTool):
         self.setText("Image")
 
     @classmethod
-    def from_pickle(cls, X: list[Any], *, scene) -> CommandImage:
+    def from_pickle(cls, X: list[Any], *, scene) -> "CommandImage":
         """Construct a CommandImage from a serialized form."""
         assert X[0] == "Image"
         X = X[1:]

@@ -133,7 +133,7 @@ class RubricTable(QTableWidget):
 
     def __init__(
         self,
-        parent: RubricWidget,
+        parent: "RubricWidget",
         shortname: str,
         *,
         sort: bool = False,
