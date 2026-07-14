@@ -2,8 +2,6 @@
 # Copyright (C) 2024, 2026 Colin B. Macdonald
 # Copyright (C) 2024 Bryan Tanady
 
-from __future__ import annotations
-
 from PyQt6.QtWidgets import QWidget
 
 from .useful_classes import InfoMsg, WarnMsg

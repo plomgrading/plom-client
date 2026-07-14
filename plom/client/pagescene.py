@@ -8,9 +8,6 @@
 # Copyright (C) 2024-2025 Bryan Tanady
 # Copyright (C) 2025 Deep Shah
 
-# a different kind of annotations... this is about code typing
-from __future__ import annotations
-
 from copy import deepcopy
 from itertools import cycle
 import logging

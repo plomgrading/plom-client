@@ -5,8 +5,6 @@
 # Copyright (C) 2024 Aden Chan
 # Copyright (C) 2024 Bryan Tanady
 
-from __future__ import annotations
-
 from copy import deepcopy
 from typing import Any
 
