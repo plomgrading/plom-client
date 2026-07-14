@@ -7,8 +7,6 @@
 
 """The Plom Identifier client."""
 
-from __future__ import annotations
-
 import logging
 import tempfile
 from importlib import resources

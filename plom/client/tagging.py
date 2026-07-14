@@ -2,8 +2,6 @@
 # Copyright (C) 2018-2021 Andrew Rechnitzer
 # Copyright (C) 2019-2024, 2026 Colin B. Macdonald
 
-from __future__ import annotations
-
 import html
 
 from PyQt6.QtCore import Qt

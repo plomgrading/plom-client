@@ -8,8 +8,6 @@
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2024 Aidan Murphy
 
-from __future__ import annotations
-
 import re
 from importlib import resources
 from textwrap import shorten

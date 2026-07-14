@@ -9,8 +9,6 @@
 # Copyright (C) 2025 Brody Sanderson
 # Copyright (C) 2025 Deep Shah
 
-from __future__ import annotations
-
 import html
 import json
 import logging
