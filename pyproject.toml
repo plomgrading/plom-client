@@ -129,7 +129,6 @@ explicit_package_bases = true
 # Maintenance: try removing X, removing .mypy_cache, uninstalling types-X, and rerunning mypy locally
 [[tool.mypy.overrides]]
 module = [
-    'importlib_resources',
     'requests_toolbelt',
     'stdiomask',
 ]

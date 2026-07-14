@@ -18,16 +18,12 @@ import shutil
 import sys
 import tempfile
 import time
+from importlib import resources
 from typing import Any
 
 import arrow
 import platformdirs
 from packaging.version import Version
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 if sys.version_info < (3, 11):
     import tomli as tomllib

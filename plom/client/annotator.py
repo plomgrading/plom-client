@@ -15,15 +15,10 @@ import html
 import json
 import logging
 import os
-import sys
+from importlib import resources
 from pathlib import Path
 from textwrap import dedent
 from typing import Any, Dict
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 from PyQt6 import QtGui, uic
 from PyQt6.QtCore import (

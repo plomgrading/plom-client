@@ -11,17 +11,12 @@
 from __future__ import annotations
 
 import re
-import sys
+from importlib import resources
 from textwrap import shorten
 from typing import Any, Sequence
 
 import arrow
 from spellchecker import SpellChecker
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 from PyQt6.QtCore import Qt, QRegularExpression
 from PyQt6 import QtGui

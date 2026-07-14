@@ -5,12 +5,8 @@
 import logging
 import sys
 from copy import deepcopy
+from importlib import resources
 from typing import Any
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 if sys.version_info < (3, 11):
     import tomli as tomllib
