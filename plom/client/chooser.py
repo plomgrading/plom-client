@@ -552,7 +552,7 @@ class Chooser(QDialog):
             self.messenger = None
 
         try:
-            msgr = Messenger(server, verify_ssl=verify_ssl)
+            msgr = Messenger(server, port="", verify_ssl=verify_ssl)
             if not self._pre_login_connection(msgr):
                 return
         except PlomException as e:
