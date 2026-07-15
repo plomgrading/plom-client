@@ -37,7 +37,6 @@ else:
     import tomllib
 import tomlkit
 
-import urllib3
 from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
