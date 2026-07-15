@@ -43,7 +43,6 @@ from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtGui import QKeySequence, QShortcut
 
-from plom.common import Default_Port
 from plom.messenger import Plom_API_Version, Messenger
 from plom.common.exceptions import (
     PlomException,
@@ -113,7 +112,7 @@ class Chooser(QDialog):
         # TODO: with uic, we don't have a .ui: can go through and remove
         self.ui = self
 
-        self.mportSB.setValue(int(Default_Port))
+        self.mportSB.setSpecialValueText(" ")
         # Append version to window title
         self.setWindowTitle("{} {}".format(self.windowTitle(), __version__))
         self.ui.markButton.clicked.connect(self.run_marker)

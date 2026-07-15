@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <author>
-  Copyright (C) 2018-2025 The Plom Project Developers
+  Copyright (C) 2018-2026 The Plom Project Developers
   SPDX-License-Identifier: AGPL-3.0-or-later
  </author>
  <class>Chooser</class>
@@ -11,7 +11,7 @@
     <x>0</x>
     <y>0</y>
     <width>540</width>
-    <height>641</height>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -118,9 +118,6 @@
        <widget class="QSpinBox" name="mportSB">
         <property name="maximum">
          <number>65535</number>
-        </property>
-        <property name="value">
-         <number>41984</number>
         </property>
        </widget>
       </item>
