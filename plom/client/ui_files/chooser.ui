@@ -50,16 +50,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="infoLabelStatic">
-        <property name="text">
-         <string>Info:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop|Qt::AlignmentFlag::AlignTrailing</set>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="serverLabel">
         <property name="text">
@@ -70,7 +60,24 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2" colspan="2">
+      <item row="1" column="1" colspan="3">
+       <widget class="QLineEdit" name="serverLE">
+        <property name="text">
+         <string>127.0.0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="infoLabelStatic">
+        <property name="text">
+         <string>Info:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTop|Qt::AlignmentFlag::AlignTrailing</set>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="3">
        <layout class="QHBoxLayout" name="horizontalLayout_5">
         <item>
          <spacer name="horizontalSpacer">
@@ -96,30 +103,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="mportLabel">
-        <property name="text">
-         <string>Port:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1" colspan="3">
-       <widget class="QLineEdit" name="serverLE">
-        <property name="text">
-         <string>127.0.0.1</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="mportSB">
-        <property name="maximum">
-         <number>65535</number>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -520,7 +503,6 @@
  </widget>
  <tabstops>
   <tabstop>serverLE</tabstop>
-  <tabstop>mportSB</tabstop>
   <tabstop>getServerInfoButton</tabstop>
   <tabstop>userLE</tabstop>
   <tabstop>passwordLE</tabstop>
