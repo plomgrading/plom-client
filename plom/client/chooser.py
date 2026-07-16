@@ -37,13 +37,11 @@ else:
     import tomllib
 import tomlkit
 
-import urllib3
 from PyQt6 import uic, QtGui
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtGui import QKeySequence, QShortcut
 
-from plom.common import Default_Port
 from plom.messenger import Plom_API_Version, Messenger
 from plom.common.exceptions import (
     PlomException,
@@ -113,7 +111,6 @@ class Chooser(QDialog):
         # TODO: with uic, we don't have a .ui: can go through and remove
         self.ui = self
 
-        self.mportSB.setValue(int(Default_Port))
         # Append version to window title
         self.setWindowTitle("{} {}".format(self.windowTitle(), __version__))
         self.ui.markButton.clicked.connect(self.run_marker)
@@ -134,12 +131,8 @@ class Chooser(QDialog):
         # clear the validation on server edit
         self.ui.serverLE.textEdited.connect(self.ungetInfo)
         self.ui.serverLE.setPlaceholderText("plom.example.com")
-        self.ui.mportSB.valueChanged.connect(self.ungetInfo)
         self.ui.vDrop.setVisible(False)
         self.ui.pgDrop.setVisible(False)
-
-        # TODO: properly with a QValidator? maybe as part of a more general parser
-        self.ui.serverLE.editingFinished.connect(self.partial_parse_address)
 
         # set login etc from last time client ran.
         self.ui.userLE.setText(self.lastTime["user"])
@@ -169,13 +162,8 @@ class Chooser(QDialog):
     #             super().keyPressEvent(event)
 
     def setServer(self, s: str) -> None:
-        """Set the server and port UI widgets from a string.
-
-        If port is missing, a default will be used.  If we cannot
-        parse the url, just leave it alone.
-        """
+        """Set the server lineedit widget from a string."""
         self.ui.serverLE.setText(s)
-        self.partial_parse_address()
 
     def options(self) -> None:
         d = ClientSettingsDialog(
@@ -294,11 +282,7 @@ class Chooser(QDialog):
     def save_config_file(self) -> None:
         """Write the options to the config file."""
         self.lastTime["user"] = self.ui.userLE.text().strip()
-        server = self.ui.serverLE.text().strip()
-        port_txt = self.ui.mportSB.text()
-        if port_txt:
-            server += ":" + port_txt
-        self.lastTime["server"] = server
+        self.lastTime["server"] = self.ui.serverLE.text().strip()
         self.lastTime["question"] = self.getQuestion()
         self.lastTime["v"] = self.getv()
         self.lastTime["fontSize"] = self.ui.fontSB.value()
@@ -556,8 +540,6 @@ class Chooser(QDialog):
         if not server:
             self.ui.infoLabel.setText(_("You must specify a server address"))
             return
-        # due to special handling of blank versus default, use .text() not .value()
-        port = self.ui.mportSB.text()
 
         # TODO: might be nice, but needs another thread?
         # self.ui.infoLabel.setText("connecting...")
@@ -570,7 +552,7 @@ class Chooser(QDialog):
             self.messenger = None
 
         try:
-            msgr = Messenger(server, port=port, verify_ssl=verify_ssl)
+            msgr = Messenger(server, port="", verify_ssl=verify_ssl)
             if not self._pre_login_connection(msgr):
                 return
         except PlomException as e:
@@ -609,7 +591,6 @@ class Chooser(QDialog):
         self.ui.userLE.setEnabled(True)
         self.ui.passwordLE.setEnabled(True)
         self.ui.serverLE.setEnabled(True)
-        self.ui.mportSB.setEnabled(True)
         self.ui.loginButton.setEnabled(True)
 
     def login(self) -> None:
@@ -715,7 +696,6 @@ class Chooser(QDialog):
         self.ui.userLE.setEnabled(False)
         self.ui.passwordLE.setEnabled(False)
         self.ui.serverLE.setEnabled(False)
-        self.ui.mportSB.setEnabled(False)
         self.ui.loginButton.setEnabled(False)
 
     def _set_restrictions_from_spec(self, spec: dict[str, Any]) -> None:
@@ -747,60 +727,6 @@ class Chooser(QDialog):
         # TODO should we also let people type in?
         self.ui.pgDrop.setEditable(False)
         self.ui.vDrop.setEditable(False)
-
-    def _partial_parse_address_manual(self) -> None:
-        address = self.ui.serverLE.text()
-        try:
-            _addr, _port = address.split(":")
-        except ValueError:
-            return
-        if _port == "":
-            # special case handles "foo:"
-            self.ui.serverLE.setText(_addr)
-            return
-        # this special case handles "foo:1234"
-        try:
-            _port = int(_port)
-        except ValueError:
-            # special case for stuff with path "foo:1234/user"
-            self.ui.mportSB.clear()
-            return
-        self.ui.mportSB.setValue(_port)
-        self.ui.serverLE.setText(_addr)
-
-    def partial_parse_address(self) -> None:
-        """If address has a port number in it, extract and move to the port box.
-
-        If there's a colon in the address (maybe user did not see port
-        entry box or is pasting in a string), then try to extract a port
-        number and put it into the entry box.
-
-        In some rare cases, we actively clear the port box, for example
-        when the URL seems to have a path.
-        """
-        address = self.ui.serverLE.text()
-        self.ui.mportSB.setEnabled(True)
-        try:
-            parsedurl = urllib3.util.parse_url(address)
-            if not parsedurl.host:
-                self._partial_parse_address_manual()
-                return
-            if parsedurl.scheme and parsedurl.scheme.casefold() != "https":
-                # special case non-https uri
-                self.ui.mportSB.clear()
-                self.ui.mportSB.setEnabled(False)
-                return
-            if parsedurl.path:
-                # don't muck with things like "localhost:1234/base/url"
-                # activitely remove our port setting from such things
-                self.ui.mportSB.clear()
-                self.ui.mportSB.setEnabled(False)
-                return
-            if parsedurl.port:
-                self.ui.mportSB.setValue(int(parsedurl.port))
-                self.ui.serverLE.setText(parsedurl.host)
-        except urllib3.exceptions.LocationParseError:
-            return
 
     @pyqtSlot(int)
     def on_identify_window_close(self, value: int) -> None:

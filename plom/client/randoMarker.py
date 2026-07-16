@@ -22,8 +22,6 @@ import sys
 
 from stdiomask import getpass
 
-from plom.common import Default_Port
-
 from .random_marking_utils import (
     build_random_rubrics,
     do_rando_marking,
@@ -55,8 +53,8 @@ def get_parser():
         "--server",
         metavar="SERVER[:PORT]",
         action="store",
-        help=f"""
-            Which server to contact, port defaults to {Default_Port}.
+        help="""
+            Which server to contact.
             Also checks the environment variable PLOM_SERVER if omitted.
         """,
     )

@@ -24,7 +24,6 @@ from textwrap import shorten
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR, QTimer
 from PyQt6.QtWidgets import QApplication, QMessageBox, QStyleFactory
 
-from plom.common import Default_Port
 from plom.common.misc_utils import utc_now_to_string
 from plom.client import __version__
 from plom.client import Chooser
@@ -113,8 +112,8 @@ def get_parser() -> argparse.ArgumentParser:
         "--server",
         metavar="SERVER[:PORT]",
         action="store",
-        help=f"""
-            Which server to contact, port defaults to {Default_Port}.
+        help="""
+            Which server to contact.
             Also checks the environment variable PLOM_SERVER if omitted.
         """,
     )
