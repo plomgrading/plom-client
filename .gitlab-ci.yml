@@ -28,10 +28,10 @@
 #       when: never
 #     - if: '$CI_COMMIT_BRANCH'
 
-image: docker:28.5.2
+image: docker:29.6.1
 
 services:
-  - docker:28.5.2-dind
+  - docker:29.6.1-dind
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -55,14 +55,11 @@ codespell:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install codespell~=2.4.2
+    - python3 -m pip install codespell~=2.4.3
   script:
     - echo "Need an exception?  See the .codespell-ignore* files"
     - codespell
   allow_failure: true
-  artifacts:
-    reports:
-      dotenv: release_info.env
 
 
 # sometimes we write everything twice: this job ensures dupe file/info stay same
@@ -332,7 +329,7 @@ coverage:
     - pip install pyspellchecker stdiomask
     - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
-    - pip install pytest pytest-cov coverage[toml]~=7.15.0
+    - pip install pytest pytest-cov coverage[toml]~=7.15.2
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -457,7 +454,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.20
+    - python3 -m pip install ruff~=0.15.22
   script:
     - ruff check .
     # ruff format .
@@ -468,7 +465,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.20
+    - python3 -m pip install ruff~=0.15.22
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
