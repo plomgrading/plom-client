@@ -8,8 +8,6 @@
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2025 Deep Shah
 
-from __future__ import annotations
-
 from datetime import datetime
 import logging
 import random  # optionally used for debugging
@@ -135,7 +133,7 @@ class RubricTable(QTableWidget):
 
     def __init__(
         self,
-        parent: RubricWidget,
+        parent: "RubricWidget",
         shortname: str,
         *,
         sort: bool = False,
@@ -1326,9 +1324,7 @@ class RubricWidget(QWidget):
                 g = None
                 if t.startswith("group:"):
                     tags.remove(t)
-                    # TODO: Python >= 3.9
-                    # g = t.removeprefix("group:")
-                    g = t[len("group:") :]
+                    g = t.removeprefix("group:")
                 if not g:
                     continue
                 if not group_tab_data.get(g):
@@ -1640,9 +1636,7 @@ class RubricWidget(QWidget):
             tt = tt.split()
             for t in tt:
                 if t.startswith("group:"):
-                    # TODO: Python >= 3.9, Issue #2887
-                    # g = t.removeprefix("group:")
-                    g = t[len("group:") :]
+                    g = t.removeprefix("group:")
                     groups.append(g)
         return sorted(list(set(groups)))
 

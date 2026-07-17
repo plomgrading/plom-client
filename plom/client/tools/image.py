@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2020 Victoria Schuster
 # Copyright (C) 2020-2021 Andrew Rechnitzer
-# Copyright (C) 2021-2025 Colin B. Macdonald
-
-from __future__ import annotations
+# Copyright (C) 2021-2026 Colin B. Macdonald
 
 from typing import Any
 
@@ -47,7 +45,7 @@ class CommandImage(CommandTool):
         self.setText("Image")
 
     @classmethod
-    def from_pickle(cls, X: list[Any], *, scene) -> CommandImage:
+    def from_pickle(cls, X: list[Any], *, scene) -> "CommandImage":
         """Construct a CommandImage from a serialized form."""
         assert X[0] == "Image"
         X = X[1:]

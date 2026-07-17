@@ -3,8 +3,6 @@
 # Copyright (C) 2019-2026 Colin B. Macdonald
 # Copyright (C) 2024 Aden Chan
 
-from __future__ import annotations
-
 import logging
 
 from PyQt6.QtCore import Qt, pyqtSignal
