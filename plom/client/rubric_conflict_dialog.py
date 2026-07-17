@@ -2,8 +2,6 @@
 # Copyright (C) 2024, 2026 Colin B. Macdonald
 # Copyright (C) 2025 Andrew Rechnitzer
 
-from __future__ import annotations
-
 import html
 from typing import Any
 

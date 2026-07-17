@@ -10,8 +10,6 @@
 
 """The Plom Marker client."""
 
-from __future__ import annotations
-
 from collections import defaultdict
 import html
 import json
@@ -19,17 +17,13 @@ import logging
 from math import ceil
 from pathlib import Path
 import platform
-import sys
 import tempfile
 from textwrap import shorten
 import time
 import threading
+from importlib import resources
 from typing import Any
 
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 from packaging.version import Version
 from PyQt6 import QtGui, uic

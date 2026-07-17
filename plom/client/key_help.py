@@ -2,16 +2,9 @@
 # Copyright (C) 2019-2022 Andrew Rechnitzer
 # Copyright (C) 2021-2026 Colin B. Macdonald
 
-from __future__ import annotations
-
-from copy import deepcopy
 import logging
-import sys
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
+from copy import deepcopy
+from importlib import resources
 
 from PyQt6.QtCore import QBuffer, QByteArray, QPointF, Qt, pyqtSignal
 from PyQt6.QtGui import (

@@ -8,20 +8,13 @@
 # Copyright (C) 2024 Bryan Tanady
 # Copyright (C) 2024 Aidan Murphy
 
-from __future__ import annotations
-
 import re
-import sys
+from importlib import resources
 from textwrap import shorten
 from typing import Any, Sequence
 
 import arrow
 from spellchecker import SpellChecker
-
-if sys.version_info >= (3, 9):
-    from importlib import resources
-else:
-    import importlib_resources as resources
 
 from PyQt6.QtCore import Qt, QRegularExpression
 from PyQt6 import QtGui
@@ -886,11 +879,12 @@ class AddRubricDialog(QDialog):
                 # in case it was empty string or None or ...
                 params = []
             tags = com.get("tags", "").split()
-            # TODO: Python >= 3.9: t.removeprefix("exclusive:")
             exclusive_tags = [
-                t[len("exclusive:") :] for t in tags if t.startswith("exclusive:")
+                t.removeprefix("exclusive:") for t in tags if t.startswith("exclusive:")
             ]
-            group_tags = [t[len("group:") :] for t in tags if t.startswith("group:")]
+            group_tags = [
+                t.removeprefix("group:") for t in tags if t.startswith("group:")
+            ]
 
             if len(group_tags) == 0:
                 self.group_checkbox.setChecked(False)

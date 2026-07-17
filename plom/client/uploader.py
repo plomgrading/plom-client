@@ -7,8 +7,6 @@
 # Copyright (C) 2022 Lior Silberman
 # Copyright (C) 2024 Bryan Tanady
 
-from __future__ import annotations
-
 import json
 import logging
 import pathlib
