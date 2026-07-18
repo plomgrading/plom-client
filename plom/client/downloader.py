@@ -17,7 +17,7 @@ from typing import Any
 # from PyQt6.QtCore import QThread
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, pyqtSlot
 
-from plom.messenger import BaseMessenger, Messenger
+from plom.messenger import Messenger
 from plom.common.exceptions import PlomConnectionError, PlomException
 
 from .pagecache import PageCache
@@ -78,9 +78,7 @@ class Downloader(QObject):
     # emitted when queue lengths change (i.e., things enqueued)
     download_queue_changed = pyqtSignal(dict)
 
-    def __init__(
-        self, basedir: str | Path, *, msgr: BaseMessenger | None = None
-    ) -> None:
+    def __init__(self, basedir: str | Path, *, msgr: Messenger | None = None) -> None:
         """Initialize a new Downloader.
 
         Args:
@@ -98,9 +96,9 @@ class Downloader(QObject):
         """
         super().__init__()
         # self.is_download_in_progress = False
-        self.msgr: None | BaseMessenger = None
+        self.msgr: None | Messenger = None
         if msgr:
-            self.msgr = Messenger.clone(msgr)
+            self.msgr = msgr.clone_a_copy()
         self.basedir = Path(basedir)
         self.write_lock = threading.Lock()
         self.pagecache = PageCache(basedir)
@@ -128,7 +126,7 @@ class Downloader(QObject):
 
     def attach_messenger(self, msgr: Messenger) -> None:
         """Add/replace the current messenger."""
-        self.msgr = Messenger.clone(msgr)
+        self.msgr = msgr.clone_a_copy()
 
     def detach_messenger(self) -> None:
         """Stop our messenger and forget it (but do not logout)."""
@@ -506,7 +504,7 @@ class WorkerSignals(QObject):
 class DownloadWorker(QRunnable):
     def __init__(
         self,
-        msgr: BaseMessenger,
+        msgr: Messenger,
         img_id: int,
         md5: str,
         target_name: Path,
@@ -515,7 +513,7 @@ class DownloadWorker(QRunnable):
         simulate_failures: bool | tuple[float, tuple[float, float]] = False,
     ):
         super().__init__()
-        self._msgr = Messenger.clone(msgr)
+        self._msgr = msgr.clone_a_copy()
         self.img_id = img_id
         self.md5 = md5
         self.target_name = Path(target_name)

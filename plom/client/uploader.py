@@ -54,7 +54,7 @@ class BackgroundUploader(QThread):
         super().__init__()
         self.q: queue.Queue = queue.Queue()
         self.is_upload_in_progress = False
-        self._msgr = Messenger.clone(msgr)
+        self._msgr = msgr.clone_a_copy()
         self.num_uploaded = 0
         self.num_failed = 0
         self.simulate_failures = False
