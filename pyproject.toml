@@ -46,7 +46,7 @@ dependencies = [
     "packaging",
     "Pillow>=10.2",
     "platformdirs>=3.0.0",
-    "plom-common>=0.22.0.dev0",
+    "plom-common>=0.21.3",
     "pyspellchecker>=0.8.1",
     "pytest>=7.2.0",
     "pytest-qt>=4.2.0",
