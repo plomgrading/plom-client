@@ -124,12 +124,13 @@ def get_parser() -> argparse.ArgumentParser:
     group.add_argument(
         "-m",
         "--marker",
-        const="json",
         nargs="?",
         type=str,
+        metavar="QINDEX:VER",
         help="""
-            Run the marker. Pass either -m n:k (to run on pagegroup n, version k)
-            or -m (to run on whatever was used last time).
+            Run the marker. Pass either "-m qindex:ver" (to run on question
+            index "qindex" and version "ver") or simply -m (to run on
+            whatever was used last time).
         """,
     )
     return parser
@@ -183,7 +184,7 @@ def main() -> None:
             except ValueError:
                 print(
                     "When you use -m, there should either be no argument, or "
-                    " an argument of the form n:k where n,k are integers."
+                    " an argument of the form q:v where q, v are integers."
                 )
                 sys.exit(43)
 
