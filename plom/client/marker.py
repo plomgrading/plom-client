@@ -258,6 +258,18 @@ class MarkerClient(QWidget):
         self.update_get_next_button()
 
         self.refresh_server_data()
+        # TODO: also do this regions stuff in refresh?
+        regions = self.msgr.get_question_regions()
+        # TODO: should probably support per-version regions
+        this_region = regions.get(str(self.question_idx))
+        if this_region:
+            print("storing the crop region...")
+            assert (
+                len(this_region) == 1
+            ), "for now, TODO, there must be only one crop region per question index"
+            # TODO: assert the page matches?  Or maybe this dict structure should pass forward to Annotr
+            self.annotatorSettings["crop_rectangle"] = this_region[0]["rect"]
+            print(self.annotatorSettings["crop_rectangle"])
 
         # Connect the view **after** list updated.
         # Connect the table-model's selection change to Marker functions
