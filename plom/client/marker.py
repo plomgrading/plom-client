@@ -261,7 +261,7 @@ class MarkerClient(QWidget):
         # TODO: also do this regions stuff in refresh?
         regions = self.msgr.get_question_regions()
         # TODO: should probably support per-version regions
-        this_region = regions.get(str(self.question_idx))
+        this_region = [r for r in regions if r["qidx"] == self.question_idx]
         if this_region:
             print("storing the crop region...")
             assert (
