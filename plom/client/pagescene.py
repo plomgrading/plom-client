@@ -82,7 +82,6 @@ from .tools import (
     CommandPen,
     CommandHighlight,
     CommandPenArrow,
-    CommandCrop,
     CommandRotatePage,
     CommandShiftPage,
     CommandRemovePage,
@@ -116,7 +115,6 @@ COMMAND_MAP = {
     "ArrowDouble": CommandArrowDouble,
     "Box": CommandBox,
     "TiltedBox": CommandTiltedBox,
-    "Crop": CommandCrop,
     "Cross": CommandCross,
     "Delete": CommandDelete,
     "Ellipse": CommandEllipse,
@@ -2104,11 +2102,6 @@ class PageScene(QGraphicsScene):
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
 
-        # Turned off the undo of crop for Issue #5113.
-        # TODO: delete the code if not restored by say end of 2026
-        # pass new crop rect, as well as current one (for undo)
-        # command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
-        # self.undoStack.push(command)
         self._crop_to(actual_crop)
 
         _parent = self.parent()
