@@ -2050,31 +2050,38 @@ class PageScene(QGraphicsScene):
     def get_current_crop_rectangle_as_proportions(
         self,
     ) -> None | tuple[float, float, float, float]:
-        """Return the crop rectangle as proportions of original image, or None if uncropped."""
+        """Return the crop rectangle as proportions of original image, or None if uncropped.
+
+        Return: A 4-tuple of the form ``(xmin, ymin, xmax, ymax)``.
+        """
         if not self.overMask.is_cropped:
             return None
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         rect_in_pix = self.overMask.inner_rect
         rect_as_proportions = (
-            rect_in_pix.x() / full_width,
-            rect_in_pix.y() / full_height,
-            rect_in_pix.width() / full_width,
-            rect_in_pix.height() / full_height,
+            rect_in_pix.left() / full_width,
+            rect_in_pix.top() / full_height,
+            rect_in_pix.right() / full_width,
+            rect_in_pix.bottom() / full_height,
         )
         return rect_as_proportions
 
     def crop_from_proportions(
         self, crop_dat: tuple[float, float, float, float]
     ) -> None:
-        """Crop to just part of the page scene."""
+        """Crop to just part of the page scene.
+
+        Args:
+            crop_dat: a 4-tuple of ``(xmin, ymin, xmax, ymax)``.
+        """
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         crop_rect = QRectF(
             crop_dat[0] * full_width,
             crop_dat[1] * full_height,
-            crop_dat[2] * full_width,
-            crop_dat[3] * full_height,
+            (crop_dat[2] - crop_dat[0]) * full_width,
+            (crop_dat[3] - crop_dat[1]) * full_height,
         )
         self.trigger_crop(crop_rect)
 

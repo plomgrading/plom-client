@@ -1908,10 +1908,11 @@ class Annotator(QWidget):
             plomdata.update({"annotationColor": annot_colour})
 
         # get the crop-rect as proportions of underlying image
-        # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rectangle = self.scene.get_current_crop_rectangle_as_proportions()
-        if crop_rectangle:
-            plomdata.update({"crop_rectangle_data": crop_rectangle})
+        crop_rect = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rect:
+            # Convert to a 4-tuple (x,y,w,h)
+            # TODO: if we change the format, change to (xmin,ymin,xmax,ymax)
+            plomdata.update({"crop_rectangle_data": (crop_rect[0], crop_rect[1], crop_rect[2]-crop_rect[0], crop_rect[3]-crop_rect[1])})
 
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last
@@ -1952,8 +1953,9 @@ class Annotator(QWidget):
             if abs(x) > tol or abs(y) > tol or abs(w - 1) > tol or abs(h - 1) > tol:
                 # TODO: note that this overwrites the client's local crop setting
                 # unsure if that is desirable or not
+                # We may want to keep enough metadata to tell
                 log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
-                self.scene.crop_from_proportions(crop)
+                self.scene.crop_from_proportions((x, y, x + w, y + h))
         self.view.setHidden(False)
         # restoring the scene would've marked it dirty
         self.scene.reset_dirty()
