@@ -53,6 +53,10 @@ class MultiStageDrawer:
 
     Each specific tool that requires a sequence of mouse events (press, move,
     release) will have its own concrete Drawer class that inherits from this one.
+
+    Many of them use an internal `self.state`: perhaps that could be refactored
+    to this superclass in the future.  But note the managing of that state is
+    important for the multi-stage drawing.
     """
 
     def __init__(self, scene, event: QGraphicsSceneMouseEvent) -> None:
@@ -305,7 +309,7 @@ class RubricToolDrawer(MultiStageDrawer):
             event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
-        self.state = 0  # 0=idle, 1=drawing box, 2=drawing line
+        self.state = 0  # 0=idle, 1=drawing box, 2=drawing line, 3=complete,idle
         self.temp_box_item: None | QGraphicsRectItem = None
         self.path_item = None
         self.permanent_box_item = None
@@ -446,7 +450,7 @@ class TickToolDrawer(MultiStageDrawer):
             event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
-        self.state = 0
+        self.state = 0  # 0=idle, 1=drawing box, 2=drawing line, 3=complete,idle
         self.temp_box_item: QGraphicsRectItem | None = None
         self.path_item = None
         self.permanent_box_item = None
@@ -599,7 +603,7 @@ class TextToolDrawer(MultiStageDrawer):
             event: The mouse event that triggered the drawer.
         """
         super().__init__(scene, event)
-        self.state = 0
+        self.state = 0  # 0=idle, 1=drawing box, 2=drawing line, 3=complete,idle
         self.temp_box_item: QGraphicsRectItem | None = None
         self.path_item = None
         self.permanent_box_item = None
@@ -657,6 +661,7 @@ class TextToolDrawer(MultiStageDrawer):
 
             self._stamp(event)
             self.scene.undoStack.endMacro()
+            self.state = 3
             self.finish()
 
     def mouse_move(self, event: QGraphicsSceneMouseEvent) -> None:
