@@ -1936,7 +1936,16 @@ class Annotator(QWidget):
         if crop_rect:
             # Convert to a 4-tuple (x,y,w,h)
             # TODO: if we change the format, change to (xmin,ymin,xmax,ymax)
-            plomdata.update({"crop_rectangle_data": (crop_rect[0], crop_rect[1], crop_rect[2]-crop_rect[0], crop_rect[3]-crop_rect[1])})
+            plomdata.update(
+                {
+                    "crop_rectangle_data": (
+                        crop_rect[0],
+                        crop_rect[1],
+                        crop_rect[2] - crop_rect[0],
+                        crop_rect[3] - crop_rect[1],
+                    )
+                }
+            )
 
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last

@@ -268,7 +268,7 @@ class MarkerClient(QWidget):
                     self,
                     "Plom Client currently supports only one region per question index. "
                     "Unexpected results may occur b/c this server gave multiple regions:",
-                    info=f"{this_region}"
+                    info=f"{this_region}",
                 ).exec()
             self.annotatorSettings["regions"] = this_region
 

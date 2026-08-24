@@ -901,7 +901,9 @@ class CropToolDrawer(MultiStageDrawer):
             self.temp_box_item.rect().height() >= minbox
             and self.temp_box_item.rect().width() >= minbox
         ):
-            self.scene.trigger_crop(self.temp_box_item.rect(), _save_custom_crop_callback=True)
+            self.scene.trigger_crop(
+                self.temp_box_item.rect(), _save_custom_crop_callback=True
+            )
 
         self.finish()
 

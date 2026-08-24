@@ -2087,7 +2087,9 @@ class PageScene(QGraphicsScene):
         """Uncrop, returning to the entire extent of the underlying images."""
         self._uncrop()
 
-    def trigger_crop(self, crop_rect: QRectF, *, _save_custom_crop_callback: bool = False) -> None:
+    def trigger_crop(
+        self, crop_rect: QRectF, *, _save_custom_crop_callback: bool = False
+    ) -> None:
         """React to a cropping operation to a rectangle.
 
         Args:
