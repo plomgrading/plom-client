@@ -1291,7 +1291,7 @@ class Annotator(QWidget):
         """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
-        if not self._custom_crop_rect:
+        if not self._regions and not self._custom_crop_rect:
             log.debug("enabling crop, no existing data, entering interactive crop mode")
             self.to_crop_mode()
             self._crop_enable = True
