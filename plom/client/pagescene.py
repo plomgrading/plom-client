@@ -2087,16 +2087,16 @@ class PageScene(QGraphicsScene):
         """Uncrop, returning to the entire extent of the underlying images."""
         self._uncrop()
 
-    def trigger_crop(self, crop_rect: QRectF, *, _keep_crop: bool = True) -> None:
+    def trigger_crop(self, crop_rect: QRectF, *, _save_custom_crop_callback: bool = False) -> None:
         """React to a cropping operation to a rectangle.
 
         Args:
             crop_rect: A rectangular region to crop to.
 
         Keyword Args:
-            _keep_crop: If True, and by default, if you set the crop, the client
-                will keep that crop region so it can be reused later.  Pass
-                False if you want to set t the crop in a one-off manner.
+            _save_custom_crop_callback: False by default, set crop as
+                a one-off.  If True, if you set the crop, the client
+                may keep that crop region so it can be reused later.
         """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
@@ -2109,5 +2109,5 @@ class PageScene(QGraphicsScene):
         # MyPy is rightfully unsure parent is an Annotator:
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
-        if _keep_crop:
+        if _save_custom_crop_callback:
             _parent.set_custom_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
