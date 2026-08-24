@@ -216,7 +216,7 @@ class Annotator(QWidget):
 
         self._crop_enable: bool = True
         self._custom_crop_rect: None | tuple[float, float, float, float] = None
-        self._regions: None | list = None
+        self._regions: list = []
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -1463,19 +1463,16 @@ class Annotator(QWidget):
 
     def _load_window_settings_early(self):
         """Load the window settings, early stuff."""
+        settings = self.parentMarkerUI.annotatorSettings
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
-        if self.parentMarkerUI.annotatorSettings.get("_config"):
-            self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
+        if settings.get("_config"):
+            self._config = settings["_config"].copy()
 
-        self._crop_enable = self.parentMarkerUI.annotatorSettings.get(
-            "crop_enable", self._crop_enable
-        )
-        self._custom_crop_rect = self.parentMarkerUI.annotatorSettings.get(
-            "custom_crop_rect", None
-        )
+        self._crop_enable = settings.get("crop_enable", self._crop_enable)
+        self._custom_crop_rect = settings.get("custom_crop_rect", None)
         # server-side regions
-        self._regions = self.parentMarkerUI.annotatorSettings.get("regions", None)
+        self._regions = settings.get("regions", [])
 
     def _load_window_settings_mid(self):
         """Load the window settings, middle stuff."""
@@ -1517,16 +1514,13 @@ class Annotator(QWidget):
         Returns:
             None: modifies self.parentMarkerUI and self.scene
         """
-        self.parentMarkerUI.annotatorSettings["viewRectangle"] = (
-            self.view.getCurrentViewRect()
-        )
-        self.parentMarkerUI.annotatorSettings["_config"] = self._config.copy()
-        self.parentMarkerUI.annotatorSettings["zoomState"] = (
-            self.ui.zoomCB.currentIndex()
-        )
-        self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
-        self.parentMarkerUI.annotatorSettings["crop_enable"] = self._crop_enable
-        self.parentMarkerUI.annotatorSettings["custom_crop_rect"] = self._custom_crop_rect
+        settings = self.parentMarkerUI.annotatorSettings
+        settings["viewRectangle"] = self.view.getCurrentViewRect()
+        settings["_config"] = self._config.copy()
+        settings["zoomState"] = self.ui.zoomCB.currentIndex()
+        settings["compact"] = self.is_ui_compact()
+        settings["crop_enable"] = self._crop_enable
+        settings["custom_crop_rect"] = self._custom_crop_rect
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
