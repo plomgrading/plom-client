@@ -1324,7 +1324,9 @@ class Annotator(QWidget):
 
         if rect:
             self.scene.crop_from_proportions(rect)
-            self.view.zoomFitPage(update=True)
+            # TODO: now scene does this it self, which is a bit odd but makes it
+            # consistent e.g., when CropDrawerTool triggers it as well.
+            # self.view.zoomFitPage(update=True)
 
     def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
         self._custom_crop_rect = rect

@@ -902,9 +902,6 @@ class CropToolDrawer(MultiStageDrawer):
             and self.temp_box_item.rect().width() >= minbox
         ):
             self.scene.trigger_crop(self.temp_box_item.rect(), _save_custom_crop_callback=True)
-            page_view = self.scene.views()[0]
-            assert isinstance(page_view, PageView)
-            page_view.zoomFitPage(update=True)
 
         self.finish()
 

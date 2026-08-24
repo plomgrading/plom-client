@@ -2111,3 +2111,9 @@ class PageScene(QGraphicsScene):
         # but that's likely a circular import, so just add exceptions below
         if _save_custom_crop_callback:
             _parent.set_custom_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+
+        # its a bit odd for the scene to ask for this but triggers can come from pagescene
+        # itself rather than from Annotator...
+        page_view = self.views()[0]
+        assert isinstance(page_view, PageView)
+        page_view.zoomFitPage(update=True)
