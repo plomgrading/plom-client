@@ -214,8 +214,9 @@ class Annotator(QWidget):
         # Set up cursors
         self.loadCursors()
 
-        self._crop_enable: None | bool = None
-        self._crop_rectangle: None | tuple[float, float, float, float] = None
+        self._crop_enable: bool = True
+        self._custom_crop_rect: None | tuple[float, float, float, float] = None
+        self._regions: list = []
 
         # Connect all the buttons to relevant functions
         self.setButtons()
@@ -224,12 +225,14 @@ class Annotator(QWidget):
 
         self.modeInformation = ["move"]
 
+        self._load_window_settings_early()
+
         # unit tests might pass None to avoid mocking support code
         if initialData:
             self.load_new_task(*initialData)
             self.rubric_widget.setInitialRubrics()
 
-        self._load_window_settings_early()
+        self._load_window_settings_mid()
 
         # no initial keybindings - get from the marker if non-default
         self.keybinding_name = self.parentMarkerUI.annotatorSettings["keybinding_name"]
@@ -366,7 +369,7 @@ class Annotator(QWidget):
         (key,) = keydata["crop-out"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Uncrop\t{key}", self.uncrop_region)
-        m.addAction("Choose new crop region", self.to_crop_mode)
+        m.addAction("Choose custom crop region", self.to_crop_mode)
 
         m.addSeparator()
         subm = m.addMenu("Tools")
@@ -604,9 +607,7 @@ class Annotator(QWidget):
         if plomDict is not None:
             self.restore_from_data(plomDict)
         else:
-            # if there is a held crop rectangle and user explicitly was cropping, then use it.
-            if self._crop_enable and self._crop_rectangle:
-                self.scene.crop_from_proportions(self._crop_rectangle)
+            self._apply_crop()
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1290,15 +1291,13 @@ class Annotator(QWidget):
         """Turn the crop region on, or if one isn't set, change to crop mode."""
         if not self.scene:
             return
-        if not self._crop_rectangle:
+        if not self._regions and not self._custom_crop_rect:
             log.debug("enabling crop, no existing data, entering interactive crop mode")
             self.to_crop_mode()
             self._crop_enable = True
             return
-        log.debug(f"enabling existing crop: {self._crop_rectangle}")
-        self.scene.crop_from_proportions(self._crop_rectangle)
-        self.view.zoomFitPage(update=True)
         self._crop_enable = True
+        self._apply_crop()
 
     def uncrop_region(self) -> None:
         if not self.scene:
@@ -1308,8 +1307,29 @@ class Annotator(QWidget):
         self.view.zoomFitPage(update=True)
         self._crop_enable = False
 
-    def set_crop_region(self, rect: tuple[float, float, float, float]) -> None:
-        self._crop_rectangle = rect
+    def _apply_crop(self):
+        """If cropping is enabled and we have a crop region, apply it."""
+        if not self.scene:
+            return
+        if not self._crop_enable:
+            return
+        rect = None
+        if self._regions:
+            # TODO: need to think about multiple pages!?
+            rect = self._regions[0]["rect"]
+            log.debug(f"enabling server region as crop: {rect}")
+        elif self._custom_crop_rect:
+            rect = self._custom_crop_rect
+            log.debug(f"enabling custom crop: {rect}")
+
+        if rect:
+            self.scene.crop_from_proportions(rect)
+            # TODO: now scene does this it self, which is a bit odd but makes it
+            # consistent e.g., when CropDrawerTool triggers it as well.
+            # self.view.zoomFitPage(update=True)
+
+    def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
+        self._custom_crop_rect = rect
         # now set mode to move (just to change it away from crop tool)
         if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
@@ -1443,18 +1463,19 @@ class Annotator(QWidget):
 
     def _load_window_settings_early(self):
         """Load the window settings, early stuff."""
+        settings = self.parentMarkerUI.annotatorSettings
         # remember the "don't ask me again" checks
         # but note that Marker is not supposed to be saving these globally to disc
-        if self.parentMarkerUI.annotatorSettings.get("_config"):
-            self._config = self.parentMarkerUI.annotatorSettings["_config"].copy()
+        if settings.get("_config"):
+            self._config = settings["_config"].copy()
 
-        self._crop_enable = self.parentMarkerUI.annotatorSettings.get(
-            "crop_enable", None
-        )
-        self._crop_rectangle = self.parentMarkerUI.annotatorSettings.get(
-            "crop_rectangle", None
-        )
+        self._crop_enable = settings.get("crop_enable", self._crop_enable)
+        self._custom_crop_rect = settings.get("custom_crop_rect", None)
+        # server-side regions
+        self._regions = settings.get("regions", [])
 
+    def _load_window_settings_mid(self):
+        """Load the window settings, middle stuff."""
         # TODO: feels flaky, and despite QTimer, doesn't work if moved to _late fcn
         # if zoom-state is none, set it to index 1 (fit page) - but delay.
         if self.parentMarkerUI.annotatorSettings["zoomState"] is None:
@@ -1493,16 +1514,13 @@ class Annotator(QWidget):
         Returns:
             None: modifies self.parentMarkerUI and self.scene
         """
-        self.parentMarkerUI.annotatorSettings["viewRectangle"] = (
-            self.view.getCurrentViewRect()
-        )
-        self.parentMarkerUI.annotatorSettings["_config"] = self._config.copy()
-        self.parentMarkerUI.annotatorSettings["zoomState"] = (
-            self.ui.zoomCB.currentIndex()
-        )
-        self.parentMarkerUI.annotatorSettings["compact"] = self.is_ui_compact()
-        self.parentMarkerUI.annotatorSettings["crop_enable"] = self._crop_enable
-        self.parentMarkerUI.annotatorSettings["crop_rectangle"] = self._crop_rectangle
+        settings = self.parentMarkerUI.annotatorSettings
+        settings["viewRectangle"] = self.view.getCurrentViewRect()
+        settings["_config"] = self._config.copy()
+        settings["zoomState"] = self.ui.zoomCB.currentIndex()
+        settings["compact"] = self.is_ui_compact()
+        settings["crop_enable"] = self._crop_enable
+        settings["custom_crop_rect"] = self._custom_crop_rect
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
@@ -1908,10 +1926,20 @@ class Annotator(QWidget):
             plomdata.update({"annotationColor": annot_colour})
 
         # get the crop-rect as proportions of underlying image
-        # is 4-tuple (x,y,w,h) scaled by image width / height
-        crop_rectangle = self.scene.get_current_crop_rectangle_as_proportions()
-        if crop_rectangle:
-            plomdata.update({"crop_rectangle_data": crop_rectangle})
+        crop_rect = self.scene.get_current_crop_rectangle_as_proportions()
+        if crop_rect:
+            # Convert to a 4-tuple (x,y,w,h)
+            # TODO: if we change the format, change to (xmin,ymin,xmax,ymax)
+            plomdata.update(
+                {
+                    "crop_rectangle_data": (
+                        crop_rect[0],
+                        crop_rect[1],
+                        crop_rect[2] - crop_rect[0],
+                        crop_rect[3] - crop_rect[1],
+                    )
+                }
+            )
 
         lst = self.scene.pickleSceneItems()  # newest items first
         lst.reverse()  # so newest items last
@@ -1952,8 +1980,9 @@ class Annotator(QWidget):
             if abs(x) > tol or abs(y) > tol or abs(w - 1) > tol or abs(h - 1) > tol:
                 # TODO: note that this overwrites the client's local crop setting
                 # unsure if that is desirable or not
+                # We may want to keep enough metadata to tell
                 log.debug(f"cropping scene from in-plom-file crop: {x}, {y}, {w}, {h}")
-                self.scene.crop_from_proportions(crop)
+                self.scene.crop_from_proportions((x, y, x + w, y + h))
         self.view.setHidden(False)
         # restoring the scene would've marked it dirty
         self.scene.reset_dirty()

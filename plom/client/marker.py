@@ -258,6 +258,19 @@ class MarkerClient(QWidget):
         self.update_get_next_button()
 
         self.refresh_server_data()
+        # TODO: also do this regions stuff in refresh?
+        regions = self.msgr.get_question_regions()
+        # TODO: should probably support per-version regions
+        this_region = [r for r in regions if r["qidx"] == self.question_idx]
+        if this_region:
+            if len(this_region) > 1:
+                InfoMsg(
+                    self,
+                    "Plom Client currently supports only one region per question index. "
+                    "Unexpected results may occur b/c this server gave multiple regions:",
+                    info=f"{this_region}",
+                ).exec()
+            self.annotatorSettings["regions"] = this_region
 
         # Connect the view **after** list updated.
         # Connect the table-model's selection change to Marker functions

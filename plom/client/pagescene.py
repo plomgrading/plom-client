@@ -82,7 +82,6 @@ from .tools import (
     CommandPen,
     CommandHighlight,
     CommandPenArrow,
-    CommandCrop,
     CommandRotatePage,
     CommandShiftPage,
     CommandRemovePage,
@@ -116,7 +115,6 @@ COMMAND_MAP = {
     "ArrowDouble": CommandArrowDouble,
     "Box": CommandBox,
     "TiltedBox": CommandTiltedBox,
-    "Crop": CommandCrop,
     "Cross": CommandCross,
     "Delete": CommandDelete,
     "Ellipse": CommandEllipse,
@@ -2050,31 +2048,38 @@ class PageScene(QGraphicsScene):
     def get_current_crop_rectangle_as_proportions(
         self,
     ) -> None | tuple[float, float, float, float]:
-        """Return the crop rectangle as proportions of original image, or None if uncropped."""
+        """Return the crop rectangle as proportions of original image, or None if uncropped.
+
+        Return: A 4-tuple of the form ``(xmin, ymin, xmax, ymax)``.
+        """
         if not self.overMask.is_cropped:
             return None
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         rect_in_pix = self.overMask.inner_rect
         rect_as_proportions = (
-            rect_in_pix.x() / full_width,
-            rect_in_pix.y() / full_height,
-            rect_in_pix.width() / full_width,
-            rect_in_pix.height() / full_height,
+            rect_in_pix.left() / full_width,
+            rect_in_pix.top() / full_height,
+            rect_in_pix.right() / full_width,
+            rect_in_pix.bottom() / full_height,
         )
         return rect_as_proportions
 
     def crop_from_proportions(
         self, crop_dat: tuple[float, float, float, float]
     ) -> None:
-        """Crop to just part of the page scene."""
+        """Crop to just part of the page scene.
+
+        Args:
+            crop_dat: a 4-tuple of ``(xmin, ymin, xmax, ymax)``.
+        """
         full_height = self.underImage.boundingRect().height()
         full_width = self.underImage.boundingRect().width()
         crop_rect = QRectF(
             crop_dat[0] * full_width,
             crop_dat[1] * full_height,
-            crop_dat[2] * full_width,
-            crop_dat[3] * full_height,
+            (crop_dat[2] - crop_dat[0]) * full_width,
+            (crop_dat[3] - crop_dat[1]) * full_height,
         )
         self.trigger_crop(crop_rect)
 
@@ -2082,26 +2087,23 @@ class PageScene(QGraphicsScene):
         """Uncrop, returning to the entire extent of the underlying images."""
         self._uncrop()
 
-    def trigger_crop(self, crop_rect: QRectF, *, _keep_crop: bool = True) -> None:
+    def trigger_crop(
+        self, crop_rect: QRectF, *, _save_custom_crop_callback: bool = False
+    ) -> None:
         """React to a cropping operation to a rectangle.
 
         Args:
             crop_rect: A rectangular region to crop to.
 
         Keyword Args:
-            _keep_crop: If True, and by default, if you set the crop, the client
-                will keep that crop region so it can be reused later.  Pass
-                False if you want to set t the crop in a one-off manner.
+            _save_custom_crop_callback: False by default, set crop as
+                a one-off.  If True, if you set the crop, the client
+                may keep that crop region so it can be reused later.
         """
         # make sure that the underlying crop-rectangle is normalised
         # also make sure that it is not larger than the original image - so use their intersection
         actual_crop = crop_rect.intersected(self.underImage.boundingRect()).normalized()
 
-        # Turned off the undo of crop for Issue #5113.
-        # TODO: delete the code if not restored by say end of 2026
-        # pass new crop rect, as well as current one (for undo)
-        # command = CommandCrop(self, actual_crop, self.overMask.inner_rect)
-        # self.undoStack.push(command)
         self._crop_to(actual_crop)
 
         _parent = self.parent()
@@ -2109,5 +2111,11 @@ class PageScene(QGraphicsScene):
         # MyPy is rightfully unsure parent is an Annotator:
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
-        if _keep_crop:
-            _parent.set_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+        if _save_custom_crop_callback:
+            _parent.set_custom_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+
+        # its a bit odd for the scene to ask for this but triggers can come from pagescene
+        # itself rather than from Annotator...
+        page_view = self.views()[0]
+        assert isinstance(page_view, PageView)
+        page_view.zoomFitPage(update=True)
