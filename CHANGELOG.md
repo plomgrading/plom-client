@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* If the server defines "crop regions" for a question, these will apply automatically.
 
 ### Removed
 * The "port" box in the login-UI: you can specify the port as part of the server address if needed.
