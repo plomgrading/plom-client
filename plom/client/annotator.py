@@ -369,7 +369,7 @@ class Annotator(QWidget):
         (key,) = keydata["crop-out"]["keys"]
         key = QKeySequence(key).toString(QKeySequence.SequenceFormat.NativeText)
         m.addAction(f"Uncrop\t{key}", self.uncrop_region)
-        m.addAction("Choose new crop region", self.to_crop_mode)
+        m.addAction("Choose custom crop region", self.to_crop_mode)
 
         m.addSeparator()
         subm = m.addMenu("Tools")
