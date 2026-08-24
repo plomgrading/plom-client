@@ -2110,4 +2110,4 @@ class PageScene(QGraphicsScene):
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
         if _keep_crop:
-            _parent.set_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+            _parent.set_custom_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
