@@ -1320,7 +1320,7 @@ class Annotator(QWidget):
             # only supports a single crop region (for now) but the server is
             # much more general.
             if self.scene.how_many_underlying_images() != len(self._regions):
-                log.debug(f"scalar region should not crop multiple pages")
+                log.debug("scalar region should not crop multiple pages")
                 # TODO: should we allow custom crop in this case?
             else:
                 # TODO: need to think about multiple pages!?
