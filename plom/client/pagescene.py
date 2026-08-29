@@ -872,6 +872,10 @@ class PageScene(QGraphicsScene):
                 r.append(x)
         return r
 
+    def how_many_underlying_images(self) -> int:
+        """How many page images make up the bottom layer."""
+        return len(self.get_src_img_data(only_visible=True))
+
     def how_many_underlying_images_wide(self) -> int:
         """Count how many images wide the bottom layer is.
 
@@ -879,7 +883,7 @@ class PageScene(QGraphicsScene):
         in one long row) but future revisions might support alternate
         layouts.
         """
-        return len(self.get_src_img_data(only_visible=True))
+        return self.how_many_underlying_images()
 
     def how_many_underlying_images_high(self) -> int:
         """How many images high is the bottom layer.
