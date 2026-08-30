@@ -1326,7 +1326,8 @@ class Annotator(QWidget):
                 # TODO: need to think about multiple pages!?
                 rect = self._regions[0]["rect"]
                 log.debug(f"enabling server region as crop: {rect}")
-        elif self._custom_crop_rect:
+
+        if not rect and self._custom_crop_rect:
             rect = self._custom_crop_rect
             log.debug(f"enabling custom crop: {rect}")
 
