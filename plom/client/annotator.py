@@ -606,8 +606,10 @@ class Annotator(QWidget):
 
         if plomDict is not None:
             self.restore_from_data(plomDict)
-        else:
+        elif self._crop_enable:
             self._apply_crop()
+        else:
+            pass
 
     def change_annot_scale(self, scale=None):
         """Change the scale of the annotations.
@@ -1288,26 +1290,18 @@ class Annotator(QWidget):
             self.uncrop_region()
 
     def crop_region(self) -> None:
-        """Turn the crop region on, or if one isn't set, change to crop mode."""
+        """Turn the crop region on, or if an appropriate one isn't set, change to crop mode."""
         if not self.scene:
             return
-        do_interactive = False
-        if not self._custom_crop_data:
-            if self._regions:
-                # see discussion elsewhere
-                if self.scene.how_many_underlying_images() != len(self._regions):
-                    do_interactive = True
-            else:
-                do_interactive = True
-        if do_interactive:
+        crop_completed = self._apply_crop()
+        if crop_completed:
+            self._enable_crop = True
+        else:
             log.debug(
-                "enabled crop, no existing appropriate data so entering interactive crop"
+                "enable crop but neither server nor custom crop is appropriate, "
+                "so entering interactive crop"
             )
             self.to_crop_mode()
-            self._crop_enable = True
-            return
-        self._crop_enable = True
-        self._apply_crop()
 
     def uncrop_region(self) -> None:
         if not self.scene:
@@ -1317,12 +1311,15 @@ class Annotator(QWidget):
         self.view.zoomFitPage(update=True)
         self._crop_enable = False
 
-    def _apply_crop(self):
-        """If cropping is enabled and we have a crop region, apply it."""
+    def _apply_crop(self) -> bool:
+        """Apply crop if possible and return True if we were able to crop.
+
+        The logic of whether its possible is quite complicated, but generally
+        the number of pages should match what is expected so that we don't
+        accidentally hide something.
+        """
         if not self.scene:
-            return
-        if not self._crop_enable:
-            return
+            return False
         rect = None
         if self._regions:
             # If length of region (anything but one would be rejected earlier)
@@ -1338,19 +1335,24 @@ class Annotator(QWidget):
                 log.debug(f"enabling server region as crop: {rect}")
 
         if not rect and self._custom_crop_data:
-            if self.scene.how_many_underlying_images() != self._custom_crop_data.get(
-                "numpages"
-            ):
-                log.debug("custom crop region was set for different number of pages")
+            _set_w_numpages = self._custom_crop_data.get("numpages")
+            _current_numpages = self.scene.how_many_underlying_images()
+            if _current_numpages != _set_w_numpages:
+                log.debug(
+                    f"previous crop region was set for {_set_w_numpages} "
+                    f"but we now have {_current_numpages}"
+                )
             else:
                 rect = self._custom_crop_data["rect"]
                 log.debug(f"enabling custom crop: {rect}")
 
         if rect:
             self.scene.crop_from_proportions(rect)
+            return True
             # TODO: now scene does this it self, which is a bit odd but makes it
             # consistent e.g., when CropDrawerTool triggers it as well.
             # self.view.zoomFitPage(update=True)
+        return False
 
     def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
         self._custom_crop_data["rect"] = rect
