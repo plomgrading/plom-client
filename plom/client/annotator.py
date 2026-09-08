@@ -215,7 +215,7 @@ class Annotator(QWidget):
         self.loadCursors()
 
         self._crop_enable: bool = True
-        self._custom_crop_rect: None | tuple[float, float, float, float] = None
+        self._custom_crop_data: dict[str, Any] = {}
         self._regions: list = []
 
         # Connect all the buttons to relevant functions
@@ -1292,7 +1292,7 @@ class Annotator(QWidget):
         if not self.scene:
             return
         do_interactive = False
-        if not self._custom_crop_rect:
+        if not self._custom_crop_data:
             if self._regions:
                 # see discussion elsewhere
                 if self.scene.how_many_underlying_images() != len(self._regions):
@@ -1337,8 +1337,8 @@ class Annotator(QWidget):
                 rect = self._regions[0]["rect"]
                 log.debug(f"enabling server region as crop: {rect}")
 
-        if not rect and self._custom_crop_rect:
-            rect = self._custom_crop_rect
+        if not rect and self._custom_crop_data:
+            rect = self._custom_crop_data["rect"]
             log.debug(f"enabling custom crop: {rect}")
 
         if rect:
@@ -1348,7 +1348,7 @@ class Annotator(QWidget):
             # self.view.zoomFitPage(update=True)
 
     def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
-        self._custom_crop_rect = rect
+        self._custom_crop_data["rect"] = rect
         # now set mode to move (just to change it away from crop tool)
         if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
@@ -1489,7 +1489,7 @@ class Annotator(QWidget):
             self._config = settings["_config"].copy()
 
         self._crop_enable = settings.get("crop_enable", self._crop_enable)
-        self._custom_crop_rect = settings.get("custom_crop_rect", None)
+        self._custom_crop_data = settings.get("custom_crop_data", {})
         # server-side regions
         self._regions = settings.get("regions", [])
 
@@ -1539,7 +1539,7 @@ class Annotator(QWidget):
         settings["zoomState"] = self.ui.zoomCB.currentIndex()
         settings["compact"] = self.is_ui_compact()
         settings["crop_enable"] = self._crop_enable
-        settings["custom_crop_rect"] = self._custom_crop_rect
+        settings["custom_crop_data"] = self._custom_crop_data
 
     def saveAnnotations(self) -> bool:
         """Try to save the annotations and signal Marker to upload them.
