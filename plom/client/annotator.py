@@ -1338,8 +1338,13 @@ class Annotator(QWidget):
                 log.debug(f"enabling server region as crop: {rect}")
 
         if not rect and self._custom_crop_data:
-            rect = self._custom_crop_data["rect"]
-            log.debug(f"enabling custom crop: {rect}")
+            if self.scene.how_many_underlying_images() != self._custom_crop_data.get(
+                "numpages"
+            ):
+                log.debug("custom crop region was set for different number of pages")
+            else:
+                rect = self._custom_crop_data["rect"]
+                log.debug(f"enabling custom crop: {rect}")
 
         if rect:
             self.scene.crop_from_proportions(rect)
@@ -1349,6 +1354,8 @@ class Annotator(QWidget):
 
     def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
         self._custom_crop_data["rect"] = rect
+        # TODO: pass this in as an arg?
+        self._custom_crop_data["numpages"] = self.scene.how_many_underlying_images()
         # now set mode to move (just to change it away from crop tool)
         if self.scene and self.scene.mode == "crop":
             self.toMoveMode()
