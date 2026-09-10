@@ -81,6 +81,7 @@ def check_for_shared_pages(
         "with {rendered_shared_with} which are independently markable.",
         len(shared_with),
     ).format(rendered_shared_with=rendered_shared_with)
+    docs_url = "https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be"
     msg_bullets = _("""
           <li>
             <em>Do not</em> mark any parts of {rendered_shared_with}
@@ -88,9 +89,9 @@ def check_for_shared_pages(
           <li>
             You will not see any annotations to {rendered_shared_with};
             see
-            <a href="https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be">docs about Plom questions</a>.
+            <a href="{docs_url}">docs about Plom questions</a>.
           </li>
-    """).format(rendered_shared_with=rendered_shared_with)
+    """).format(rendered_shared_with=rendered_shared_with, docs_url=docs_url)
     if has_region:
         msg_bullets += """
             <li>
