@@ -6,7 +6,7 @@
 from typing import Any
 
 from .translations import translate as _
-from .translations import ngettext as _n
+from .translations import plural_translate as _n
 
 
 def get_question_label(spec: dict[str, Any], n: int | str) -> str:
@@ -93,10 +93,11 @@ def check_for_shared_pages(
           </li>
     """).format(rendered_shared_with=rendered_shared_with, docs_url=docs_url)
     if has_region:
-        msg_bullets += """
+        msg_bullets += _("""
             <li>
               The server has provided a &ldquo;region&rdquo;:
-              You can &ldquo;uncrop&rdquo; if you need to see more of the page.
+              You can &ldquo;uncrop&rdquo; if you need to see more
+              of the page.
             </li>
-        """
+        """)
     return "<p>" + msg1 + msg2 + "</p>" + "<ul>" + msg_bullets + "</ul>"
