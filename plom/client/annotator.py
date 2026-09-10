@@ -1295,7 +1295,7 @@ class Annotator(QWidget):
             return
         crop_completed = self._apply_crop()
         if crop_completed:
-            self._enable_crop = True
+            self._crop_enable = True
         else:
             log.debug(
                 "enable crop but neither server nor custom crop is appropriate, "
@@ -1360,6 +1360,7 @@ class Annotator(QWidget):
             return
         self._custom_crop_data["rect"] = rect
         self._custom_crop_data["numpages"] = num_images
+        self._crop_enable = True
         # now set mode to move (just to change it away from crop tool)
         if self.scene.mode == "crop":
             self.toMoveMode()
