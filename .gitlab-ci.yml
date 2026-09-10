@@ -983,6 +983,9 @@ macos15_x86_64_client:
   - /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
+  # Manually install cryptography, see Issue #5139
+  - arch -x86_64 /usr/local/bin/python3 -m pip download --only-binary=":all:" --platform macosx_11_0_x86_64 cryptography
+  - arch -x86_64 /usr/local/bin/python3 -m pip install cryptography*.whl
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version
