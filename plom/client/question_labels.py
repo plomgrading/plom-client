@@ -5,6 +5,8 @@
 
 from typing import Any
 
+from .translations import translate as _
+
 
 def get_question_label(spec: dict[str, Any], n: int | str) -> str:
     """Print question label for the nth question from spec dict.
@@ -76,16 +78,16 @@ def check_for_shared_pages(
           which {is_slash_are} independently markable.
         </p>
     """
-    msg_bullets = f"""
-          <li><em>Do not</em> mark any parts of {rendered_shared_with}
+    msg_bullets = _("""
+          <li><em>Do not</em> mark any parts of {shared_with}
             at this time.</li>
-          <li>You will not see any annotations to {rendered_shared_with};
+          <li>You will not see any annotations to {shared_with};
             see
             <a href="https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be">docs about Plom questions</a>.
           </li>
-    """
+    """).format(shared_with=rendered_shared_with)
     if has_region:
-        msg_bullets += f"""
+        msg_bullets += """
             <li>The server has provided a &ldquo;crop region&rdquo;:
               You can uncrop if you need to see more of the page.
             </li>
