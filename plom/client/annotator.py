@@ -1354,11 +1354,13 @@ class Annotator(QWidget):
         return False
 
     def set_custom_crop_region(self, rect: tuple[float, float, float, float]) -> None:
+        if not self.scene:
+            return
         self._custom_crop_data["rect"] = rect
         # TODO: pass this in as an arg?
         self._custom_crop_data["numpages"] = self.scene.how_many_underlying_images()
         # now set mode to move (just to change it away from crop tool)
-        if self.scene and self.scene.mode == "crop":
+        if self.scene.mode == "crop":
             self.toMoveMode()
 
     def toUndo(self):
