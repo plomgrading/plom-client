@@ -6,6 +6,7 @@
 from typing import Any
 
 from .translations import translate as _
+from .translations import ngettext as _n
 
 
 def get_question_label(spec: dict[str, Any], n: int | str) -> str:
@@ -67,29 +68,34 @@ def check_for_shared_pages(
     if not shared_pages:
         return ""
     shared_pages = sorted(list(set(shared_pages)))
-    page_slash_pages = "page" if len(shared_pages) == 1 else "pages"
+    # TODO: do proper int'l render here?  "a, b et c" vs "a, b, and c"
     rendered_shared_pages = ", ".join(str(x) for x in shared_pages)
-    is_slash_are = "is" if len(shared_with) == 1 else "are"
     rendered_shared_with = ", ".join(shared_with)
-    msg = f"""
-        <p>
-          {verbose_qlabel} shares {page_slash_pages} {rendered_shared_pages}
-          of the assessment with {rendered_shared_with}
-          which {is_slash_are} independently markable.
-        </p>
-    """
+    msg1 = _n(
+        "{qlabel} shares page {rendered_shared_pages_list} of the assessment ",
+        "{qlabel} shares pages {rendered_shared_pages_list} of the assessment ",
+        len(shared_pages),
+    ).format(qlabel=verbose_qlabel, rendered_shared_pages_list=rendered_shared_pages)
+    msg2 = _n(
+        "with {rendered_shared_with} which is independently markable.",
+        "with {rendered_shared_with} which are independently markable.",
+        len(shared_with),
+    ).format(rendered_shared_with=rendered_shared_with)
     msg_bullets = _("""
-          <li><em>Do not</em> mark any parts of {shared_with}
+          <li>
+            <em>Do not</em> mark any parts of {rendered_shared_with}
             at this time.</li>
-          <li>You will not see any annotations to {shared_with};
+          <li>
+            You will not see any annotations to {rendered_shared_with};
             see
             <a href="https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be">docs about Plom questions</a>.
           </li>
-    """).format(shared_with=rendered_shared_with)
+    """).format(rendered_shared_with=rendered_shared_with)
     if has_region:
         msg_bullets += """
-            <li>The server has provided a &ldquo;crop region&rdquo;:
-              You can uncrop if you need to see more of the page.
+            <li>
+              The server has provided a &ldquo;region&rdquo;:
+              You can &ldquo;uncrop&rdquo; if you need to see more of the page.
             </li>
         """
-    return msg + "<ul>" + msg_bullets + "</ul>"
+    return "<p>" + msg1 + msg2 + "</p>" + "<ul>" + msg_bullets + "</ul>"

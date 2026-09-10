@@ -57,3 +57,18 @@ def setup():
 def translate(msg: str) -> str:
     """Dummy placeholder standing in for an actual translator."""
     return msg
+
+
+# Issue #5130: uncomment this
+# def ngettext(msg_singular: str, msg_plural: str, count: int) -> str:
+#     """Translate a plural form using the current translator."""
+#     return _translations.ngettext(msg_singular, msg_plural, count)
+
+
+# Issue #5130: ... and remove this placeholder
+def ngettext(msg_singular: str, msg_plural: str, count: int) -> str:
+    """Dummy placeholder standing in for an actual translator."""
+    if count == 1:
+        return msg_singular
+    else:
+        return msg_plural
