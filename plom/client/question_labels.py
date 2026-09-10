@@ -47,7 +47,9 @@ def verbose_question_label(spec: dict[str, Any], qidx: int) -> str:
     return f"{qlabel} (question index {qidx})"
 
 
-def check_for_shared_pages(spec: dict[str, Any], question_idx: int) -> str:
+def check_for_shared_pages(
+    spec: dict[str, Any], question_idx: int, has_region: bool
+) -> str:
     """Check if our question shares pages, and return user-facing info message."""
     verbose_qlabel = verbose_question_label(spec, question_idx)
     my_pages = spec["question"][str(question_idx)]["pages"]
@@ -67,25 +69,25 @@ def check_for_shared_pages(spec: dict[str, Any], question_idx: int) -> str:
     rendered_shared_pages = ", ".join(str(x) for x in shared_pages)
     is_slash_are = "is" if len(shared_with) == 1 else "are"
     rendered_shared_with = ", ".join(shared_with)
-    return f"""
+    msg = f"""
         <p>
           {verbose_qlabel} shares {page_slash_pages} {rendered_shared_pages}
           of the assessment with {rendered_shared_with}
           which {is_slash_are} independently markable.
         </p>
-        <ul>
+    """
+    msg_bullets = f"""
           <li><em>Do not</em> mark any parts of {rendered_shared_with}
             at this time.</li>
-          <li>You may want to use the
-            &ldquo;crop to region&rdquo; feature.</li>
           <li>You will not see any annotations to {rendered_shared_with};
             see
             <a href="https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be">docs about Plom questions</a>.
           </li>
-        </ul>
-        <p>
-          Shared pages are a <em>new feature in Plom;</em>
-          please <strong>discuss your marking assignment with
-          your instructor</strong>.
-        </p>
     """
+    if has_region:
+        msg_bullets += f"""
+            <li>The server has provided a &ldquo;crop region&rdquo;:
+              You can uncrop if you need to see more of the page.
+            </li>
+        """
+    return msg + "<ul>" + msg_bullets + "</ul>"
