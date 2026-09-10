@@ -51,7 +51,7 @@ def verbose_question_label(spec: dict[str, Any], qidx: int) -> str:
 
 
 def check_for_shared_pages(
-    spec: dict[str, Any], question_idx: int, has_region: bool
+    spec: dict[str, Any], question_idx: int, has_region: bool = False
 ) -> str:
     """Check if our question shares pages, and return user-facing info message."""
     verbose_qlabel = verbose_question_label(spec, question_idx)
