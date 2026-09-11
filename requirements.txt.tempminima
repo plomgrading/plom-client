@@ -25,7 +25,7 @@ arrow==1.1.1
 cryptography==41.0.3
 Pillow==10.2.0
 platformdirs==3.0.0
-plom-common==0.21.3
+plom-common==0.22.0
 pyOpenSSL==23.2.0
 pyspellchecker==0.8.1
 pytest==7.2.0
