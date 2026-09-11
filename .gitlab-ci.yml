@@ -134,6 +134,69 @@ copyright_visible:
     - grep "__copyright__ = \"Copyright (C) ....-${YEAR}" plom/client/randoMarker.py
 
 
+# This job needs a custom CI/CD variable PLOM_CUSTOM_MILESTONE_TOKEN [1] containing
+# a "project access token" [2] with 'read_api' privileges.  It can a "Guest", created
+# at the "group" level (gitlab.com/plom).
+# The token will need to be maintained and recreated after it expires (2027-09)
+# [1](https://docs.gitlab.com/ci/variables/#restrict-pipeline-variables)
+# [2](https://docs.gitlab.com/user/project/settings/project_access_tokens/)
+# This is because CI_JOB_TOKEN does not have access to milestone list
+# https://gitlab.com/plom/plom-common/-/merge_requests/7
+# https://gitlab.com/gitlab-org/gitlab/-/work_items/17511
+release_milestone_exists:
+  stage: static_analysis
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  script:
+  - echo "CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH"
+  - echo "CI_COMMIT_TAG=$CI_COMMIT_TAG"
+  - echo "Project path is $CI_PROJECT_PATH"
+  - echo "For the login to work, the PLOM_CUSTOM_MILESTONE_TOKEN must be defined"
+  - glab auth login --hostname gitlab.com --token "$PLOM_CUSTOM_MILESTONE_TOKEN"
+  - glab auth status || true
+  - |
+    # Fetch all GitLab milestones for this project as JSON
+    GLAB_OUTPUT_JSON=$(glab milestone list --project "$CI_PROJECT_PATH" --output json)
+
+    # Print all milestone titles for debugging
+    echo "Available milestone titles:"
+    echo "$GLAB_OUTPUT_JSON" | jq -r '.[].title'
+
+    if [ -n "$CI_COMMIT_TAG" ]; then
+      echo "This is a tag pipeline."
+
+      ACTUAL_MILESTONE="$CI_COMMIT_TAG"
+
+      echo "Checking whether milestone exists for tag: $ACTUAL_MILESTONE"
+
+    elif [ -n "$CI_COMMIT_BRANCH" ]; then
+      echo "This is a branch pipeline."
+
+      # Grab version number from version field in init__py. An example value contained
+      # inside VERSION is '0.2x.x.dev0'
+      VERSION=$(grep '^__version__' plom/common/__init__.py | cut -d '"' -f2)
+
+      ACTUAL_MILESTONE="v${VERSION%.dev*}"
+
+      echo "Package version is: $VERSION"
+      echo "Checking whether milestone exists for base version: $ACTUAL_MILESTONE"
+
+    else
+      echo "ERROR: This pipeline is neither a tag pipeline nor a branch pipeline."
+      exit 1
+    fi
+
+    GLAB_OUTPUT_CONTAINS_ACTUAL_MILESTONE=$(echo "$GLAB_OUTPUT_JSON" | jq --arg milestone "$ACTUAL_MILESTONE" '.[] | select(.title == $milestone)')
+
+    echo "Looked for $ACTUAL_MILESTONE in glab output and found: $GLAB_OUTPUT_CONTAINS_ACTUAL_MILESTONE"
+
+    if [ -n "$GLAB_OUTPUT_CONTAINS_ACTUAL_MILESTONE" ]; then
+      echo "Milestone exists: $ACTUAL_MILESTONE"
+    else
+      echo "ERROR: Milestone does not exist: $ACTUAL_MILESTONE"
+      exit 1
+    fi
+
+
 # to ensure the pypi job works, make sure we can package
 build-package:
   image: python:3
