@@ -173,7 +173,7 @@ release_milestone_exists:
 
       # Grab version number from version field in init__py. An example value contained
       # inside VERSION is '0.2x.x.dev0'
-      VERSION=$(grep '^__version__' plom/common/__init__.py | cut -d '"' -f2)
+      VERSION=$(grep '^__version__' plom/client/__init__.py | cut -d '"' -f2)
 
       ACTUAL_MILESTONE="v${VERSION%.dev*}"
 
