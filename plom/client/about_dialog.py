@@ -5,7 +5,6 @@ import platform
 
 from PyQt6.QtCore import PYQT_VERSION_STR, QT_VERSION_STR
 from PyQt6.QtWidgets import QMessageBox
-from requests import __version__ as requests_version
 
 from plom.common import __version__ as plom_common_version
 from . import __version__
@@ -41,7 +40,6 @@ def show_about_dialog(parent):
         + f"""
             <p>
             PyQt {PYQT_VERSION_STR} (Qt {QT_VERSION_STR})<br />
-            Requests {requests_version}<br />
             Python {platform.python_version()}<br />
             {platform.platform()}<br />
             plom-common package: {plom_common_version}
