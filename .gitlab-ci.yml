@@ -983,7 +983,7 @@ macos15_x86_64_client:
   - /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
-  # Manually install cryptography, see Issue #5139
+  # Manually install cryptography, no wheels for >= 49, Issue #5139
   - arch -x86_64 /usr/local/bin/python3 -m pip install --only-binary=":all:" cryptography
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
