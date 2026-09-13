@@ -146,6 +146,9 @@ copyright_visible:
 release_milestone_exists:
   stage: static_analysis
   image: registry.gitlab.com/gitlab-org/cli:latest
+  only:
+    - main
+    - tags
   script:
   - echo "CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH"
   - echo "CI_COMMIT_TAG=$CI_COMMIT_TAG"
