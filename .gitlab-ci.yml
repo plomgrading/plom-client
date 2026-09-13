@@ -464,7 +464,7 @@ mypy-type-checking:
     - pip install --break-system-packages pyspellchecker stdiomask
     # mypy was failing with the Ubuntu built-in one
     - pip install --break-system-packages -U pillow
-    - pip install --break-system-packages mypy~=1.20.2
+    - pip install --break-system-packages mypy~=2.3.1
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
     - mypy --version
