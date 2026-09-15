@@ -395,7 +395,7 @@ coverage:
     - pip install pyspellchecker stdiomask
     - pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
   script:
-    - pip install pytest pytest-cov coverage[toml]~=7.15.2
+    - pip install pytest pytest-cov coverage[toml]~=7.16.0
     - coverage run -m pytest
     - coverage report --precision=2
     - coverage xml
@@ -429,8 +429,8 @@ pylint:
       git
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages astroid~=4.1.2  # codespell:ignore astroid
-    - pip install --break-system-packages pylint~=4.0.6
+    - pip install --break-system-packages astroid~=4.3.1  # codespell:ignore astroid
+    - pip install --break-system-packages pylint~=4.0.8
     - pip install --break-system-packages git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     - pip install --break-system-packages .
   script:
@@ -496,7 +496,7 @@ pyright:
       python3-pillow
     - apt-get -yq autoclean
     - pip install --break-system-packages pyspellchecker stdiomask
-    - pip install --break-system-packages pyright~=1.1.411
+    - pip install --break-system-packages pyright~=1.1.414
   script:
     # for now, just display errors but don't fail (Issue #3237)
     - pyright || true
@@ -520,7 +520,7 @@ ruff:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.22
+    - python3 -m pip install ruff~=0.16.7
   script:
     - ruff check .
     # ruff format .
@@ -531,7 +531,7 @@ count-no-docstring:
   image: python:3
   stage: static_analysis
   before_script:
-    - python3 -m pip install ruff~=0.15.22
+    - python3 -m pip install ruff~=0.16.7
   script:
     # run once just for log out but don't fail
     - EXCEPTIONS="D101,D102,D103,D104,D106"
@@ -1049,6 +1049,8 @@ macos15_x86_64_client:
   - /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 --version
   - arch -x86_64 /usr/local/bin/python3 -m pip install --upgrade pip
+  # Manually install cryptography, no wheels for >= 49, Issue #5139
+  - arch -x86_64 /usr/local/bin/python3 -m pip install --only-binary=":all:" cryptography
   - arch -x86_64 /usr/local/bin/python3 -m pip install -r requirements.txt
   - arch -x86_64 /usr/local/bin/python3 -m pip install pyinstaller~=$PYINSTALLER_VER
   - arch -x86_64 /usr/local/bin/python3 -m pip install . --no-deps  # pyinstaller spec needs version

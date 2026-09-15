@@ -42,7 +42,6 @@ dynamic = ['version']
 requires-python = '>=3.10'
 dependencies = [
     "arrow>=1.1.1",
-    "cryptography>=41.0.3",
     "packaging",
     "Pillow>=10.2",
     "platformdirs>=3.0.0",
@@ -51,8 +50,6 @@ dependencies = [
     "pytest>=7.2.0",
     "pytest-qt>=4.2.0",
     "PyQt6>=6.4.0",  # needed for QFormLayout.setRowVisible, 6.4.2 available in Debian 12
-    "requests",
-    "requests-toolbelt",
     "stdiomask>=0.0.6",
     'tomli>=2.0.1 ; python_version<"3.11"',  # until we drop 3.10
     "tomlkit>=0.11.7",
@@ -128,7 +125,6 @@ explicit_package_bases = true
 # Maintenance: try removing X, removing .mypy_cache, uninstalling types-X, and rerunning mypy locally
 [[tool.mypy.overrides]]
 module = [
-    'requests_toolbelt',
     'stdiomask',
 ]
 ignore_missing_imports = true
