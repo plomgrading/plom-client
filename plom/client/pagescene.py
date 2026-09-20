@@ -2116,7 +2116,10 @@ class PageScene(QGraphicsScene):
         # # assert isinstance(_parent, Annotator)
         # but that's likely a circular import, so just add exceptions below
         if _save_custom_crop_callback:
-            _parent.set_custom_crop_region(self.get_current_crop_rectangle_as_proportions())  # type: ignore[attr-defined]
+            _parent.set_custom_crop_region(  # type: ignore[attr-defined]
+                self.get_current_crop_rectangle_as_proportions(),
+                self.how_many_underlying_images(),
+            )
 
         # its a bit odd for the scene to ask for this but triggers can come from pagescene
         # itself rather than from Annotator...
