@@ -5,6 +5,9 @@
 
 from typing import Any
 
+from .translations import translate as _
+from .translations import plural_translate as _n
+
 
 def get_question_label(spec: dict[str, Any], n: int | str) -> str:
     """Print question label for the nth question from spec dict.
@@ -47,7 +50,9 @@ def verbose_question_label(spec: dict[str, Any], qidx: int) -> str:
     return f"{qlabel} (question index {qidx})"
 
 
-def check_for_shared_pages(spec: dict[str, Any], question_idx: int) -> str:
+def check_for_shared_pages(
+    spec: dict[str, Any], question_idx: int, has_region: bool = False
+) -> str:
     """Check if our question shares pages, and return user-facing info message."""
     verbose_qlabel = verbose_question_label(spec, question_idx)
     my_pages = spec["question"][str(question_idx)]["pages"]
@@ -63,29 +68,36 @@ def check_for_shared_pages(spec: dict[str, Any], question_idx: int) -> str:
     if not shared_pages:
         return ""
     shared_pages = sorted(list(set(shared_pages)))
-    page_slash_pages = "page" if len(shared_pages) == 1 else "pages"
+    # TODO: do proper int'l render here?  "a, b et c" vs "a, b, and c"
     rendered_shared_pages = ", ".join(str(x) for x in shared_pages)
-    is_slash_are = "is" if len(shared_with) == 1 else "are"
     rendered_shared_with = ", ".join(shared_with)
-    return f"""
-        <p>
-          {verbose_qlabel} shares {page_slash_pages} {rendered_shared_pages}
-          of the assessment with {rendered_shared_with}
-          which {is_slash_are} independently markable.
-        </p>
-        <ul>
-          <li><em>Do not</em> mark any parts of {rendered_shared_with}
+    msg1 = _n(
+        "{qlabel} shares page {rendered_shared_pages_list} of the assessment ",
+        "{qlabel} shares pages {rendered_shared_pages_list} of the assessment ",
+        len(shared_pages),
+    ).format(qlabel=verbose_qlabel, rendered_shared_pages_list=rendered_shared_pages)
+    msg2 = _n(
+        "with {rendered_shared_with} which is independently markable.",
+        "with {rendered_shared_with} which are independently markable.",
+        len(shared_with),
+    ).format(rendered_shared_with=rendered_shared_with)
+    docs_url = "https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be"
+    msg_bullets = _("""
+          <li>
+            <em>Do not</em> mark any parts of {rendered_shared_with}
             at this time.</li>
-          <li>You may want to use the
-            &ldquo;crop to region&rdquo; feature.</li>
-          <li>You will not see any annotations to {rendered_shared_with};
+          <li>
+            You will not see any annotations to {rendered_shared_with};
             see
-            <a href="https://plom.readthedocs.io/en/latest/preparing_an_exam.html#what-should-each-question-be">docs about Plom questions</a>.
+            <a href="{docs_url}">docs about Plom questions</a>.
           </li>
-        </ul>
-        <p>
-          Shared pages are a <em>new feature in Plom;</em>
-          please <strong>discuss your marking assignment with
-          your instructor</strong>.
-        </p>
-    """
+    """).format(rendered_shared_with=rendered_shared_with, docs_url=docs_url)
+    if has_region:
+        msg_bullets += _("""
+            <li>
+              The server has provided a &ldquo;region&rdquo;:
+              You can &ldquo;uncrop&rdquo; if you need to see more
+              of the page.
+            </li>
+        """)
+    return "<p>" + msg1 + msg2 + "</p>" + "<ul>" + msg_bullets + "</ul>"

@@ -73,3 +73,17 @@ def test_check_shared_pages() -> None:
     assert "shares pages 4, 5" in s
     assert "with Q2, Q3b, Q3c" in s
     assert "which are indep" in s
+
+
+def test_check_shared_pages_regions() -> None:
+    partial_spec = {
+        "numberOfQuestions": 2,
+        "question": {
+            "1": {"label": "Q1a", "pages": [3], "mark": 2},
+            "2": {"label": "Q1bc", "pages": [3], "mark": 3},
+        },
+    }
+    s = check_for_shared_pages(partial_spec, 1, True)
+    assert "crop" in s
+    s = check_for_shared_pages(partial_spec, 1, False)
+    assert "crop" not in s

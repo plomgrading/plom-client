@@ -307,7 +307,7 @@ class MarkerClient(QWidget):
             )
             self.backgroundUploader.start()
         self.cacheLatexComments()  # Now cache latex for comments:
-        s = check_for_shared_pages(self.exam_spec, self.question_idx)
+        s = check_for_shared_pages(self.exam_spec, self.question_idx, bool(this_region))
         if s:
             InfoMsg(self, s).exec()
 
