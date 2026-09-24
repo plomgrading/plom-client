@@ -1680,7 +1680,10 @@ class Annotator(QWidget):
 
     @property
     def _feedback_rules(self) -> dict[str, Any]:
-        return self.parentMarkerUI.annotatorSettings.get("feedback_rules")
+        r = self.parentMarkerUI.annotatorSettings.get("feedback_rules")
+        if r is None:
+            raise RuntimeError("Unexpected empty feedback rules!")
+        return r
 
     def _continue_after_warning(self, code: str, msg: str | None = None) -> bool:
         """Notify user about a specific warnings/error in their annotations.
