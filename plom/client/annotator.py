@@ -1683,7 +1683,7 @@ class Annotator(QWidget):
         return self.parentMarkerUI.annotatorSettings.get("feedback_rules")
 
     def _continue_after_warning(self, code: str, msg: str | None = None) -> bool:
-        """Notify user about warnings/errors in their annotations.
+        """Notify user about a specific warnings/error in their annotations.
 
         Handle "don't ask me again" and associated settings.
 
@@ -1698,7 +1698,9 @@ class Annotator(QWidget):
             True if we should continue or False if either settings or
             user choose to edit further.
         """
-        situation = self._feedback_rules[code]
+        situation = self._feedback_rules.get(code)
+        if not situation:
+            return True
 
         if msg is None:
             # str() to shutup MyPy: we unit test that is a string
@@ -1733,7 +1735,7 @@ class Annotator(QWidget):
         return True
 
     def _will_we_warn(self, code: str) -> bool:
-        """Would we notify user about warnings/errors in their annotations?
+        """Would we notify user about a specific warnings/error in their annotations?
 
         Determines if the closely-related :method:`_continue_after_warning`
         will popup a dialog asking and/or notifying the user of a situation.
@@ -1749,7 +1751,9 @@ class Annotator(QWidget):
             either because of global settings or b/c they have chosen
             "don't-ask-me-again".
         """
-        situation = self._feedback_rules[code]
+        situation = self._feedback_rules.get(code)
+        if not situation:
+            return False
         if not situation["allowed"]:
             return True
         if situation["warn"]:
