@@ -1782,8 +1782,11 @@ class Annotator(QWidget):
             code = "zero-marks-but-has-only-ticks"
         elif self.scene.hasAnyTicks():
             code = "zero-marks-but-has-ticks"
-        if code:
-            msg = self._feedback_rules[code]["explanation"]
+        if not code:
+            return True
+        rule = self._feedback_rules.get(code)
+        if rule:
+            msg = rule["explanation"]
             assert isinstance(msg, str)
             msg = msg.format(max_mark=self.maxMark)
             if not self._continue_after_warning(code, msg):
@@ -1811,8 +1814,11 @@ class Annotator(QWidget):
             pass
         else:
             code = "full-marks-but-other-annotations-contradictory"
-        if code:
-            msg = self._feedback_rules[code]["explanation"]
+        if not code:
+            return True
+        rule = self._feedback_rules.get(code)
+        if rule:
+            msg = rule["explanation"]
             assert isinstance(msg, str)
             msg = msg.format(max_mark=self.maxMark)
             if not self._continue_after_warning(code, msg):
@@ -1836,10 +1842,13 @@ class Annotator(QWidget):
         if not indices:
             return True
 
+        rule = self._feedback_rules.get(code)
+        if not rule:
+            return True
+        msg = rule["explanation"]
         # the try behaves like "with highlighted_pages(indices):"
         self.scene.highlight_pages(indices)
         try:
-            msg = self._feedback_rules[code]["explanation"]
             msg = msg.format(which_pages=", ".join([str(p + 1) for p in indices]))
             return self._continue_after_warning(code, msg)
         finally:
