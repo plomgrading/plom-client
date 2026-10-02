@@ -13,8 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 ### Changed
+* Improve crop behaviour to more consistently apply custom crops.
+* Don't apply crop regions designed for a different number of pages.
 
 ### Fixed
+* Don't crash on unexpected feedback rules from server: display an error dialog instead.
 
 
 
