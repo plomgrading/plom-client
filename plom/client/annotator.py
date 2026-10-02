@@ -1678,12 +1678,24 @@ class Annotator(QWidget):
         self.annotator_upload.emit(self.task, stuff)
         return True
 
-    @property
-    def _feedback_rules(self) -> dict[str, Any]:
-        return self.parentMarkerUI.annotatorSettings.get("feedback_rules")
+    def _get_feedback_rule(self, code: str) -> None | dict[str, Any]:
+        try:
+            rules = self.parentMarkerUI.annotatorSettings.get("feedback_rules")
+            if not rules:
+                raise KeyError("empty")
+            situation = rules[code]
+        except KeyError:
+            msg = _("""
+                <p>Unexpectedly, we could not find the feedback structure
+                for key <var>{keycode}</var>.
+                This is probably a bug: please report it.</p>
+            """).format(keycode=code)
+            ErrorMsg(self, msg, details=f"feedback structure: {rules}").exec()
+            return None
+        return situation
 
     def _continue_after_warning(self, code: str, msg: str | None = None) -> bool:
-        """Notify user about warnings/errors in their annotations.
+        """Notify user about a specific warnings/error in their annotations.
 
         Handle "don't ask me again" and associated settings.
 
@@ -1698,7 +1710,9 @@ class Annotator(QWidget):
             True if we should continue or False if either settings or
             user choose to edit further.
         """
-        situation = self._feedback_rules[code]
+        situation = self._get_feedback_rule(code)
+        if not situation:
+            return True
 
         if msg is None:
             # str() to shutup MyPy: we unit test that is a string
@@ -1733,7 +1747,7 @@ class Annotator(QWidget):
         return True
 
     def _will_we_warn(self, code: str) -> bool:
-        """Would we notify user about warnings/errors in their annotations?
+        """Would we notify user about a specific warnings/error in their annotations?
 
         Determines if the closely-related :method:`_continue_after_warning`
         will popup a dialog asking and/or notifying the user of a situation.
@@ -1749,7 +1763,9 @@ class Annotator(QWidget):
             either because of global settings or b/c they have chosen
             "don't-ask-me-again".
         """
-        situation = self._feedback_rules[code]
+        situation = self._get_feedback_rule(code)
+        if not situation:
+            return False
         if not situation["allowed"]:
             return True
         if situation["warn"]:
@@ -1778,12 +1794,16 @@ class Annotator(QWidget):
             code = "zero-marks-but-has-only-ticks"
         elif self.scene.hasAnyTicks():
             code = "zero-marks-but-has-ticks"
-        if code:
-            msg = self._feedback_rules[code]["explanation"]
-            assert isinstance(msg, str)
-            msg = msg.format(max_mark=self.maxMark)
-            if not self._continue_after_warning(code, msg):
-                return False
+        if not code:
+            return True
+        rule = self._get_feedback_rule(code)
+        if not rule:
+            return True
+        msg = rule["explanation"]
+        assert isinstance(msg, str)
+        msg = msg.format(max_mark=self.maxMark)
+        if not self._continue_after_warning(code, msg):
+            return False
         return True
 
     def _fullMarksWarn(self) -> bool:
@@ -1807,12 +1827,16 @@ class Annotator(QWidget):
             pass
         else:
             code = "full-marks-but-other-annotations-contradictory"
-        if code:
-            msg = self._feedback_rules[code]["explanation"]
-            assert isinstance(msg, str)
-            msg = msg.format(max_mark=self.maxMark)
-            if not self._continue_after_warning(code, msg):
-                return False
+        if not code:
+            return True
+        rule = self._get_feedback_rule(code)
+        if not rule:
+            return True
+        msg = rule["explanation"]
+        assert isinstance(msg, str)
+        msg = msg.format(max_mark=self.maxMark)
+        if not self._continue_after_warning(code, msg):
+            return False
         return True
 
     def _check_all_pages_touched(self) -> bool:
@@ -1832,10 +1856,13 @@ class Annotator(QWidget):
         if not indices:
             return True
 
+        rule = self._get_feedback_rule(code)
+        if not rule:
+            return True
+        msg = rule["explanation"]
         # the try behaves like "with highlighted_pages(indices):"
         self.scene.highlight_pages(indices)
         try:
-            msg = self._feedback_rules[code]["explanation"]
             msg = msg.format(which_pages=", ".join([str(p + 1) for p in indices]))
             return self._continue_after_warning(code, msg)
         finally:
