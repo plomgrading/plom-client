@@ -614,7 +614,7 @@ oldOS_mindeps:
     - python3 -m pip install git+https://gitlab.com/plom/plom-common.git@$PLOMCOMMON_BRANCHNAME
     # install min versions of all deps, including transitive floors, from pyproject.toml
     - python3 -m pip install uv
-    - python3 -m uv pip install --resolution=lowest-direct --python python3.10 -r pyproject.toml
+    - python3 -m uv pip install --resolution=lowest-direct --system -r pyproject.toml
     - python3 -m pip install .
     # First, run the unit tests
     - pytest -l --pyargs plom
@@ -634,7 +634,7 @@ minpy_mindeps:
   script:
     # install min versions of all deps, including transitive floors, from pyproject.toml
     - pip install uv
-    - uv pip install --resolution=lowest-direct --python python3.10 -r pyproject.toml
+    - uv pip install --resolution=lowest-direct --system -r pyproject.toml
     - pip install .
     - pytest -l --pyargs plom
 
