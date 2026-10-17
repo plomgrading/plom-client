@@ -1003,7 +1003,6 @@ class MarkerClient(QWidget):
         papernum, qidx = unpack_task_code(task)
         pagedata = self.msgr.get_pagedata_context_question(papernum, qidx)
 
-        # TODO: is this the main difference between pagedata and src_img_data?
         pagedata = [x for x in pagedata if x["included"]]
 
         if cache and self.question_idx == qidx:
@@ -1248,17 +1247,18 @@ class MarkerClient(QWidget):
         """
         __, qidx = unpack_task_code(task)
         assert qidx == self.question_idx, f"wrong question: question_idx={qidx}"
-        src_img_data, tags, integrity_check = self.msgr.claim_task(
+        pagedata, tags, integrity_check = self.msgr.claim_task(
             task, version=self.version
         )
+        pagedata = [x for x in pagedata if x["included"]]
 
-        self.get_downloads_for_src_img_data(src_img_data)
+        self.get_downloads_for_src_img_data(pagedata)
 
         # TODO: do we really want to just hardcode "untouched" here?
         if self.examModel.has_task(task):
             self.examModel.update_task(
                 task,
-                src_img_data=src_img_data,
+                src_img_data=pagedata,
                 status="untouched",
                 mark=-1,
                 marking_time=0.0,
@@ -1269,7 +1269,7 @@ class MarkerClient(QWidget):
         else:
             self.examModel.add_task(
                 task,
-                src_img_data=src_img_data,
+                src_img_data=pagedata,
                 status="untouched",
                 mark=-1,
                 marking_time=0.0,
