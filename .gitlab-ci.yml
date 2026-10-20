@@ -28,10 +28,10 @@
 #       when: never
 #     - if: '$CI_COMMIT_BRANCH'
 
-image: docker:29.6.1
+image: docker:29
 
 services:
-  - docker:29.6.1-dind
+  - docker:29-dind
 
 variables:
   DOCKER_DRIVER: overlay2
