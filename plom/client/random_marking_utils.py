@@ -248,12 +248,13 @@ def do_random_marking_backend(
             break
         # print("Trying to claim next ask = ", task)
         try:
-            src_img_data, tags, integrity_check = messenger.claim_task(
+            pagedata, tags, integrity_check = messenger.claim_task(
                 task, version=version
             )
         except PlomTakenException:
             print("Another user got task {}. Trying again...".format(task))
             continue
+        pagedata = [x for x in pagedata if x["included"]]
 
         # tag one in three papers
         if random.randrange(3) == 0:
@@ -273,7 +274,7 @@ def do_random_marking_backend(
 
         with tempfile.TemporaryDirectory() as td:
             downloader = Downloader(td, msgr=messenger)
-            src_img_data = downloader.sync_downloads(src_img_data)
+            src_img_data = downloader.sync_downloads(pagedata)
 
             basefile = Path(td) / "argh"
             score, rubrics, aname, anndata = annotatePaper(
